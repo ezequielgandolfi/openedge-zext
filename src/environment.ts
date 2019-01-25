@@ -1,7 +1,10 @@
+import * as vscode from 'vscode';
 import * as path from 'path';
 import { OpenEdgeConfig } from './openEdgeConfigFile';
 import * as fs from 'fs';
 import { getConfig } from './ablConfig';
+
+export const ABL_MODE: vscode.DocumentFilter = { language: 'abl', scheme: 'file' };
 
 function getConfigDLCPath() {
     let config = getConfig();

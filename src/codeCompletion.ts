@@ -1,26 +1,73 @@
 import * as vscode from 'vscode';
-import { readFile } from 'fs';
+import * as fs from 'fs';
 import * as promisify from 'util.promisify';
 import * as jsonminify from 'jsonminify';
-import * as utils from './utils';
-import { ABLTableDefinition, ABLIndexDefinition } from './definition';
+import { ABLTableDefinition } from './definition';
+import { ABLDocumentController } from './documentController';
+import { updateTableCompletionList, getText } from './utils';
 
 let watcher: vscode.FileSystemWatcher = null;
 let _tableCollection: vscode.CompletionList = new vscode.CompletionList();
-const readFileAsync = promisify(readFile);
+const readFileAsync = promisify(fs.readFile);
 
-export class ABLDbSchemaCompletion implements vscode.CompletionItemProvider {
+export class ABLCodeCompletion implements vscode.CompletionItemProvider {
+	private _ablDocumentController: ABLDocumentController;
+
+	constructor(controller: ABLDocumentController) {
+		this._ablDocumentController = controller;
+	}
+	
 	public provideCompletionItems(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken, context: vscode.CompletionContext) {
-		let selection = utils.getText(document, position, true);
+		let doc  = this._ablDocumentController.getDocument(document);
+		/*let temps: ABLTempTable[] = [];
+		if (doc)
+			temps = doc.tempTables;*/
+		let selection = getText(document, position, true);
 		let words = selection.statement.split('.');
 		if (words.length == 2) {
+			// Tables
 			let tb = _tableCollection.items.find((item) => item.label.toLowerCase() == words[0]);
 			if (tb) {
 				return tb['completion'];
 			}
+			// Temp-tables
+			let tt = doc.tempTables.find(item => item.filename.toLowerCase() == words[0]);
+			if (tt) {
+				return tt.completionFields;
+			}
+			// External Temp-tables
+			let extTt;
+			doc.externalDocument.forEach(external => {
+				if (!extTt) {
+					let extDoc = this._ablDocumentController.getDocument(external);
+					if (extDoc) {
+						extTt = extDoc.tempTables.find(item => item.filename.toLowerCase() == words[0]);
+						if (extTt) {
+							extTt = extTt.completionFields;
+						}
+					}
+				}
+			});
+			if (extTt)
+				return extTt;
 		}
-		else if (words.length == 1)
-			return _tableCollection;
+		else if (words.length == 1) {
+			// Tables
+			let tb = _tableCollection.items;
+			// Temp-tables
+			let tt: vscode.CompletionItem[] = doc.tempTables.map(item => {
+				return new vscode.CompletionItem(item.filename);
+			});
+			// External Temp-tables
+			let externalTt: vscode.CompletionItem[] = [];
+			doc.externalDocument.forEach(external => {
+				let _ti = this._ablDocumentController.getDocument(external).tempTables.map(item => {
+					return new vscode.CompletionItem(item.filename);
+				});
+				externalTt = [...externalTt,..._ti];
+			});
+			return new vscode.CompletionList([...tb,...tt,...externalTt]);
+		}
 		return [];
 	}
 }
@@ -48,69 +95,14 @@ function loadAndSetDumpFile(filename: string) {
 		if(res) {
 			res.map(tb => {
 				tb.filename = filename;
-				tb.completionFields = new vscode.CompletionList(tb.fields);
-				tb.completionIndexes = mapIndexCompletionList(tb, tb.indexes);
-				tb.completion = new vscode.CompletionList([...tb.completionFields.items,...tb.completionIndexes.items]);
-
-				let pk = tb.indexes.find(item => item.primary);
-				if((pk)&&(pk.fields))
-					tb.pkList = pk.fields.map(item => {return item.label}).join(', ');
-				else
-					tb.pkList = '';
+				tb.fields.map(fd => fd.name = fd['label']);
+				updateTableCompletionList(tb);
 			});
 			res.forEach(tb => {
 				_tableCollection.items.push(tb);	
 			});
 		}
     });
-}
-
-function getIndexSnippet(table: ABLTableDefinition, index: ABLIndexDefinition): vscode.SnippetString {
-	let snip = new vscode.SnippetString();
-	let first: boolean = true;
-	let size = 0;
-	// get max field name size
-	index.fields.forEach(field => { if(field.label.length > size) size = field.label.length });
-	// fields snippet 
-	index.fields.forEach(field => {
-		if(first) {
-			first = false;
-		}
-		else {
-			snip.appendText('\n');
-			snip.appendText('\tand ' + table.label + '.');
-		}
-		snip.appendText(utils.padRight(field.label, size) + ' = ');
-		snip.appendTabstop();
-	});
-	return snip;
-}
-
-function mapIndexCompletionList(table: ABLTableDefinition, list: ABLIndexDefinition[]): vscode.CompletionList {
-	let result = new vscode.CompletionList();
-
-	if(!list) return result;
-	
-	list.forEach(objItem => {
-		if (!objItem.fields) return;
-		let item = new vscode.CompletionItem(objItem.label, vscode.CompletionItemKind.Snippet);
-		item.insertText = getIndexSnippet(table, objItem);
-		item.detail = objItem.fields.map(item => {return item.label}).join(', ');
-		if (objItem.primary) {
-			item.label = '>INDEX (PK) ' + item.label;
-			item.detail = 'Primary Key, Fields: ' + item.detail;
-		}
-		else if (objItem.unique) {
-			item.label = '>INDEX (U) ' + item.label; 
-			item.detail = 'Unique Index, Fields: ' + item.detail;
-		}
-		else {
-			item.label = '>INDEX ' + item.label;
-			item.detail = 'Index, Fields: ' + item.detail;
-		}
-		result.items.push(item);
-	});
-	return result;
 }
 
 function unloadDumpFile(filename: string) {

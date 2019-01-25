@@ -29,6 +29,9 @@ export interface DeploymentTask {
     path: string;
     postAction?: PostActionTask[];
 }
+export interface EditorOptions {
+    trim?: 'none' | 'right';
+}
 export interface OpenEdgeConfig {
     proPath?: string[];
     proPathMode?: 'append' | 'overwrite' | 'prepend';
@@ -39,6 +42,7 @@ export interface OpenEdgeConfig {
     dlcPath?: string;
     dbDictionary?: string[];
     deployment?: DeploymentTask[];
+    editor?: EditorOptions;
 }
 
 export function loadConfigFile(filename: string): Thenable<OpenEdgeConfig> {

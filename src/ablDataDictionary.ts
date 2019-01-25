@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import cp = require('child_process');
 import path = require('path');
 
-import { getProwinBin, createProArgs, getProBin, setupEnvironmentVariables } from './ablPath';
+import { getProwinBin, createProArgs, getProBin, setupEnvironmentVariables } from './environment';
 import { getConfig } from './ablConfig';
 import { create } from './outputProcess';
 import { outputChannel } from './notification';

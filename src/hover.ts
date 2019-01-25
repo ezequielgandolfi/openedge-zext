@@ -3,7 +3,7 @@ import { HoverProvider, ProviderResult, Hover, TextDocument, Position, Cancellat
 import * as utils from './utils';
 import { ABLDocumentController } from "./documentController";
 import { getTableCollection } from "./codeCompletion";
-import { ABLFieldDefinition, ABLTableDefinition, SYMBOL_TYPE } from './definition';
+import { ABLFieldDefinition, ABLTableDefinition, ABL_ASLIKE } from './definition';
 
 export class ABLHoverProvider implements HoverProvider {
     private _ablDocumentController: ABLDocumentController;
@@ -13,18 +13,27 @@ export class ABLHoverProvider implements HoverProvider {
     }
     
     provideHover(document: TextDocument, position: Position, token: CancellationToken): ProviderResult<Hover> {
+        let doc = this._ablDocumentController.getDocument(document);
         let selection = utils.getText(document, position);
         let words = utils.cleanArray(selection.statement.split(/[\.\:\s\t]/));
         if (words.length > 0) {
-            // check for table collection
-            let tb = getTableCollection().items.find(item => item.label == selection.word);
-            if (tb) {
-                let tbd = <ABLTableDefinition>tb;
-                return new Hover([selection.word, '*'+tb.detail+'*', 'PK: ' + tbd.pkList], selection.wordRange);
+            if (words.length == 1) {
+                // check for table collection
+                let tb = getTableCollection().items.find(item => item.label == selection.statement);
+                if (tb) {
+                    let tbd = <ABLTableDefinition>tb;
+                    return new Hover([selection.word, '*'+tb.detail+'*', 'PK: ' + tbd.pkList], selection.wordRange);
+                }
+                // check for temp-tables
+                let tt = doc.tempTables.find(item => item.filename.toLowerCase() == selection.statement);
+                if (tt) {
+                    return new Hover([selection.statement, '*'+tt.label+'*'], selection.wordRange);
+                }
             }
-            // check for table.field collection
-            if (words.length > 1) {
-                tb = getTableCollection().items.find(item => item.label == words[0]);
+            
+            else {
+                // check for table.field collection
+                let tb = getTableCollection().items.find(item => item.label == words[0]);
                 if (tb) {
                     let fdLst = <ABLFieldDefinition[]>tb['fields'];
                     let fd = fdLst.find(item => item.label == words[1]);
@@ -33,7 +42,22 @@ export class ABLHoverProvider implements HoverProvider {
                     else
                         return;
                 }
+                // check for temp-table.field collection
+                let tt = doc.tempTables.find(item => item.filename.toLowerCase() == words[0]);
+                if (tt) {
+                    let fd = tt.fields.find(item => item.name.toLowerCase() == words[1]);
+                    if (fd) {
+                        let dt = fd.dataType;
+                        if (fd.asLike == ABL_ASLIKE.LIKE) {
+                            dt = '*like* ' + dt;
+                        }
+                        return new Hover([selection.statement, 'Type: ' + dt], selection.statementRange);
+                    }
+                    else
+                        return;
+                }
             }
+            // other symbols
             let symbols = this._ablDocumentController.getDocument(document).symbols;
             let method = this._ablDocumentController.getDocument(document).methods.find(m => (m.lineAt <= position.line && m.lineEnd >= position.line));
             if(method) {

@@ -230,6 +230,7 @@ export class OutlineNavigatorProvider {
   symbolViewer: TreeView<OutlineNavigatorNode>;
 
   constructor(context: ExtensionContext) {
+    /*
     const treeDataProvider = new OutlineNavigatorTreeDataProvider(context);
     this.symbolViewer = window.createTreeView("abl.outline", {
       treeDataProvider
@@ -262,6 +263,7 @@ export class OutlineNavigatorProvider {
         }
       }
     );
+    */
   }
 }
 

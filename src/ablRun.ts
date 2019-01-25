@@ -2,10 +2,10 @@ import * as vscode from 'vscode';
 import path = require('path');
 import { outputChannel } from './notification';
 import { getConfig } from './ablConfig';
-import { getProBin, createProArgs, setupEnvironmentVariables } from './ablPath';
+import { getProBin, createProArgs, setupEnvironmentVariables } from './environment';
 import { create } from './outputProcess';
 
-export function run(filename: string, ablConfig: vscode.WorkspaceConfiguration): Promise<any> {
+export function execRun(filename: string, ablConfig: vscode.WorkspaceConfiguration): Promise<any> {
 	outputChannel.clear();
 	let cwd = path.dirname(filename);
 	let cmd = getProBin();

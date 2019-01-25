@@ -1,12 +1,28 @@
 import * as vscode from 'vscode';
 
+export interface ICheckResult {
+	file: string;
+	line: number;
+	column: number;
+	msg: string;
+	severity: string;
+}
+
+export class TextSelection {
+    word: string;
+    wordRange: vscode.Range;
+    statement: string;
+    statementRange: vscode.Range;
+}
+
 export enum SYMBOL_TYPE {
     METHOD = 'Method',
     INCLUDE = 'Include File',
     LOCAL_VAR = 'Local Variable',
     GLOBAL_VAR = 'Global Variable',
     LOCAL_PARAM = 'Local Parameter',
-    GLOBAL_PARAM = 'Global Parameter'
+    GLOBAL_PARAM = 'Global Parameter',
+    TEMPTABLE = 'Temp-table'
 }
 
 export enum ABL_ASLIKE {
@@ -42,18 +58,11 @@ export class ABLTableDefinition {
     kind: vscode.CompletionItemKind;
     detail: string;
     pkList: string;
-    fields: ABLFieldDefinition[];
+    fields: ABLVariable[];
     indexes: ABLIndexDefinition[];
     completionFields: vscode.CompletionList;
     completionIndexes: vscode.CompletionList;
     completion: vscode.CompletionList;
-}
-
-export class TextSelection {
-    word: string;
-    wordRange: vscode.Range;
-    statement: string;
-    statementRange: vscode.Range;
 }
 
 export class ABLVariable {
@@ -71,4 +80,12 @@ export class ABLMethod {
 
 export class ABLParameter extends ABLVariable {
     direction: ABL_PARAM_DIRECTION;
+}
+
+export class ABLInclude {
+    name: string;
+}
+
+export class ABLTempTable extends ABLTableDefinition {
+    line: number;
 }

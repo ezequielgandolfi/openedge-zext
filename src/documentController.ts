@@ -1,9 +1,21 @@
 import * as vscode from "vscode";
 import * as utils from './utils';
 import * as fs from 'fs';
-import { ABL_MODE } from "./ablMode";
-import { SYMBOL_TYPE, ABLVariable, ABLMethod, ABLParameter } from "./definition";
+import { ABL_MODE } from "./environment";
+import { SYMBOL_TYPE, ABLVariable, ABLMethod, ABLParameter, ABLInclude, ABLTempTable } from "./definition";
 import { ABLHoverProvider } from "./hover";
+import { ABLCodeCompletion } from "./codeCompletion";
+import { getAllIncludes, getAllMethods, getAllVariables, getAllParameters, getAllTempTables } from "./processDocument";
+import { getConfig } from "./ablConfig";
+
+let thisInstance: ABLDocumentController;
+export function getDocumentController(): ABLDocumentController {
+	return thisInstance;
+}
+export function initDocumentController(context: vscode.ExtensionContext): ABLDocumentController {
+	thisInstance = new ABLDocumentController(context);
+	return thisInstance;
+}
 
 class ABLDocument {
 	private _document: vscode.TextDocument;
@@ -11,9 +23,13 @@ class ABLDocument {
 	private _vars: ABLVariable[];
 	private _methods: ABLMethod[];
 	private _params: ABLParameter[];
+	private _includes: ABLInclude[];
+	private _temps: ABLTempTable[];
 
 	public disposables: vscode.Disposable[] = [];
 	public debounceController;
+
+	public externalDocument: vscode.TextDocument[] = [];
 
 	constructor(document: vscode.TextDocument) {
 		this._document = document;
@@ -21,6 +37,8 @@ class ABLDocument {
 		this._vars = [];
 		this._methods = [];
 		this._params = [];
+		this._includes = [];
+		this._temps = [];
 	}
 
 	dispose() {
@@ -29,50 +47,47 @@ class ABLDocument {
 
 	public get symbols(): vscode.SymbolInformation[] {return this._symbols}
 	public get methods(): ABLMethod[] {return this._methods}
+	public get includes(): ABLInclude[] {return this._includes}
+	public get tempTables(): ABLTempTable[] {return this._temps}
+	public get document(): vscode.TextDocument {return this._document}
 
-	public refreshDocument(): Thenable<any> {
+	public refreshDocument() {
 		this._symbols = [];
+		this.externalDocument = [];
 
-		//this.refreshIncludes();
-		this.refreshMethods();
-		this.refreshVariables();
-		this.refreshParameters();
-		return Promise.resolve();
+		// comandos abaixos estão demorando, e pendura as extensoes... verificar...
+		try {
+			this.refreshIncludes();
+			this.refreshMethods();
+			this.refreshVariables();
+			this.refreshParameters();
+			this.refreshTempTables();	
+		} catch (error) {
+			console.log('ERROR', error);
+		}
+		
 	}
 
-	public refreshMethodsOLD() {
-		let line: vscode.TextLine;
-		let symbolName: string;
-
-		for(let i = 0; i < this._document.lineCount; i++) {
-			line = this._document.lineAt(i);
-			if (!line.isEmptyOrWhitespace) {
-				// procedure/function
-				symbolName = utils.getMethodDefinition(line.text);
-				if(symbolName != '') {
-					if (!this._symbols.find(item => (item.name == symbolName)&&(item.containerName == SYMBOL_TYPE.METHOD)))
-						this._symbols.push(new vscode.SymbolInformation(symbolName, vscode.SymbolKind.Method, SYMBOL_TYPE.METHOD, new vscode.Location(this._document.uri,  new vscode.Position(i, 0))));
-					continue;
-				}
-				// others...
-				symbolName = utils.getIncludeDefinition(line.text);
-				if(symbolName != '') {
-					if (!this._symbols.find(item => (item.name == symbolName)&&(item.containerName == SYMBOL_TYPE.INCLUDE))) {
-						let fname = [vscode.workspace.rootPath.replace('\\','/'), symbolName].join('/');
-						let uri = vscode.Uri.parse('file:///' + fname);
-						if (fs.existsSync(uri.fsPath)) {
-							this._symbols.push(new vscode.SymbolInformation(symbolName, vscode.SymbolKind.File, SYMBOL_TYPE.INCLUDE, new vscode.Location(uri,  new vscode.Position(0, 0))));
-						}
+	public refreshIncludes() {
+		this._includes = getAllIncludes(this._document);
+		this._includes.forEach(item => {
+			vscode.workspace.workspaceFolders.forEach(folder => {
+				let uri = folder.uri.with({path: [folder.uri.path,item.name].join('/')});
+				if (fs.existsSync(uri.fsPath)) {
+					if(!this._symbols.find(s => (s.name == item.name) && (s.containerName == SYMBOL_TYPE.INCLUDE) )) {
+						let s = new vscode.SymbolInformation(item.name, vscode.SymbolKind.File, SYMBOL_TYPE.INCLUDE, new vscode.Location(uri, new vscode.Position(0, 0)));
+						this._symbols.push(s);
 					}
-					continue;
+					if(!this.externalDocument.find(item => item.uri.fsPath == uri.fsPath)) {
+						vscode.workspace.openTextDocument(uri).then(doc => this.externalDocument.push(doc));
+					}
 				}
-
-			}
-		}
+			})
+		});
 	}
 
 	public refreshMethods() {
-		this._methods = utils.getAllMethods(this._document);
+		this._methods = getAllMethods(this._document);
 		this._methods.forEach(item => {
 			let s = new vscode.SymbolInformation(item.name, vscode.SymbolKind.Variable, SYMBOL_TYPE.METHOD, new vscode.Location(this._document.uri, new vscode.Position(item.lineAt, 0)));
 			this._symbols.push(s);
@@ -102,7 +117,7 @@ class ABLDocument {
 	}
 
 	public refreshVariables() {
-		this._vars = utils.getAllVariables(this._document);
+		this._vars = getAllVariables(this._document);
 		this._vars.forEach(item => {
 			let method = this._methods.find(m => (m.lineAt <= item.line && m.lineEnd >= item.line));
 			let nm = item.name;
@@ -117,7 +132,7 @@ class ABLDocument {
 	}
 
 	public refreshParameters() {
-		this._params = utils.getAllParameters(this._document);
+		this._params = getAllParameters(this._document);
 		this._params.forEach(item => {
 			let method = this._methods.find(m => (m.lineAt <= item.line && m.lineEnd >= item.line));
 			let nm = item.name;
@@ -129,6 +144,10 @@ class ABLDocument {
 			let s = new vscode.SymbolInformation(nm, vscode.SymbolKind.Property, st, new vscode.Location(this._document.uri, new vscode.Position(item.line, 0)));
 			this._symbols.push(s);
 		});
+	}
+
+	public refreshTempTables() {
+		this._temps = getAllTempTables(this._document);
 	}
 }
 
@@ -160,6 +179,9 @@ export class ABLDocumentController {
 		let ablHover = new ABLHoverProvider(this);
 		context.subscriptions.push(vscode.languages.registerHoverProvider(ABL_MODE.language, ablHover));
 
+		let ablCodeCompletion = new ABLCodeCompletion(this);
+		context.subscriptions.push(vscode.languages.registerCompletionItemProvider(ABL_MODE.language, ablCodeCompletion, '.'));
+
 		// Current documents
 		vscode.workspace.textDocuments.forEach(document => {
 			this.insertDocument(document);
@@ -169,21 +191,22 @@ export class ABLDocumentController {
 		vscode.workspace.onDidSaveTextDocument(document => { this.updateDocument(document) }, null, context.subscriptions);
 		vscode.workspace.onDidOpenTextDocument(document => { this.insertDocument(document) }, null, context.subscriptions);
 		vscode.workspace.onDidCloseTextDocument(document => { this.removeDocument(document) }, null, context.subscriptions);
+		vscode.workspace.onWillSaveTextDocument(event => { this.prepareToSaveDocument(event.document) }, null, context.subscriptions);
 	}
 
 	public insertDocument(document: vscode.TextDocument) {
 		if (document.languageId === ABL_MODE.language) {
-			this.removeDocument(document);
+			if (!this._documents[document.uri.fsPath]) {
+				let ablDoc = new ABLDocument(document);
+				this._documents[document.uri.fsPath] = ablDoc;
 
-			let ablDoc = new ABLDocument(document);
-			this._documents[document.uri.fsPath] = ablDoc;
-			this.updateDocument(document);
-			
-			vscode.workspace.onDidChangeTextDocument(event => {
-				if(event.document == document) {
-					this.updateDocument(document, 5000);
-				}
-			}, this, ablDoc.disposables);
+				vscode.workspace.onDidChangeTextDocument(event => {
+					if(event.document.uri.fsPath == document.uri.fsPath) {
+						this.updateDocument(document, 5000);
+					}
+				}, this, ablDoc.disposables);
+			}
+			return this.updateDocument(document);
 		}
 
 	}
@@ -212,7 +235,7 @@ export class ABLDocumentController {
 					}
 					// if debouce time is set, creates a timer
 					if (debounceTime) {
-						ablDoc.debounceController = setTimeout(invoke, debounceTime, [ablDoc]);
+						ablDoc.debounceController = setTimeout(() => invoke(ablDoc), debounceTime);
 					}
 					else  {
 						invoke(ablDoc);
@@ -223,6 +246,13 @@ export class ABLDocumentController {
 				else 
 					reject();
 			});
+		}
+	}
+
+	public prepareToSaveDocument(document: vscode.TextDocument) {
+		let oeConfig = getConfig();
+		if (oeConfig.editor && oeConfig.editor.trim == 'right') {
+			//
 		}
 	}
 

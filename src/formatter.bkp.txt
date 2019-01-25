@@ -1,5 +1,20 @@
 import { workspace, WorkspaceConfiguration, FormattingOptions, DocumentFormattingEditProvider, TextDocument, CancellationToken, TextEdit, Range, Position, OnTypeFormattingEditProvider } from 'vscode';
-import { ABL_MODE } from './environment';
+import { ABL_MODE } from './ablMode';
+
+/**
+ * 
+ * 
+ * 
+ * 
+ * 
+ * Adicionar uma forma de validar se não foi esquecido nenhum comando de teste (message, write-json, etc...)
+ * 
+ * 
+ * 
+ * 
+ * 
+ */
+
 
 export class ABLFormatter implements DocumentFormattingEditProvider, OnTypeFormattingEditProvider {
 	public provideDocumentFormattingEdits(document: TextDocument, options: FormattingOptions, token: CancellationToken): Thenable<TextEdit[]> {
@@ -48,10 +63,6 @@ class Format {
     protected static last;
     protected static words: string[];
 
-    // identifica os then/else que quebram a linha (comando nao está ao lado)
-    // a linha de baixo deve ser agregada junto a linha atual
-    private static regexThenWithBreak: RegExp = new RegExp(/(?:then|else){1}[\s\t]+(?![\w])/gi);
-
     public static document(source: string, formattingOptions: FormattingOptions, languageId: string): string {
         var config: WorkspaceConfiguration = workspace.getConfiguration('ablFormat');
         this.options = formattingOptions;
@@ -87,10 +98,10 @@ class Format {
 		//var textWords = '';
 		
 		var line = '';
-        var depthLineDiff = 0;
-        
-        console.log('antes', new Date());
-        
+		var depthLineDiff = 0;
+		
+		console.log('antes', new Date());
+
         for (var i = 0; i < source.length; i++) {
 			
             this.offset = i;
