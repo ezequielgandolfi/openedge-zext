@@ -4,6 +4,7 @@ import { getConfig } from './ablConfig';
 import * as fs from 'fs';
 import * as http from 'http';
 import { DeploymentTask } from './openEdgeConfigFile';
+import { mkdir } from './utils';
 
 export function sourceDeploy(filename: string) {
 	let oeConfig = getConfig();
@@ -33,7 +34,7 @@ function deploy(filename: string, dirname: string, tasks: DeploymentTask[]): Pro
 			fname = fname.replace(vscode.workspace.rootPath, task.path);
 			let cwd = path.dirname(fname);
 			if (!fs.existsSync(cwd))
-				fs.mkdirSync(cwd);
+				mkdir(cwd);
 			fs.createReadStream(filename).pipe(fs.createWriteStream(fname));
 			// post-action
 			if (task.postAction) {
@@ -43,6 +44,8 @@ function deploy(filename: string, dirname: string, tasks: DeploymentTask[]): Pro
 				});
 			}
 		});
+		// notification
+		vscode.window.showInformationMessage('Source ' + path.basename(filename) + ' deployed!');
 		resolve();
 	});
 }

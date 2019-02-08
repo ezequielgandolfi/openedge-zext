@@ -29,6 +29,21 @@ export class ABLHoverProvider implements HoverProvider {
                 if (tt) {
                     return new Hover([selection.statement, '*'+tt.label+'*'], selection.wordRange);
                 }
+                // External Temp-tables
+                let extTt;
+                doc.externalDocument.forEach(external => {
+                    if (!extTt) {
+                        let extDoc = this._ablDocumentController.getDocument(external);
+                        if (extDoc) {
+                            extTt = extDoc.tempTables.find(item => item.filename.toLowerCase() == words[0]);
+                            if (extTt) {
+                                extTt = new Hover([selection.statement, '*'+extTt.label+'*'], selection.wordRange);
+                            }
+                        }
+                    }
+                });
+                if (extTt)
+                    return extTt;
             }
             
             else {
@@ -56,6 +71,29 @@ export class ABLHoverProvider implements HoverProvider {
                     else
                         return;
                 }
+                // External Temp-tables
+                let extTt;
+                doc.externalDocument.forEach(external => {
+                    if (!extTt) {
+                        let extDoc = this._ablDocumentController.getDocument(external);
+                        if (extDoc) {
+                            extTt = extDoc.tempTables.find(item => item.filename.toLowerCase() == words[0]);
+                            if (extTt) {
+                                let fd = extTt.fields.find(item => item.name.toLowerCase() == words[1]);
+                                if (fd) {
+                                    let dt = fd.dataType;
+                                    if (fd.asLike == ABL_ASLIKE.LIKE) {
+                                        dt = '*like* ' + dt;
+                                    }
+                                    extTt = new Hover([selection.statement, 'Type: ' + dt], selection.statementRange);
+                                    return extTt;
+                                }
+                            }
+                        }
+                    }
+                });
+                if (extTt)
+                    return extTt;
             }
             // other symbols
             let symbols = this._ablDocumentController.getDocument(document).symbols;

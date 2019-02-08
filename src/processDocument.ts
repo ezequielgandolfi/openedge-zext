@@ -9,12 +9,12 @@ export function getAllIncludes(document: vscode.TextDocument): ABLInclude[] {
 	let text = document.getText();
 	let res = regexInclude.exec(text);
 	while(res) {
-		let v = new ABLInclude();
-		try {
-			v.name = res[1].trim();
+		let nm = res[1].trim().toLowerCase();
+		if (!result.find(item => item.name == nm)) {
+			let v = new ABLInclude();	
+			v.name = nm;
 			result.push(v);
 		}
-		catch {} // suppress errors
 		res = regexInclude.exec(text);
 	}
 	return result;
@@ -119,8 +119,9 @@ export function getAllTempTables(document: vscode.TextDocument): ABLTempTable[] 
 			v.kind = vscode.CompletionItemKind.Struct;
 			v.detail = '';
 			v.label = 'Temp-table';
-			v.fields = getTempTableFields(res[2]);
+			v.fields = getTempTableFields(res[2], document);
 			v.indexes = getTempTableIndexes(res[2]);
+			v.line = document.positionAt(res.index).line;
 			updateTableCompletionList(v);
 			result.push(v);
 		}
@@ -130,7 +131,7 @@ export function getAllTempTables(document: vscode.TextDocument): ABLTempTable[] 
 	return result;
 }
 
-function getTempTableFields(text: string): ABLVariable[] {
+function getTempTableFields(text: string, document?: vscode.TextDocument): ABLVariable[] {
 	let result: ABLVariable[] = [];
 	let regexDefineField: RegExp = new RegExp(/(?:field){1}(?:[\s\t]+)([\w\d\-]+)[\s\t]+(as|like){1}[\s\t]+([\w\d\-\.]+)/gim);
 	// 1 = var name
@@ -143,7 +144,8 @@ function getTempTableFields(text: string): ABLVariable[] {
 			v.name = res[1].trim();
 			v.asLike = <ABL_ASLIKE>res[2].trim();
 			v.dataType = removeInvalidRightChar(res[3].trim()); // removeInvalidRightChar to remove special chars because is accepted in this capture group
-			//v.line = document.positionAt(res.index).line;
+			if (document)
+				v.line = document.positionAt(res.index).line;
 			result.push(v);
 		}
 		catch {} // suppress errors

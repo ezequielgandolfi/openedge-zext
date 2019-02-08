@@ -26,9 +26,10 @@ class ABLDocument {
 	private _includes: ABLInclude[];
 	private _temps: ABLTempTable[];
 
+	private _processed: boolean;
+
 	public disposables: vscode.Disposable[] = [];
 	public debounceController;
-
 	public externalDocument: vscode.TextDocument[] = [];
 
 	constructor(document: vscode.TextDocument) {
@@ -39,6 +40,7 @@ class ABLDocument {
 		this._params = [];
 		this._includes = [];
 		this._temps = [];
+		this._processed = false;
 	}
 
 	dispose() {
@@ -50,25 +52,51 @@ class ABLDocument {
 	public get includes(): ABLInclude[] {return this._includes}
 	public get tempTables(): ABLTempTable[] {return this._temps}
 	public get document(): vscode.TextDocument {return this._document}
+	public get processed(): boolean {return this._processed}
 
-	public refreshDocument() {
+	public refreshDocument(): Promise<ABLDocument> {
+		this._processed = false;
 		this._symbols = [];
 		this.externalDocument = [];
 
+		let refreshIncludes = this.refreshIncludes.bind(this);
+		let refreshMethods = this.refreshMethods.bind(this);
+		let refreshVariables = this.refreshVariables.bind(this);
+		let refreshParameters = this.refreshParameters.bind(this);
+		let refreshTempTables = this.refreshTempTables.bind(this);
+		let self = this;
+
 		// comandos abaixos estão demorando, e pendura as extensoes... verificar...
-		try {
-			this.refreshIncludes();
-			this.refreshMethods();
-			this.refreshVariables();
-			this.refreshParameters();
-			this.refreshTempTables();	
-		} catch (error) {
-			console.log('ERROR', error);
-		}
+		// >> o motivo são algumas expressões regulares... modificar para testes
+		let result = new Promise<ABLDocument>(function(resolve,reject) {
+			//let tm = (new Date()).getTime();
+			//console.log(self.document.uri.fsPath);
+			refreshIncludes();
+			//console.log('refreshIncludes', (new Date()).getTime() - tm);
+			//tm = (new Date()).getTime();
+			refreshMethods();
+			//console.log('refreshMethods', (new Date()).getTime() - tm);
+			//tm = (new Date()).getTime();
+			refreshVariables();
+			//console.log('refreshVariables', (new Date()).getTime() - tm);
+			//tm = (new Date()).getTime();
+			refreshParameters();
+			//console.log('refreshParameters', (new Date()).getTime() - tm);
+			//tm = (new Date()).getTime();
+			refreshTempTables();
+			//console.log('refreshTempTables', (new Date()).getTime() - tm);
+			resolve(self);
+		});
 		
+		// refresh temp-table "like" from other temp-tables (check if external document has been processed)
+
+		// finaliza processo
+		let finish = () => {this._processed = true};
+		result.then(() => finish());
+		return result;
 	}
 
-	public refreshIncludes() {
+	private refreshIncludes() {
 		this._includes = getAllIncludes(this._document);
 		this._includes.forEach(item => {
 			vscode.workspace.workspaceFolders.forEach(folder => {
@@ -86,7 +114,7 @@ class ABLDocument {
 		});
 	}
 
-	public refreshMethods() {
+	private refreshMethods() {
 		this._methods = getAllMethods(this._document);
 		this._methods.forEach(item => {
 			let s = new vscode.SymbolInformation(item.name, vscode.SymbolKind.Variable, SYMBOL_TYPE.METHOD, new vscode.Location(this._document.uri, new vscode.Position(item.lineAt, 0)));
@@ -94,7 +122,7 @@ class ABLDocument {
 		});
 	}
 
-	public refreshReferences(): Thenable<any> {
+	/*private refreshReferences(): Thenable<any> {
 		let document = this._document;
 		let symbols = this._symbols;
 
@@ -104,19 +132,19 @@ class ABLDocument {
 			for(let i = 0; i < document.lineCount; i++) {
 				line = document.lineAt(i);
 				if (!line.isEmptyOrWhitespace) {
-					/*
+					
 					methodName = utils.getMethodDefinition(line.text);
 					if(methodName != '') {
 						symbols[methodName] = (new vscode.SymbolInformation(methodName, vscode.SymbolKind.Method, document.uri.fsPath, new vscode.Location(document.uri,  new vscode.Position(i, 0))));
 					}
-					*/
+					
 				}
 			}
 			resolve();
 		});
-	}
+	}*/
 
-	public refreshVariables() {
+	private refreshVariables() {
 		this._vars = getAllVariables(this._document);
 		this._vars.forEach(item => {
 			let method = this._methods.find(m => (m.lineAt <= item.line && m.lineEnd >= item.line));
@@ -131,7 +159,7 @@ class ABLDocument {
 		});
 	}
 
-	public refreshParameters() {
+	private refreshParameters() {
 		this._params = getAllParameters(this._document);
 		this._params.forEach(item => {
 			let method = this._methods.find(m => (m.lineAt <= item.line && m.lineEnd >= item.line));
@@ -146,9 +174,14 @@ class ABLDocument {
 		});
 	}
 
-	public refreshTempTables() {
+	private refreshTempTables() {
 		this._temps = getAllTempTables(this._document);
+		this._temps.forEach(item => {
+			let s = new vscode.SymbolInformation(item.filename, vscode.SymbolKind.Variable, SYMBOL_TYPE.METHOD, new vscode.Location(this._document.uri, new vscode.Position(item.line, 0)));
+			this._symbols.push(s);
+		});
 	}
+
 }
 
 export class ABLDocumentController {
@@ -276,12 +309,31 @@ export class ABLDefinitionProvider implements vscode.DefinitionProvider {
 	public provideDefinition(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Thenable<vscode.Location> {
 		// go-to definition
 		let selection = utils.getText(document, position);
+		let doc = this._ablDocumentController.getDocument(document);
 
-		let symbol = this._ablDocumentController.getDocument(document).symbols.find(item => item.name.toLowerCase() == selection.statement);
+		let symbol;
+		// search full statement
+		symbol = doc.symbols.find(item => item.name.toLowerCase() == selection.statement);
 		if (symbol) 
 			return Promise.resolve(symbol.location);
-		else 
-			return;
+		// search word statement
+		symbol = doc.symbols.find(item => item.name.toLowerCase() == selection.word);
+		if (symbol) 
+			return Promise.resolve(symbol.location);
+		// search external documents
+		doc.externalDocument.forEach(ext => {
+			if (symbol)
+				return;
+			let extDoc = this._ablDocumentController.getDocument(ext);
+			// search full statement
+			symbol = extDoc.symbols.find(item => item.name.toLowerCase() == selection.statement);
+			// search word statement
+			if (!symbol)
+				symbol = extDoc.symbols.find(item => item.name.toLowerCase() == selection.word);
+		});
+		if (symbol)
+			return Promise.resolve(symbol.location);
+		return;
 	}
 }
 

@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+import * as fs from 'fs';
 import { TextSelection, ABLTableDefinition, ABLIndexDefinition } from "./definition";
 
 let regexInvalidWordEnd: RegExp = new RegExp(/[\.|\:|\-|\_|\\|\/]$/);
@@ -122,3 +123,13 @@ export function applyTrim(document: vscode.TextDocument) {
 	*/
 }
 
+export function mkdir(path: string) {
+	let dirs = path.split('\\');
+	for (let i = 0; i < dirs.length; i++) {
+		let dir = dirs.filter((v,idx) => { return (idx <= i) }).join('\\');
+		if (dir.replace('\\','') == '') 
+			continue;
+		if (!fs.existsSync(dir))
+			fs.mkdirSync(dir);
+	}
+}
