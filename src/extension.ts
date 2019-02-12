@@ -21,7 +21,7 @@ export function activate(ctx: vscode.ExtensionContext): void {
 	startConfigFileWatcher();
 	startDictWatcher();
 	startCleanStatusWatcher(ctx.subscriptions);
-	//startFormatCommand(ctx.subscriptions);
+	startFormatCommand(ctx.subscriptions);
 	startDocumentWatcher(ctx);
 	initDiagnostic(ctx);
 

@@ -1,5 +1,3 @@
-/* TODO ajouter la possibilité de lancer un .p (ie: dog-startws.p) via option dans un fichier de config du workspace */
-def var wh_w_outro_produto as widget-handle no-undo.
 def var wh_v6_display as widget-handle no-undo.
 
 assign wh_v6_display = session:first-child.

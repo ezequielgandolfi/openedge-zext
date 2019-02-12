@@ -33,7 +33,7 @@ export class ABLCodeCompletion implements vscode.CompletionItemProvider {
 			// Temp-tables
 			let tt = doc.tempTables.find(item => item.filename.toLowerCase() == words[0]);
 			if (tt) {
-				return tt.completionFields;
+				return tt.completion;
 			}
 			// External Temp-tables
 			let extTt;
@@ -43,7 +43,7 @@ export class ABLCodeCompletion implements vscode.CompletionItemProvider {
 					if (extDoc) {
 						extTt = extDoc.tempTables.find(item => item.filename.toLowerCase() == words[0]);
 						if (extTt) {
-							extTt = extTt.completionFields;
+							extTt = extTt.completion;
 						}
 					}
 				}

@@ -29,7 +29,7 @@ export interface DeploymentTask {
     path: string;
     postAction?: PostActionTask[];
 }
-export interface EditorOptions {
+export interface OpenEdgeFormatOptions {
     trim?: 'none' | 'right';
 }
 export interface OpenEdgeConfig {
@@ -42,7 +42,7 @@ export interface OpenEdgeConfig {
     dlcPath?: string;
     dbDictionary?: string[];
     deployment?: DeploymentTask[];
-    editor?: EditorOptions;
+    format?: OpenEdgeFormatOptions;
 }
 
 export function loadConfigFile(filename: string): Thenable<OpenEdgeConfig> {

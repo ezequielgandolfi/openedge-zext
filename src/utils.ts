@@ -45,7 +45,8 @@ export function updateTableCompletionList(table: ABLTableDefinition) {
 		return new vscode.CompletionItem(field.name, vscode.CompletionItemKind.Variable);
 	}));
 	table.completionIndexes = mapIndexCompletionList(table, table.indexes);
-	table.completion = new vscode.CompletionList([...table.completionFields.items,...table.completionIndexes.items]);
+	table.completionAdditional = mapAdditionalCompletionList(table);
+	table.completion = new vscode.CompletionList([...table.completionFields.items,...table.completionAdditional.items,...table.completionIndexes.items]);
 
 	let pk = table.indexes.find(item => item.primary);
 	if((pk)&&(pk.fields))
@@ -81,6 +82,19 @@ function mapIndexCompletionList(table: ABLTableDefinition, list: ABLIndexDefinit
 	return result;
 }
 
+function mapAdditionalCompletionList(table: ABLTableDefinition): vscode.CompletionList {
+	let result = new vscode.CompletionList();
+	let item;
+
+	// ALL FIELDS
+	item = new vscode.CompletionItem('>ALL FIELDS', vscode.CompletionItemKind.Snippet);
+	item.insertText = getAllFieldsSnippet(table);
+	item.detail = 'Insert all table fields';
+	result.items.push(item);
+
+	return result;
+}
+
 function getIndexSnippet(table: ABLTableDefinition, index: ABLIndexDefinition): vscode.SnippetString {
 	let snip = new vscode.SnippetString();
 	let first: boolean = true;
@@ -97,6 +111,27 @@ function getIndexSnippet(table: ABLTableDefinition, index: ABLIndexDefinition): 
 			snip.appendText('\tand ' + table.label + '.');
 		}
 		snip.appendText(padRight(field.label, size) + ' = ');
+		snip.appendTabstop();
+	});
+	return snip;
+}
+
+function getAllFieldsSnippet(table: ABLTableDefinition): vscode.SnippetString {
+	let snip = new vscode.SnippetString();
+	let first: boolean = true;
+	let size = 0;
+	// get max field name size
+	table.fields.forEach(field => { if(field.name.length > size) size = field.name.length });
+	// fields snippet 
+	table.fields.forEach(field => {
+		if(first) {
+			first = false;
+		}
+		else {
+			snip.appendText('\n');
+			snip.appendText(table.filename + '.');
+		}
+		snip.appendText(padRight(field.name, size) + ' = ');
 		snip.appendTabstop();
 	});
 	return snip;

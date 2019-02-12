@@ -1,4 +1,4 @@
-# OpenEdge-ZExt README
+# OpenEdge-ZExt - Visual Studio Code extension for OpenEdge ABL
 
 OpenEdge ABL Extension for Visual Studio Code
 
@@ -62,13 +62,25 @@ Create a file named ".openedge-zext.json" in root path of the workspace.
 
 ## Known Issues
 
-- Variables inside trigger events (today is considering as global variables)
-- Key Mappings are activating for any language (should be ABL only)
+- Variables inside trigger events are referencing as global variables
 - Source mapping ignores strings / comments blocks
     - Can suggest something wrong
     - Sometimes it crashes... it happens...
 
 ## Release Notes
+
+### 0.0.18
+
+#### Fixes
+
+- "Run" command now forces current window to show (or create a new window)
+- Fixed the looping problem when trying to run with compile error
+- Fixed key bindings to activate only for ABL files
+
+#### Improvements
+
+- "ALL FIELDS" snippet for tables / temp-tables
+- Formatter (supports: trim right). Enable options in settings file
 
 ### 0.0.17
 
@@ -84,19 +96,18 @@ Create a file named ".openedge-zext.json" in root path of the workspace.
 - Get definitions inside includes
     - Partially working...
     - Bug: check for case insensitive file names...
-- List all fields from table / temp-table
+- List all fields from temp-tables
 - Temp-table definitions
     - Insert "like" condition to temp-tables (insert all fields from original temp-table)
 - Map comment blocks to eliminate from processing
     - Change regex expressions to avoid comments
-- Snippets
-    - Insert all fields from table / temp-table
 - Key bind F2 to open help file
-    - C:\DLC116\prohelp\lgrfeng.chm
+    - C:\DLC116\prohelp\lgrfeng.chm / https://documentation.progress.com/output/ua/OpenEdge_latest/index.html
 - Compile options
     - debug-list / x-ref / listing / xcode
-- Remove right whitespaces / tabs on save
 - Save before run commands (check syntax, compile, run)
+- Change case (lower, upper, camel)
+- More snippets (run persistent)
 
 ### Sometime...
 

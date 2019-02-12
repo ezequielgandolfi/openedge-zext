@@ -101,13 +101,13 @@
         }
       }
     },
-    "editor": {
-      "id": "/properties/editor",
-      "description": "Editor properties",
+    "format": {
+      "id": "/properties/forpat",
+      "description": "Formatter properties",
       "type": "object",
       "properties": {
         "trim": {
-          "id": "/properties/editor/trim",
+          "id": "/properties/format/trim",
           "description": "Trim options",
           "type": "string",
           "enum": [

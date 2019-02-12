@@ -1,5 +1,6 @@
 import { workspace, WorkspaceConfiguration, FormattingOptions, DocumentFormattingEditProvider, TextDocument, CancellationToken, TextEdit, Range, Position, OnTypeFormattingEditProvider } from 'vscode';
 import { ABL_MODE } from './environment';
+import { getConfig } from './ablConfig';
 
 export class ABLFormatter implements DocumentFormattingEditProvider, OnTypeFormattingEditProvider {
 	public provideDocumentFormattingEdits(document: TextDocument, options: FormattingOptions, token: CancellationToken): Thenable<TextEdit[]> {
@@ -11,7 +12,7 @@ export class ABLFormatter implements DocumentFormattingEditProvider, OnTypeForma
 		//if (!onType) { return; }
 		if (document.languageId !== ABL_MODE.language) { return; }
 		return format(document, null, options);
-	}
+    }
 }
 
 function format(document: TextDocument, range: Range, options: FormattingOptions): Thenable<TextEdit[]> {
@@ -25,7 +26,8 @@ function format(document: TextDocument, range: Range, options: FormattingOptions
 			range = new Range(start, end);
 		}
 		// Format the document with the user specified settings
-		var newText: string = Format.document(document.getText(), options, document.languageId);
+        //var newText: string = PatternFormat.document(document.getText(), options, document.languageId);
+        var newText: string = SpacingFormat.document(document.getText(), options, document.languageId);
 		// Push the edit into the result array
 		result.push(new TextEdit(range, newText));
 		// Return the result of the change
@@ -33,7 +35,7 @@ function format(document: TextDocument, range: Range, options: FormattingOptions
 	});
 }
 
-class Format {
+class PatternFormat {
     protected static spacePlaceholderStr = '__VSCODE__SPACE__PLACEHOLDER__';
     protected static depth: number = 0;
     protected static options: FormattingOptions;
@@ -338,7 +340,7 @@ class Format {
 		console.log('depois', new Date());
 
 		s += this.indent(this.depth) + line.trim();
-        s = s.replace(new RegExp(Format.spacePlaceholderStr, 'g'), ' ');
+        s = s.replace(new RegExp(PatternFormat.spacePlaceholderStr, 'g'), ' ');
 
         return s;
     }
@@ -434,9 +436,9 @@ class Format {
             spaces = override;
         }
         s = s.trim();
-        s += Format.spacePlaceholderStr.repeat(spaces.before);
+        s += PatternFormat.spacePlaceholderStr.repeat(spaces.before);
         s += char;
-        s += Format.spacePlaceholderStr.repeat(spaces.after);
+        s += PatternFormat.spacePlaceholderStr.repeat(spaces.after);
         return s.trim();
     }
 
@@ -447,14 +449,14 @@ class Format {
         }
         s = s.trim();
         if (this.prev && this.notBefore(this.prev, '=', '!', '>', '<', '?', '%', '&', '|', '/')) {
-            s += Format.spacePlaceholderStr.repeat(spaces.before);
+            s += PatternFormat.spacePlaceholderStr.repeat(spaces.before);
         }
         s = s.trim();
         s += char;
         s = s.trim();
         if (this.next && this.notAfter(this.next, '=', '>', '<', '?', '%', '&', '|', '/')) {
             if (char != '?' || this.source.substr(this.offset, 4) != '?php') {
-                s += Format.spacePlaceholderStr.repeat(spaces.after);
+                s += PatternFormat.spacePlaceholderStr.repeat(spaces.after);
             }
         }
         return s.trim();
@@ -489,7 +491,7 @@ class Format {
     }
 
     protected static spacePlaceholder(length: number): string {
-        return Format.spacePlaceholderStr.repeat(length);
+        return PatternFormat.spacePlaceholderStr.repeat(length);
     }
 
     protected static lineAtIndex(str: string, idx: number): string {
@@ -508,7 +510,24 @@ class Format {
 
     protected static indent(amount: number) {
         amount = amount < 0 ? 0 : amount;
-        return Format.spacePlaceholderStr.repeat(amount * 4);
+        return PatternFormat.spacePlaceholderStr.repeat(amount * 4);
+    }
+}
+
+class SpacingFormat {
+    public static document(source: string, formattingOptions: FormattingOptions, languageId: string): string {
+        let oeConfig = getConfig();
+
+        // trim right
+        if (oeConfig.format && oeConfig.format.trim == 'right') {
+            let lines = source.split('\n');
+            for (let i = 0; i < lines.length; i++) {
+                lines[i] = lines[i].trimRight();
+            }
+            source = lines.join('\n');
+        }
+
+        return source;
     }
 }
 

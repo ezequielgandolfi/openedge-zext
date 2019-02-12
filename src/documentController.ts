@@ -283,10 +283,7 @@ export class ABLDocumentController {
 	}
 
 	public prepareToSaveDocument(document: vscode.TextDocument) {
-		let oeConfig = getConfig();
-		if (oeConfig.editor && oeConfig.editor.trim == 'right') {
-			//
-		}
+		//
 	}
 
 	public getDocument(document: vscode.TextDocument): ABLDocument {

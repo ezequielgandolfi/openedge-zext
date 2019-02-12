@@ -62,6 +62,7 @@ export class ABLTableDefinition {
     indexes: ABLIndexDefinition[];
     completionFields: vscode.CompletionList;
     completionIndexes: vscode.CompletionList;
+    completionAdditional: vscode.CompletionList;
     completion: vscode.CompletionList;
 }
 
