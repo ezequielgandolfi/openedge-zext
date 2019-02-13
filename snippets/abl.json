@@ -1,58 +1,34 @@
 {
-    "Http Request": {
-        "prefix": "httprequest",
-        "description": "ABL HttpRequest",
-        "body": [
-            "using OpenEdge.Net.HTTP.RequestBuilder.",
-            "using OpenEdge.Net.HTTP.IHttpRequest.",
-            "using OpenEdge.Net.HTTP.IHttpResponse.",
-            "using OpenEdge.Net.HTTP.ClientBuilder.",
-            "",
-            "def var baseUrl as char no-undo.",
-            "def var apiRoute as char no-undo.",
-            "def var oRequest as IHttpRequest no-undo.",
-            "def var oResponse as IHttpResponse no-undo.",
-            "",
-            "baseUrl = \"${1:base-url}\".",
-            "apiRoute = \"/${2:api-route}\".",
-            "oRequest = RequestBuilder:Get(baseUrl + apiRoute):Request.",
-            "",
-            "oResponse = ClientBuilder:Build():Client:Execute(oRequest).",
-            "$0"
-        ]
-    },
-    "JsonObject from IHttpResponse:Entity": {
-        "prefix": "entity-jsonobject",
-        "description": "Create a JsonObject from IHttpResponse:Entity",
-        "body":[
-            "def var ${1:oJson} as JsonObject no-undo.",
-            "$1 = cast(${2:oResponse}:Entity, JsonObject).",
-            "$0"
-        ]
-    },
-    "JsonArray from IHttpResponse:Entity": {
-        "prefix": "entity-jsonarray",
-        "description": "Create a JsonArray from IHttpResponse:Entity",
-        "body":[
-            "def var ${1:oJson} as JsonArray no-undo.",
-            "$1 = cast(${2:oResponse}:Entity, JsonArray).",
-            "$0"
-        ]
-    },
     "DEF VAR NO-UNDO": {
-        "prefix": "var",
+        "prefix": "def",
         "description": "Define a variable no-undo",
         "body":[
-            "def var ${1:varName} as ${2:char} no-undo.",
+            "def var ${1} as ${2:char} no-undo.",
             "$0"
         ]
     },
     "DEF TEMP-TABLE NO-UNDO": {
-        "prefix": "tt",
+        "prefix": "deftt",
         "description": "Define a temp-table no-undo",
         "body": [
             "def temp-table ${1:ttName} no-undo",
             "\tfield ${2:fieldName} as ${3:char}.",
+            "$0"
+        ]
+    },
+    "DEF PARAM": {
+        "prefix": "par",
+        "description": "Define a parameter",
+        "body":[
+            "def ${1|input,output,input-output|} param ${2} as ${3:char} no-undo.",
+            "$0"
+        ]
+    },
+    "DEF PARAM TABLE": {
+        "prefix": "partt",
+        "description": "Define a parameter for temp-table",
+        "body":[
+            "def ${1|input,output,input-output|} param table for ${2}.",
             "$0"
         ]
     },
@@ -79,7 +55,24 @@
         "prefix": "log",
         "description": "Log manager output (paste clipboard content)",
         "body": [
-            "log-manager:write-message(\"${1}${CLIPBOARD}\",\"${2}MY-LOG\")"
+            "log-manager:write-message(\"${1}${CLIPBOARD}\",\"${2}MY-LOG\").",
+            "$0"
+        ]
+    },
+    "ALERT-BOX": {
+        "prefix": "mes",
+        "description": "Alert-box message",
+        "body": [
+            "message",
+            "\t\"$0\"",
+            "\tview-as alert-box."
+        ]
+    },
+    "WRITE-JSON": {
+        "prefix": "writejson",
+        "description": "Write-Json from temp-table",
+        "body": [
+            "temp-table ${1:ttName}:write-json(\"file\", \"$0/$1\", true)."
         ]
     }
 }

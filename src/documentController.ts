@@ -177,7 +177,7 @@ class ABLDocument {
 	private refreshTempTables() {
 		this._temps = getAllTempTables(this._document);
 		this._temps.forEach(item => {
-			let s = new vscode.SymbolInformation(item.filename, vscode.SymbolKind.Variable, SYMBOL_TYPE.METHOD, new vscode.Location(this._document.uri, new vscode.Position(item.line, 0)));
+			let s = new vscode.SymbolInformation(item.label, vscode.SymbolKind.Variable, SYMBOL_TYPE.TEMPTABLE, new vscode.Location(this._document.uri, new vscode.Position(item.line, 0)));
 			this._symbols.push(s);
 		});
 	}

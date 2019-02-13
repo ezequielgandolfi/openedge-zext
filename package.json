@@ -2,7 +2,7 @@
     "name": "openedge-zext",
     "displayName": "OpenEdge ABL (Progress 4GL)",
     "description": "OpenEdge ABL Extension for VSCode",
-    "version": "0.0.18",
+    "version": "0.0.19",
     "publisher": "ezequielgandolfi",
     "author": "Ezequiel Gandolfi",
     "license": "Apache-2.0",
@@ -61,22 +61,6 @@
         ],
         "commands": [
             {
-                "command": "abl.prototype",
-                "title": "ABL: For prototype purpose"
-            },
-            {
-                "command": "abl.outline.refresh",
-                "title": "Refresh code outline",
-                "icon": {
-                    "dark": "resources/dark/icon-refresh.svg",
-                    "light": "resources/light/icon-refresh.svg"
-                }
-            },
-            {
-                "command": "abl.outline.revealCurrentSymbol",
-                "title": "Show in code outline"
-            },
-            {
                 "command": "abl.run.currentFile",
                 "title": "ABL: Run",
                 "description": "Run the current .p file"
@@ -97,34 +81,9 @@
                 "description": "Deploy the current .p file to remote host"
             },
             {
-                "command": "abl.test",
-                "title": "ABL: Test",
-                "description": "Run all UnitTest"
-            },
-            {
-                "command": "abl.test.currentFile",
-                "title": "ABL: Test current file",
-                "description": "Run current UnitTest file"
-            },
-            {
-                "command": "abl.propath",
-                "title": "ABL: Current PROPATH",
-                "description": "See the currently set PROPATH."
-            },
-            {
-                "command": "abl.dataDictionary",
-                "title": "ABL: Open DataDictionary",
-                "description": "Open the DataDictionary external tool"
-            },
-            {
                 "command": "abl.dictionary.read",
                 "title": "ABL: Read Dictionary Structure",
                 "description": "Read the DataDictionary structure for further use"
-            },
-            {
-                "command": "abl.format",
-                "title": "ABL: Format File",
-                "description": "Apply default formatter to ABL file"
             }
         ],
         "breakpoints": [
@@ -199,11 +158,6 @@
                                 "description": "If true, adds command to check syntax to the editor context menu"
                             }
                         }
-                    },
-                    "abl.useProcedureEditorKeyBindings": {
-                        "type": "boolean",
-                        "default": true,
-                        "description": "If true, use the same shortcuts as the Progress Procedure Editor (F2, Shift+F2, ...)"
                     }
                 }
             },
@@ -388,26 +342,6 @@
                 }
             }
         ],
-        "menus": {
-            "editor/context": [
-                {
-                    "when": "editorTextFocus && config.abl.editorContextMenuCommands.checkSyntax && resourceLangId == abl",
-                    "command": "abl.checkSyntax",
-                    "group": "ABL group 1"
-                },
-                {
-                    "command": "abl.outline.revealCurrentSymbol",
-                    "group": "navigation"
-                }
-            ],
-            "view/title": [
-                {
-                    "command": "abl.outline.refresh",
-                    "when": "view == abl.outline",
-                    "group": "navigation"
-                }
-            ]
-        },
         "jsonValidation": [
             {
                 "fileMatch": ".openedge-zext.json",
@@ -435,24 +369,7 @@
                 "command": "abl.deploy.currentFile",
                 "key": "Alt+F2"
             }
-        ],
-        "viewsContainers": {
-            "activitybar": [
-                {
-                    "id": "outline",
-                    "title": "Outline",
-                    "icon": "resources/icon.svg"
-                }
-            ]
-        },
-        "views": {
-            "outline": [
-                {
-                    "id": "abl.outline",
-                    "name": "Code Outline"
-                }
-            ]
-        }
+        ]
     },
     "scripts": {
         "vscode:prepublish": "npm run compile",

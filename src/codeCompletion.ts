@@ -31,7 +31,7 @@ export class ABLCodeCompletion implements vscode.CompletionItemProvider {
 				return tb['completion'];
 			}
 			// Temp-tables
-			let tt = doc.tempTables.find(item => item.filename.toLowerCase() == words[0]);
+			let tt = doc.tempTables.find(item => item.label.toLowerCase() == words[0]);
 			if (tt) {
 				return tt.completion;
 			}
@@ -41,7 +41,7 @@ export class ABLCodeCompletion implements vscode.CompletionItemProvider {
 				if (!extTt) {
 					let extDoc = this._ablDocumentController.getDocument(external);
 					if (extDoc) {
-						extTt = extDoc.tempTables.find(item => item.filename.toLowerCase() == words[0]);
+						extTt = extDoc.tempTables.find(item => item.label.toLowerCase() == words[0]);
 						if (extTt) {
 							extTt = extTt.completion;
 						}
@@ -56,13 +56,13 @@ export class ABLCodeCompletion implements vscode.CompletionItemProvider {
 			let tb = _tableCollection.items;
 			// Temp-tables
 			let tt: vscode.CompletionItem[] = doc.tempTables.map(item => {
-				return new vscode.CompletionItem(item.filename);
+				return new vscode.CompletionItem(item.label);
 			});
 			// External Temp-tables
 			let externalTt: vscode.CompletionItem[] = [];
 			doc.externalDocument.forEach(external => {
 				let _ti = this._ablDocumentController.getDocument(external).tempTables.map(item => {
-					return new vscode.CompletionItem(item.filename);
+					return new vscode.CompletionItem(item.label);
 				});
 				externalTt = [...externalTt,..._ti];
 			});

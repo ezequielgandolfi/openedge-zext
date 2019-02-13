@@ -25,9 +25,9 @@ export class ABLHoverProvider implements HoverProvider {
                     return new Hover([selection.word, '*'+tb.detail+'*', 'PK: ' + tbd.pkList], selection.wordRange);
                 }
                 // check for temp-tables
-                let tt = doc.tempTables.find(item => item.filename.toLowerCase() == selection.statement);
+                let tt = doc.tempTables.find(item => item.label.toLowerCase() == selection.statement);
                 if (tt) {
-                    return new Hover([selection.statement, '*'+tt.label+'*'], selection.wordRange);
+                    return new Hover([selection.statement, 'Temp-table *'+tt.label+'*'], selection.wordRange);
                 }
                 // External Temp-tables
                 let extTt;
@@ -35,9 +35,9 @@ export class ABLHoverProvider implements HoverProvider {
                     if (!extTt) {
                         let extDoc = this._ablDocumentController.getDocument(external);
                         if (extDoc) {
-                            extTt = extDoc.tempTables.find(item => item.filename.toLowerCase() == words[0]);
+                            extTt = extDoc.tempTables.find(item => item.label.toLowerCase() == words[0]);
                             if (extTt) {
-                                extTt = new Hover([selection.statement, '*'+extTt.label+'*'], selection.wordRange);
+                                extTt = new Hover([selection.statement, 'Temp-table *'+extTt.label+'*'], selection.wordRange);
                             }
                         }
                     }
@@ -58,7 +58,7 @@ export class ABLHoverProvider implements HoverProvider {
                         return;
                 }
                 // check for temp-table.field collection
-                let tt = doc.tempTables.find(item => item.filename.toLowerCase() == words[0]);
+                let tt = doc.tempTables.find(item => item.label.toLowerCase() == words[0]);
                 if (tt) {
                     let fd = tt.fields.find(item => item.name.toLowerCase() == words[1]);
                     if (fd) {
@@ -77,7 +77,7 @@ export class ABLHoverProvider implements HoverProvider {
                     if (!extTt) {
                         let extDoc = this._ablDocumentController.getDocument(external);
                         if (extDoc) {
-                            extTt = extDoc.tempTables.find(item => item.filename.toLowerCase() == words[0]);
+                            extTt = extDoc.tempTables.find(item => item.label.toLowerCase() == words[0]);
                             if (extTt) {
                                 let fd = extTt.fields.find(item => item.name.toLowerCase() == words[1]);
                                 if (fd) {

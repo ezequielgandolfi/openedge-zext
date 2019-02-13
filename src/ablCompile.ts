@@ -1,11 +1,12 @@
 import * as vscode from 'vscode';
 import cp = require('child_process');
 import path = require('path');
-import { outputChannel, showStatusBar, STATUS_COLOR, errorDiagnosticCollection, warningDiagnosticCollection } from './notification';
+import { outputChannel, showStatusBar, STATUS_COLOR, errorDiagnosticCollection, warningDiagnosticCollection, hideStatusBar } from './notification';
 import { getConfig } from './ablConfig';
 import { getProBin, createProArgs, setupEnvironmentVariables, getProwinBin, ABL_MODE } from './environment';
 import { rcodeDeploy } from './deploy';
 import { ICheckResult } from './definition';
+import { saveAndExec } from './utils';
 
 export function execCompile(document: vscode.TextDocument, ablConfig: vscode.WorkspaceConfiguration) {
 
@@ -20,50 +21,55 @@ export function execCompile(document: vscode.TextDocument, ablConfig: vscode.Wor
 	if (document.languageId !== ABL_MODE.language) {
 		return;
 	}
+	hideStatusBar();
 
 	let uri = document.uri;
-	compile(uri.fsPath, ablConfig).then(errors => {
-		errorDiagnosticCollection.clear();
-		warningDiagnosticCollection.clear();
+	let doCompile = () => { 
+		compile(uri.fsPath, ablConfig).then(errors => {
+			errorDiagnosticCollection.clear();
+			warningDiagnosticCollection.clear();
 
-		let diagnosticMap: Map<string, Map<vscode.DiagnosticSeverity, vscode.Diagnostic[]>> = new Map();
+			let diagnosticMap: Map<string, Map<vscode.DiagnosticSeverity, vscode.Diagnostic[]>> = new Map();
 
-		errors.forEach(error => {
-			let canonicalFile = vscode.Uri.file(error.file).toString();
-			let startColumn = 0;
-			let endColumn = 1;
-			if (error.line === 0) {
-				vscode.window.showErrorMessage(error.msg);
-			}
-			else {
-				if (document && document.uri.toString() === canonicalFile) {
-					let range = new vscode.Range(error.line - 1, startColumn, error.line - 1, document.lineAt(error.line - 1).range.end.character + 1);
-					let text = document.getText(range);
-					let [_, leading, trailing] = /^(\s*).*(\s*)$/.exec(text);
-					startColumn = startColumn + leading.length;
-					endColumn = text.length - trailing.length;
+			errors.forEach(error => {
+				let canonicalFile = vscode.Uri.file(error.file).toString();
+				let startColumn = 0;
+				let endColumn = 1;
+				if (error.line === 0) {
+					vscode.window.showErrorMessage(error.msg);
 				}
-				let range = new vscode.Range(error.line - 1, startColumn, error.line - 1, endColumn);
-				let severity = mapSeverityToVSCodeSeverity(error.severity);
-				let diagnostic = new vscode.Diagnostic(range, error.msg, severity);
-				let diagnostics = diagnosticMap.get(canonicalFile);
-				if (!diagnostics) {
-					diagnostics = new Map<vscode.DiagnosticSeverity, vscode.Diagnostic[]>();
+				else {
+					if (document && document.uri.toString() === canonicalFile) {
+						let range = new vscode.Range(error.line - 1, startColumn, error.line - 1, document.lineAt(error.line - 1).range.end.character + 1);
+						let text = document.getText(range);
+						let [_, leading, trailing] = /^(\s*).*(\s*)$/.exec(text);
+						startColumn = startColumn + leading.length;
+						endColumn = text.length - trailing.length;
+					}
+					let range = new vscode.Range(error.line - 1, startColumn, error.line - 1, endColumn);
+					let severity = mapSeverityToVSCodeSeverity(error.severity);
+					let diagnostic = new vscode.Diagnostic(range, error.msg, severity);
+					let diagnostics = diagnosticMap.get(canonicalFile);
+					if (!diagnostics) {
+						diagnostics = new Map<vscode.DiagnosticSeverity, vscode.Diagnostic[]>();
+					}
+					if (!diagnostics[severity]) {
+						diagnostics[severity] = [];
+					}
+					diagnostics[severity].push(diagnostic);
+					diagnosticMap.set(canonicalFile, diagnostics);
 				}
-				if (!diagnostics[severity]) {
-					diagnostics[severity] = [];
-				}
-				diagnostics[severity].push(diagnostic);
-				diagnosticMap.set(canonicalFile, diagnostics);
-			}
+			});
+			diagnosticMap.forEach((diagMap, file) => {
+				errorDiagnosticCollection.set(vscode.Uri.parse(file), diagMap[vscode.DiagnosticSeverity.Error]);
+				warningDiagnosticCollection.set(vscode.Uri.parse(file), diagMap[vscode.DiagnosticSeverity.Warning]);
+			});
+		}).catch(err => {
+			vscode.window.showInformationMessage('Error: ' + err);
 		});
-		diagnosticMap.forEach((diagMap, file) => {
-			errorDiagnosticCollection.set(vscode.Uri.parse(file), diagMap[vscode.DiagnosticSeverity.Error]);
-			warningDiagnosticCollection.set(vscode.Uri.parse(file), diagMap[vscode.DiagnosticSeverity.Warning]);
-		});
-	}).catch(err => {
-		vscode.window.showInformationMessage('Error: ' + err);
-	});
+	}
+
+	saveAndExec(document, doCompile);
 }
 
 function compile(filename: string, ablConfig: vscode.WorkspaceConfiguration): Promise<ICheckResult[]> {

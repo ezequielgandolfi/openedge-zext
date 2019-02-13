@@ -129,7 +129,7 @@ function getAllFieldsSnippet(table: ABLTableDefinition): vscode.SnippetString {
 		}
 		else {
 			snip.appendText('\n');
-			snip.appendText(table.filename + '.');
+			snip.appendText(table.label + '.');
 		}
 		snip.appendText(padRight(field.name, size) + ' = ');
 		snip.appendTabstop();
@@ -167,4 +167,15 @@ export function mkdir(path: string) {
 		if (!fs.existsSync(dir))
 			fs.mkdirSync(dir);
 	}
+}
+
+export function saveAndExec(document: vscode.TextDocument, action: Function) {
+	if (document.isDirty) {
+		vscode.window.showInformationMessage('Current file has unsaved changes!', ...['Save', 'Cancel']).then(result => {
+			if (result == 'Save') 
+				document.save().then(saved => { if (saved) { action(); }});
+		});
+	}
+	else
+		action();
 }

@@ -6,7 +6,8 @@ import * as http from 'http';
 import { DeploymentTask } from './openEdgeConfigFile';
 import { mkdir } from './utils';
 
-export function sourceDeploy(filename: string) {
+export function documentDeploy(document: vscode.TextDocument) {
+	let filename = document.uri.fsPath;
 	let oeConfig = getConfig();
 	if (oeConfig.deployment) {
 		let tasks = oeConfig.deployment.filter(item => item.taskType == 'current.source');
@@ -45,7 +46,7 @@ function deploy(filename: string, dirname: string, tasks: DeploymentTask[]): Pro
 			}
 		});
 		// notification
-		vscode.window.showInformationMessage('Source ' + path.basename(filename) + ' deployed!');
+		vscode.window.showInformationMessage('File ' + path.basename(filename) + ' deployed!');
 		resolve();
 	});
 }

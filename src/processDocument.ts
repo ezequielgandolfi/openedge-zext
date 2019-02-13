@@ -115,10 +115,9 @@ export function getAllTempTables(document: vscode.TextDocument): ABLTempTable[] 
 	while(res) {
 		let v = new ABLTempTable();
 		try {
-			v.filename = res[1];
+			v.label = res[1];
 			v.kind = vscode.CompletionItemKind.Struct;
 			v.detail = '';
-			v.label = 'Temp-table';
 			v.fields = getTempTableFields(res[2], document);
 			v.indexes = getTempTableIndexes(res[2]);
 			v.line = document.positionAt(res.index).line;

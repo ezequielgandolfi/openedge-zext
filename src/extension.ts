@@ -5,7 +5,7 @@ import { openDataDictionary, readDataDictionary } from './ablDataDictionary';
 import { loadOpenEdgeConfig, getConfig } from './ablConfig';
 import { loadDictDumpFiles } from './codeCompletion';
 import { execCompile } from './ablCompile';
-import { sourceDeploy } from './deploy';
+import { documentDeploy } from './deploy';
 import { ABLFormatter } from './formatter';
 import { ABLDocumentController, initDocumentController } from './documentController';
 import { OutlineNavigatorProvider } from './outlineNavigator';
@@ -37,9 +37,6 @@ export function activate(ctx: vscode.ExtensionContext): void {
 	config.update('insertSpaces', true, false);
 	config.update('detectIdentation', false, false);*/
 
-	ctx.subscriptions.push(vscode.commands.registerCommand('abl.propath', () => {
-		vscode.window.showInformationMessage('PROPATH : ' + (getConfig().proPath || ''));
-	}));
 	ctx.subscriptions.push(vscode.commands.registerCommand('abl.checkSyntax', () => {
 		let ablConfig = vscode.workspace.getConfiguration(ABL_MODE.language);
 		execCheckSyntax(vscode.window.activeTextEditor.document, ablConfig);
@@ -50,24 +47,26 @@ export function activate(ctx: vscode.ExtensionContext): void {
 	}));
 	ctx.subscriptions.push(vscode.commands.registerCommand('abl.run.currentFile', () => {
 		let ablConfig = vscode.workspace.getConfiguration(ABL_MODE.language);
-		execRun(vscode.window.activeTextEditor.document.uri.fsPath, ablConfig);
+		execRun(vscode.window.activeTextEditor.document, ablConfig);
 	}));
 	ctx.subscriptions.push(vscode.commands.registerCommand('abl.deploy.currentFile', () => {
-		sourceDeploy(vscode.window.activeTextEditor.document.uri.fsPath);
+		documentDeploy(vscode.window.activeTextEditor.document);
 	}));
-	ctx.subscriptions.push(vscode.commands.registerCommand('abl.dataDictionary', () => {
-		// let ablConfig = vscode.workspace.getConfiguration(ABL_MODE.language);
-		openDataDictionary();
-	}));
-
 	ctx.subscriptions.push(vscode.commands.registerCommand('abl.dictionary.read', () => {
 		let ablConfig = vscode.workspace.getConfiguration(ABL_MODE.language);
 		readDataDictionary(ablConfig);
 	}));
 
-	ctx.subscriptions.push(vscode.commands.registerCommand('abl.prototype', () => {
+	/*ctx.subscriptions.push(vscode.commands.registerCommand('abl.propath', () => {
+		vscode.window.showInformationMessage('PROPATH : ' + (getConfig().proPath || ''));
+	}));*/
+	/*ctx.subscriptions.push(vscode.commands.registerCommand('abl.dataDictionary', () => {
+		openDataDictionary();
+	}));*/
+
+	/*ctx.subscriptions.push(vscode.commands.registerCommand('abl.prototype', () => {
 		getAllVariables(vscode.window.activeTextEditor.document);
-	}));
+	}));*/
 }
 
 function deactivate() {
