@@ -2,7 +2,7 @@
     "name": "openedge-zext",
     "displayName": "OpenEdge ABL (Progress 4GL)",
     "description": "OpenEdge ABL Extension for VSCode",
-    "version": "0.0.19",
+    "version": "0.0.20",
     "publisher": "ezequielgandolfi",
     "author": "Ezequiel Gandolfi",
     "license": "Apache-2.0",
@@ -63,27 +63,32 @@
             {
                 "command": "abl.run.currentFile",
                 "title": "ABL: Run",
-                "description": "Run the current .p file"
+                "description": "Run the current file"
             },
             {
                 "command": "abl.checkSyntax",
                 "title": "ABL: CheckSyntax",
-                "description": "Check the syntax for the current .p file"
+                "description": "Check the syntax for the current file"
             },
             {
                 "command": "abl.compile",
                 "title": "ABL: Compile & Deploy",
-                "description": "Compile the current .p file and deploy the R-Code"
+                "description": "Compile the current file and deploy the R-Code"
             },
             {
                 "command": "abl.deploy.currentFile",
                 "title": "ABL: Deploy Source",
-                "description": "Deploy the current .p file to remote host"
+                "description": "Deploy the current file to remote host"
             },
             {
                 "command": "abl.dictionary.read",
                 "title": "ABL: Read Dictionary Structure",
                 "description": "Read the DataDictionary structure for further use"
+            },
+            {
+                "command": "abl.ask.currentFile",
+                "title": "ABL: Compile with Options",
+                "description": "Compile the current file with some options"
             }
         ],
         "breakpoints": [
@@ -368,6 +373,11 @@
                 "when": "editorTextFocus && editorLangId == 'abl'",
                 "command": "abl.deploy.currentFile",
                 "key": "Alt+F2"
+            },
+            {
+                "when": "editorTextFocus && editorLangId == 'abl'",
+                "command": "abl.ask.currentFile",
+                "key": "Alt+F3"
             }
         ]
     },

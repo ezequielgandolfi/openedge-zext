@@ -25,7 +25,7 @@ export interface PostActionTask {
     command?: string;
 }
 export interface DeploymentTask {
-    taskType: 'current.r-code' | 'current.source' | 'all.source';
+    taskType: 'current.all-compile' | 'current.r-code' | 'current.source' | 'current.listing' | 'current.xref' | 'current.xref-xml' | 'current.string-xml' | 'current.debug-list' | 'current.preprocess';
     path: string;
     postAction?: PostActionTask[];
 }

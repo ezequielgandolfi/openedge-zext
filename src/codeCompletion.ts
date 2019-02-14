@@ -61,10 +61,14 @@ export class ABLCodeCompletion implements vscode.CompletionItemProvider {
 			// External Temp-tables
 			let externalTt: vscode.CompletionItem[] = [];
 			doc.externalDocument.forEach(external => {
-				let _ti = this._ablDocumentController.getDocument(external).tempTables.map(item => {
-					return new vscode.CompletionItem(item.label);
-				});
-				externalTt = [...externalTt,..._ti];
+				let _ti = [];
+				let extDoc = this._ablDocumentController.getDocument(external);
+				if (extDoc) {
+					_ti = doc.tempTables.map(item => {
+						return new vscode.CompletionItem(item.label);
+					});
+					externalTt = [...externalTt,..._ti];
+				}
 			});
 			return new vscode.CompletionList([...tb,...tt,...externalTt]);
 		}

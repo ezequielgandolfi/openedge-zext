@@ -2,10 +2,13 @@ DEFINE VARIABLE ch_prog AS CHARACTER NO-UNDO.
 DEFINE VARIABLE ch_mess AS CHARACTER NO-UNDO.
 DEFINE VARIABLE i       AS INTEGER   NO-UNDO.
 DEFINE VARIABLE vsabl_deployPath AS CHARACTER NO-UNDO.
+DEFINE VARIABLE vsabl_compileOptions AS CHARACTER NO-UNDO.
+DEFINE VARIABLE lg_deployRCode AS LOG NO-UNDO.
 
 /* Extracts the parameters */
-ASSIGN ch_prog = ENTRY( 1, SESSION:PARAMETER ).
-       vsabl_deployPath = replace(ENTRY( 2, SESSION:PARAMETER ), "~\", "/").
+ASSIGN ch_prog              = replace(ENTRY(1, SESSION:PARAMETER), "~\", "/")
+       vsabl_deployPath     = replace(ENTRY(2, SESSION:PARAMETER), "~\", "/")
+       vsabl_compileOptions = replace(entry(3, session:PARAMETER), "|", ",").
 
 RUN VALUE( REPLACE( PROGRAM-NAME( 1 ), "compile.p", "pre-launch.p") ).
 
@@ -14,9 +17,15 @@ assign nm-dir-aux = replace(OS-GETENV("VSABL_WORKSPACE"), "~\", "/").
 if r-index(nm-dir-aux, "/") < length(nm-dir-aux)
 then assign nm-dir-aux = nm-dir-aux + "/".
 
-if vsabl_deployPath <> ""
-then run compileFile(input vsabl_deployPath).
-else run compileFile("").
+if vsabl_deployPath = ""
+then assign vsabl_deployPath = nm-dir-aux
+            lg_deployRCode   = false.
+else assign lg_deployRCode = true.
+
+if r-index(vsabl_deployPath, "/") < length(vsabl_deployPath)
+then assign vsabl_deployPath = vsabl_deployPath + "/".
+
+run compileFile(input vsabl_deployPath, input vsabl_compileOptions, input lg_deployRCode).
 
 PUT UNFORMATTED "SUCCESS: Program compiled" SKIP.
 
@@ -27,22 +36,49 @@ QUIT.
 
 procedure compileFile:
   def input param vsabl_deployItem as char no-undo.
+  def input param vsabl_options    as char no-undo.
+  def input param lg_deploy_par    as log  no-undo.
 
-  if vsabl_deployItem <> ""
-  then do:
-    if r-index(vsabl_deployItem, "/") < length(vsabl_deployItem)
-    then assign vsabl_deployItem = vsabl_deployItem + "/".
+  def var baseName as char no-undo.
+  assign baseName = substring(ch_prog, r-index(ch_prog, "/") + 1).
 
-    //assign vsabl_deployItem = vsabl_deployItem + replace(substring(ch_prog, length(nm-dir-aux) + 1), "~\", "/").
-  end.
+  /* Compile and save RCode */
+  if lg_deploy_par
+  or vsabl_options <> ""
+  then run mkDir(vsabl_deployItem).
 
-  /* Compile without saving */
-  if vsabl_deployItem <> ""
-  then do:
-    run mkDir(vsabl_deployItem).
-    COMPILE VALUE( ch_prog ) SAVE INTO value(vsabl_deployItem) NO-ERROR.
-  end.
-  else COMPILE VALUE( ch_prog ) NO-ERROR.
+  if  lg_deploy_par
+  AND lookup("COMPILE", vsabl_options) > 0
+  then COMPILE VALUE( ch_prog ) SAVE INTO value(vsabl_deployItem) NO-ERROR.
+
+  /* Additional options */
+  if  LOOKUP("LISTING", vsabl_options) > 0
+  and COMPILER:NUM-MESSAGES = 0
+  then COMPILE VALUE( ch_prog ) LISTING value(vsabl_deployItem + baseName + ".listing") NO-ERROR.
+
+  if  LOOKUP("XREF", vsabl_options) > 0
+  and COMPILER:NUM-MESSAGES = 0
+  then COMPILE VALUE( ch_prog ) XREF value(vsabl_deployItem + baseName + ".xref") NO-ERROR.
+
+  if  LOOKUP("XREF-XML", vsabl_options) > 0
+  and COMPILER:NUM-MESSAGES = 0
+  then COMPILE VALUE( ch_prog ) XREF value(vsabl_deployItem + baseName + ".xref-xml") NO-ERROR.
+
+  if  LOOKUP("STRING-XREF", vsabl_options) > 0
+  and COMPILER:NUM-MESSAGES = 0
+  then COMPILE VALUE( ch_prog ) STRING-XREF value(vsabl_deployItem + baseName + ".string-xref") NO-ERROR.
+
+  if  LOOKUP("DEBUG-LIST", vsabl_options) > 0
+  and COMPILER:NUM-MESSAGES = 0
+  then COMPILE VALUE( ch_prog ) DEBUG-LIST value(vsabl_deployItem + baseName + ".debug-list") NO-ERROR.
+
+  if  LOOKUP("PREPROCESS", vsabl_options) > 0
+  and COMPILER:NUM-MESSAGES = 0
+  then COMPILE VALUE( ch_prog ) PREPROCESS value(vsabl_deployItem + baseName + ".preprocess") NO-ERROR.
+
+  /*if  LOOKUP("XCODE", vsabl_options) > 0
+  and COMPILER:NUM-MESSAGES = 0
+  then COMPILE VALUE( ch_prog ) XREF value(vsabl_deployItem + baseName + ".xref") NO-ERROR.*/
 
   /* If there are compilation messages */
   IF COMPILER:NUM-MESSAGES > 0 THEN DO:
@@ -69,7 +105,6 @@ procedure compileFile:
     END.
     QUIT.
   END.
-
 end procedure.
 
 procedure mkDir:

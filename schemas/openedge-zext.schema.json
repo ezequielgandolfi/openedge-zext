@@ -67,7 +67,14 @@
             "enum": [
               "current.r-code",
               "current.source",
-              "all.source"
+              "current.listing",
+              "current.xref",
+              "current.xref-xml",
+              "current.string-xref",
+              "current.debug-list",
+              "current.preprocess",
+              "current.xcode",
+              "current.all-compile"
             ]
           },
           "path": {

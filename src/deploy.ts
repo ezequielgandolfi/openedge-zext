@@ -6,23 +6,44 @@ import * as http from 'http';
 import { DeploymentTask } from './openEdgeConfigFile';
 import { mkdir } from './utils';
 
+export enum TASK_TYPE {
+	DEPLOY_SOURCE = 'current.source',
+	DEPLOY_RCODE = 'current.r-code',
+	DEPLOY_LISTING = 'current.listing',
+	DEPLOY_XREF = 'current.xref',
+	DEPLOY_XREFXML = 'current.xref-xml',
+	DEPLOY_STRINGXREF = 'current.string-xref',
+	DEPLOY_DEBUGLIST = 'current.debug-list',
+	DEPLOY_PREPROCESS = 'current.preprocess',
+	DEPLOY_XCODE = 'current.xcode',
+	DEPLOY_ALL = 'current.all-compile'
+}
+
 export function documentDeploy(document: vscode.TextDocument) {
 	let filename = document.uri.fsPath;
 	let oeConfig = getConfig();
 	if (oeConfig.deployment) {
-		let tasks = oeConfig.deployment.filter(item => item.taskType == 'current.source');
+		let tasks = oeConfig.deployment.filter(item => item.taskType == TASK_TYPE.DEPLOY_SOURCE);
 		deploy(filename, path.dirname(filename), tasks);
 	}
 }
 
 export function rcodeDeploy(filename: string) {
+	return fileDeploy(filename, '.r', [TASK_TYPE.DEPLOY_RCODE,TASK_TYPE.DEPLOY_ALL]);
+}
+
+export function fileDeploy(filename: string, ext:string, taskTypes: string[]) {
 	let oeConfig = getConfig();
 	if (oeConfig.deployment) {
-		let fname = filename.substring(0, filename.lastIndexOf('.')) + '.r';
+		let fname = filename.substring(0, filename.lastIndexOf('.')) + ext;
 		fname = [vscode.workspace.rootPath, path.basename(fname)].join('\\');
 		let dirname = path.dirname(filename);
-		let tasks = oeConfig.deployment.filter(item => item.taskType == 'current.r-code');
-		deploy(fname, dirname, tasks).then(() => fs.unlinkSync(fname));
+		let tasks = oeConfig.deployment.filter(item => taskTypes.find(t => t == item.taskType));
+		deploy(fname, dirname, tasks).then(() => {
+			// if has deployment task, delete original file
+			if (tasks.length > 0)
+				fs.unlinkSync(fname);
+		});
 	}
 }
 
@@ -46,7 +67,8 @@ function deploy(filename: string, dirname: string, tasks: DeploymentTask[]): Pro
 			}
 		});
 		// notification
-		vscode.window.showInformationMessage('File ' + path.basename(filename) + ' deployed!');
+		if (tasks.length > 0)
+			vscode.window.showInformationMessage('File ' + path.basename(filename) + ' deployed!');
 		resolve();
 	});
 }

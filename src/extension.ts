@@ -4,7 +4,7 @@ import { execRun } from './ablRun';
 import { openDataDictionary, readDataDictionary } from './ablDataDictionary';
 import { loadOpenEdgeConfig, getConfig } from './ablConfig';
 import { loadDictDumpFiles } from './codeCompletion';
-import { execCompile } from './ablCompile';
+import { execCompile, COMPILE_OPTIONS } from './ablCompile';
 import { documentDeploy } from './deploy';
 import { ABLFormatter } from './formatter';
 import { ABLDocumentController, initDocumentController } from './documentController';
@@ -43,7 +43,7 @@ export function activate(ctx: vscode.ExtensionContext): void {
 	}));
 	ctx.subscriptions.push(vscode.commands.registerCommand('abl.compile', () => {
 		let ablConfig = vscode.workspace.getConfiguration(ABL_MODE.language);
-		execCompile(vscode.window.activeTextEditor.document, ablConfig);
+		execCompile(vscode.window.activeTextEditor.document, ablConfig, [COMPILE_OPTIONS.COMPILE]);
 	}));
 	ctx.subscriptions.push(vscode.commands.registerCommand('abl.run.currentFile', () => {
 		let ablConfig = vscode.workspace.getConfiguration(ABL_MODE.language);
@@ -55,6 +55,9 @@ export function activate(ctx: vscode.ExtensionContext): void {
 	ctx.subscriptions.push(vscode.commands.registerCommand('abl.dictionary.read', () => {
 		let ablConfig = vscode.workspace.getConfiguration(ABL_MODE.language);
 		readDataDictionary(ablConfig);
+	}));
+	ctx.subscriptions.push(vscode.commands.registerCommand('abl.ask.currentFile', () => {
+		chooseCompileOption();
 	}));
 
 	/*ctx.subscriptions.push(vscode.commands.registerCommand('abl.propath', () => {
@@ -109,4 +112,12 @@ function startFormatCommand(subscriptions: vscode.Disposable[]) {
 
 function startDocumentWatcher(context: vscode.ExtensionContext) {
 	initDocumentController(context);
+}
+
+function chooseCompileOption() {
+	let options = Object.keys(COMPILE_OPTIONS).map(k => {return COMPILE_OPTIONS[k]});
+	vscode.window.showQuickPick(options, {placeHolder: 'Compile option', canPickMany: true}).then(v => {
+		let ablConfig = vscode.workspace.getConfiguration(ABL_MODE.language);
+		execCompile(vscode.window.activeTextEditor.document, ablConfig, v);
+	});
 }

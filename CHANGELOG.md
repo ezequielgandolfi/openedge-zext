@@ -1,5 +1,13 @@
 # Change Log
 
+## 0.0.20
+
+### Fixes
+- Auto-complete was crashing in some situations
+
+### Improvements
+- New command to compile with some flags (Alt+F3)
+
 ## 0.0.19
 
 ### Fixes

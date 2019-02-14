@@ -13,6 +13,19 @@ OpenEdge ABL Extension for Visual Studio Code
 - Auto-complete
 - Source navigation
 
+## What's new
+
+### 0.0.20
+- New command to compile with additional options (Alt+F3)
+
+### 0.0.19
+- More code snippets
+- Ask to save dirty files before run commands
+
+### 0.0.18
+- "ALL FIELDS" snippet for tables / temp-tables
+- Formatter (supports: trim right). Enable options in settings file
+
 ## Requirements
 
 - OpenEdge Progress 11
@@ -32,10 +45,13 @@ OpenEdge ABL Extension for Visual Studio Code
 > Check syntax for current file and highlights errors
 
 #### ABL: Compile & Deploy (Alt+F1)
-> Compiles the current file and deploy the RCode when configured
+> Compile the current file and deploy the RCode when configured
 
 #### ABL: Deploy Source (Alt+F2)
 > Deploy the current file when configured (without compile)
+
+#### ABL: Compile with Options (Alt+F3)
+> Compile the current file with additional options
 
 ### Other features
 

@@ -4,11 +4,22 @@ import path = require('path');
 import { outputChannel, showStatusBar, STATUS_COLOR, errorDiagnosticCollection, warningDiagnosticCollection, hideStatusBar } from './notification';
 import { getConfig } from './ablConfig';
 import { getProBin, createProArgs, setupEnvironmentVariables, getProwinBin, ABL_MODE } from './environment';
-import { rcodeDeploy } from './deploy';
+import { rcodeDeploy, fileDeploy, TASK_TYPE } from './deploy';
 import { ICheckResult } from './definition';
 import { saveAndExec } from './utils';
 
-export function execCompile(document: vscode.TextDocument, ablConfig: vscode.WorkspaceConfiguration) {
+export enum COMPILE_OPTIONS {
+	COMPILE = 'COMPILE',
+	LISTING = 'LISTING',
+	XREF = 'XREF',
+	XREFXML = 'XREF-XML',
+	STRINGXREF = 'STRING-XREF',
+	DEBUGLIST = 'DEBUG-LIST',
+	PREPROCESS = 'PREPROCESS' /*,
+	XCODE = 'XCODE'*/
+};
+
+export function execCompile(document: vscode.TextDocument, ablConfig: vscode.WorkspaceConfiguration, options:COMPILE_OPTIONS[]) {
 
 	function mapSeverityToVSCodeSeverity(sev: string) {
 		switch (sev) {
@@ -25,7 +36,7 @@ export function execCompile(document: vscode.TextDocument, ablConfig: vscode.Wor
 
 	let uri = document.uri;
 	let doCompile = () => { 
-		compile(uri.fsPath, ablConfig).then(errors => {
+		compile(uri.fsPath, ablConfig, options).then(errors => {
 			errorDiagnosticCollection.clear();
 			warningDiagnosticCollection.clear();
 
@@ -72,8 +83,11 @@ export function execCompile(document: vscode.TextDocument, ablConfig: vscode.Wor
 	saveAndExec(document, doCompile);
 }
 
-function compile(filename: string, ablConfig: vscode.WorkspaceConfiguration): Promise<ICheckResult[]> {
+function compile(filename: string, ablConfig: vscode.WorkspaceConfiguration, options:COMPILE_OPTIONS[]): Promise<ICheckResult[]> {
 	outputChannel.clear();
+	if (options.length == 0)
+		return;
+
 	showStatusBar('Compiling...', STATUS_COLOR.INFO);
 
 	let cwd = path.dirname(filename);
@@ -82,10 +96,12 @@ function compile(filename: string, ablConfig: vscode.WorkspaceConfiguration): Pr
 
 	let oeConfig = getConfig();
 	// output path (.R) only if has post actions
-	if ((oeConfig.deployment)&&(oeConfig.deployment.find(item => item.taskType == 'current.r-code')))
+	if ((oeConfig.deployment)&&(oeConfig.deployment.find(item => (item.taskType == TASK_TYPE.DEPLOY_RCODE)||(item.taskType == TASK_TYPE.DEPLOY_ALL))))
 		par.push(vscode.workspace.rootPath);
 	else
 		par.push('');
+	// compile options
+	par.push(Object.keys(options).map(k => {return options[k]}).join('|'));
 	let env = setupEnvironmentVariables(process.env, oeConfig, vscode.workspace.rootPath);
 	let args = createProArgs({
 		parameterFiles: oeConfig.parameterFiles,
@@ -145,10 +161,38 @@ function compile(filename: string, ablConfig: vscode.WorkspaceConfiguration): Pr
 	}).then(results => {
 		if (results.length === 0) {
 			showStatusBar('Compiled', STATUS_COLOR.SUCCESS);
-			rcodeDeploy(filename);
+			options.forEach(opt => {
+				switch(opt) {
+					case COMPILE_OPTIONS.COMPILE:
+						rcodeDeploy(filename);
+						break;
+					case COMPILE_OPTIONS.LISTING:
+						fileDeploy(filename+'.listing', '.listing', [TASK_TYPE.DEPLOY_LISTING,TASK_TYPE.DEPLOY_ALL]);
+						break;
+					case COMPILE_OPTIONS.XREF:
+						fileDeploy(filename+'.xref', '.xref', [TASK_TYPE.DEPLOY_XREF,TASK_TYPE.DEPLOY_ALL]);
+						break;
+					case COMPILE_OPTIONS.XREFXML:
+						fileDeploy(filename+'.xref-xml', '.xref-xml', [TASK_TYPE.DEPLOY_XREFXML,TASK_TYPE.DEPLOY_ALL]);
+						break;
+					case COMPILE_OPTIONS.STRINGXREF:
+						fileDeploy(filename+'.string-xref', '.string-xref', [TASK_TYPE.DEPLOY_STRINGXREF,TASK_TYPE.DEPLOY_ALL]);
+						break;
+					case COMPILE_OPTIONS.DEBUGLIST:
+						fileDeploy(filename+'.debug-list', '.debug-list', [TASK_TYPE.DEPLOY_DEBUGLIST,TASK_TYPE.DEPLOY_ALL]);
+						break;
+					case COMPILE_OPTIONS.PREPROCESS:
+						fileDeploy(filename+'.preprocess', '.preprocess', [TASK_TYPE.DEPLOY_PREPROCESS,TASK_TYPE.DEPLOY_ALL]);
+						break;
+					/*case COMPILE_OPTIONS.XCODE:
+						fileDeploy(filename+'.xref', '.xref', ['current.r-code',TASK_TYPE.DEPLOY_ALL]);
+						break;*/
+				}
+			});
 		}
-		else
-		showStatusBar('Syntax error', STATUS_COLOR.ERROR);
+		else {
+			showStatusBar('Syntax error', STATUS_COLOR.ERROR);
+		}
 		return results;
 	});
 }
