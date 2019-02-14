@@ -6,7 +6,7 @@ import { getConfig } from './ablConfig';
 import { getProBin, createProArgs, setupEnvironmentVariables, getProwinBin, ABL_MODE } from './environment';
 import { rcodeDeploy, fileDeploy, TASK_TYPE } from './deploy';
 import { ICheckResult } from './definition';
-import { saveAndExec } from './utils';
+import { saveAndExec, xcode } from './utils';
 
 export enum COMPILE_OPTIONS {
 	COMPILE = 'COMPILE',
@@ -15,8 +15,8 @@ export enum COMPILE_OPTIONS {
 	XREFXML = 'XREF-XML',
 	STRINGXREF = 'STRING-XREF',
 	DEBUGLIST = 'DEBUG-LIST',
-	PREPROCESS = 'PREPROCESS' /*,
-	XCODE = 'XCODE'*/
+	PREPROCESS = 'PREPROCESS',
+	XCODE = 'XCODE'
 };
 
 export function execCompile(document: vscode.TextDocument, ablConfig: vscode.WorkspaceConfiguration, options:COMPILE_OPTIONS[]) {
@@ -184,9 +184,12 @@ function compile(filename: string, ablConfig: vscode.WorkspaceConfiguration, opt
 					case COMPILE_OPTIONS.PREPROCESS:
 						fileDeploy(filename+'.preprocess', '.preprocess', [TASK_TYPE.DEPLOY_PREPROCESS,TASK_TYPE.DEPLOY_ALL]);
 						break;
-					/*case COMPILE_OPTIONS.XCODE:
-						fileDeploy(filename+'.xref', '.xref', ['current.r-code',TASK_TYPE.DEPLOY_ALL]);
-						break;*/
+					case COMPILE_OPTIONS.XCODE:
+						xcode(filename+'.xcode').then(ok => {
+							if (ok)
+								fileDeploy(filename+'.xcode', '.xcode', [TASK_TYPE.DEPLOY_XCODE,TASK_TYPE.DEPLOY_ALL]);
+						});
+						break;
 				}
 			});
 		}

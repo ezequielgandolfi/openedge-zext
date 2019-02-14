@@ -15,6 +15,10 @@ OpenEdge ABL Extension for Visual Studio Code
 
 ## What's new
 
+### 0.0.21
+- Hover tooltip new behavior
+- XCode compile option
+
 ### 0.0.20
 - New command to compile with additional options (Alt+F3)
 
@@ -31,10 +35,12 @@ OpenEdge ABL Extension for Visual Studio Code
 - OpenEdge Progress 11
 
 ## Usage
+- Extension is activated for extensions: .i .p .w .cls
 
 ### Starting
-- Extension is activated for extensions (.i .p .w .cls)
 - Create a configuration file (see Extension Settings below)
+- Execute command "ABL: Read Dictionary Structure" for auto-complete feature
+- Enjoy...
 
 ### Commands
 
@@ -51,7 +57,7 @@ OpenEdge ABL Extension for Visual Studio Code
 > Deploy the current file when configured (without compile)
 
 #### ABL: Compile with Options (Alt+F3)
-> Compile the current file with additional options
+> Compile the current file with additional options (Preprocess, X-Ref, etc)
 
 ### Other features
 
@@ -98,7 +104,7 @@ Create a file named ".openedge-zext.json" in root path of the workspace.
 
 - `dlcPath` is optional, and overwrite DLC enviorenment variable
 - `dbDictionary` are the logical names of database files for the auto-complete option (command: ABL Read Dictionary Structure)
-- `deployment` are actions from commands Alt+F1 (current.r-code) and Alt+F2 (current.source)
+- `deployment` are actions from compile/deploy commands (Alt+F1, Alt+F2 and Alt+F3)
 - `format` are formatter options
 - Default values:
     - `proPath`: workspaceRoot
@@ -108,8 +114,7 @@ Create a file named ".openedge-zext.json" in root path of the workspace.
 
 - Variables inside trigger events are referencing as global variables
 - Source mapping ignores strings / comments blocks
-    - Can suggest something wrong
-    - Sometimes it crashes... it happens...
+- Source mapping freezes sometimes
 
 ## Roadmap
 
@@ -118,18 +123,11 @@ _No promises..._ :-)
 ### 1.0.0
 
 - Configuration for "source directory" to work with multiple folders in workspace
-- Get definitions inside includes (Partially working...)
-    - Bug: check for case insensitive file names...
-- List all fields from temp-tables
 - Temp-table definitions
     - Insert "like" condition to temp-tables (insert all fields from original temp-table)
 - Map comment blocks to eliminate from processing
     - Change regex expressions to avoid comments
-- Key bind F2 to open help file
-    - C:\DLC116\prohelp\lgrfeng.chm / https://documentation.progress.com/output/ua/OpenEdge_latest/index.html
-- Compile options
-    - debug-list / x-ref / listing / xcode
-- Save before run commands (check syntax, compile, run) / Save temp file to run commands
+- Key bind to open help file
 - Change case (lower, upper, camel)
 - More snippets
 

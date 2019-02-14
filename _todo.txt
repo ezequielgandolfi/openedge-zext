@@ -1,3 +1,13 @@
+helpfile
+    C:\DLC116\prohelp\lgrfeng.chm / https://documentation.progress.com/output/ua/OpenEdge_latest/index.html
+
+
+
+
+
+
+
+
 Commands:
 
     {

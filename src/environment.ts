@@ -22,6 +22,10 @@ export function getProBin() {
     return getBinPath('_progres');
 }
 
+export function getXcodeBin() {
+    return getBinPath('xcode.exe');
+}
+
 export function getProwinBin() {
     let prowin = getBinPath('prowin.exe');
     if (!fs.existsSync(prowin))

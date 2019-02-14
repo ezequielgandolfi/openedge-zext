@@ -1,5 +1,11 @@
 # Change Log
 
+## 0.0.21
+
+### Improvements
+- Hover tooltip new behavior
+- XCode compile option
+
 ## 0.0.20
 
 ### Fixes

@@ -17,17 +17,18 @@ export class ABLHoverProvider implements HoverProvider {
         let selection = utils.getText(document, position);
         let words = utils.cleanArray(selection.statement.split(/[\.\:\s\t]/));
         if (words.length > 0) {
-            if (words.length == 1) {
+            if ((words.length == 1)||
+                ((words.length > 1)&&(selection.word == words[0]))) {
                 // check for table collection
-                let tb = getTableCollection().items.find(item => item.label == selection.statement);
+                let tb = getTableCollection().items.find(item => item.label == selection.word);
                 if (tb) {
                     let tbd = <ABLTableDefinition>tb;
                     return new Hover([selection.word, '*'+tb.detail+'*', 'PK: ' + tbd.pkList], selection.wordRange);
                 }
                 // check for temp-tables
-                let tt = doc.tempTables.find(item => item.label.toLowerCase() == selection.statement);
+                let tt = doc.tempTables.find(item => item.label.toLowerCase() == selection.word);
                 if (tt) {
-                    return new Hover([selection.statement, 'Temp-table *'+tt.label+'*'], selection.wordRange);
+                    return new Hover([selection.word, 'Temp-table *'+tt.label+'*'], selection.wordRange);
                 }
                 // External Temp-tables
                 let extTt;
@@ -37,7 +38,7 @@ export class ABLHoverProvider implements HoverProvider {
                         if (extDoc) {
                             extTt = extDoc.tempTables.find(item => item.label.toLowerCase() == words[0]);
                             if (extTt) {
-                                extTt = new Hover([selection.statement, 'Temp-table *'+extTt.label+'*'], selection.wordRange);
+                                extTt = new Hover([selection.word, 'Temp-table *'+extTt.label+'*'], selection.wordRange);
                             }
                         }
                     }

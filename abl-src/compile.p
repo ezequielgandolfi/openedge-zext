@@ -76,9 +76,9 @@ procedure compileFile:
   and COMPILER:NUM-MESSAGES = 0
   then COMPILE VALUE( ch_prog ) PREPROCESS value(vsabl_deployItem + baseName + ".preprocess") NO-ERROR.
 
-  /*if  LOOKUP("XCODE", vsabl_options) > 0
+  if  LOOKUP("XCODE", vsabl_options) > 0
   and COMPILER:NUM-MESSAGES = 0
-  then COMPILE VALUE( ch_prog ) XREF value(vsabl_deployItem + baseName + ".xref") NO-ERROR.*/
+  then COMPILE VALUE( ch_prog ) PREPROCESS value(vsabl_deployItem + baseName + ".xcode") NO-ERROR.
 
   /* If there are compilation messages */
   IF COMPILER:NUM-MESSAGES > 0 THEN DO:
