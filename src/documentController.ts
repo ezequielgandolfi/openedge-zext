@@ -7,6 +7,7 @@ import { ABLHoverProvider } from "./hover";
 import { ABLCodeCompletion } from "./codeCompletion";
 import { getAllIncludes, getAllMethods, getAllVariables, getAllParameters, getAllTempTables } from "./processDocument";
 import { getConfig } from "./ablConfig";
+import { SourceParser } from "./sourceParser";
 
 let thisInstance: ABLDocumentController;
 export function getDocumentController(): ABLDocumentController {
@@ -58,6 +59,8 @@ class ABLDocument {
 		this._processed = false;
 		this._symbols = [];
 		this.externalDocument = [];
+
+		//let sourceCode = new SourceParser().getSourceCode(this.document.getText());
 
 		let refreshIncludes = this.refreshIncludes.bind(this);
 		let refreshMethods = this.refreshMethods.bind(this);
