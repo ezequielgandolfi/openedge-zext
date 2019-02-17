@@ -118,8 +118,11 @@ Create a file named ".openedge-zext.json" in root path of the workspace.
 
 ## Known Issues
 
-- Variables inside trigger events are referencing as global variables
-- Source mapper doesn't map buffer and some other types
+- Variables within trigger events are being referenced as global variables
+- Source mapper doesn't map buffer, table-handle, dataset, dataset-handle, worktable, work-file types
+- Source mapper doesn't map return parameters
+- Source mapper is incompatible with extent variables/parameters/fields
+- Source mapper is incompatible with "define variable" statement with additional information (format, serialize-name, label, etc)
 
 ## Roadmap
 
@@ -130,8 +133,6 @@ _No promises..._ :-)
 - Configuration for "source directory" to work with multiple folders in workspace
 - Temp-table definitions
     - Insert "like" condition to temp-tables (insert all fields from original temp-table)
-- Map comment blocks to eliminate from processing
-    - Change regex expressions to avoid comments
 - Key bind to open help file
 - Change case (lower, upper, camel)
 - More snippets
