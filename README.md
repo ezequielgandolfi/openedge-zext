@@ -119,6 +119,7 @@ Create a file named ".openedge-zext.json" in root path of the workspace.
 ## Known Issues
 
 - Variables inside trigger events are referencing as global variables
+- Source mapper doesn't map buffer and some other types
 
 ## Roadmap
 

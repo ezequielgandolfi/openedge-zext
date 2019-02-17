@@ -97,6 +97,7 @@ export function getAllMethods(sourceCode: SourceCode): ABLMethod[] {
 
 export function getAllParameters(sourceCode: SourceCode): ABLParameter[] {
 	let result: ABLParameter[] = [];
+	/* Primitive types */
 	let regexParams: RegExp = new RegExp(/\b(?:def|define){1}[\s\t]+([inputo\-]*){1}[\s\t]+(?:param|parameter){1}[\s\t]+([\w\d\-\.]*){1}[\s\t]+(as|like){1}[\s\t]+([\w\d\-\.]+)/gim);
 	// 1 = input | output | input-output
 	// 2 = name
@@ -122,7 +123,33 @@ export function getAllParameters(sourceCode: SourceCode): ABLParameter[] {
 		catch {} // suppress errors
 		res = regexParams.exec(text);
 	}
-	return result;
+	/* Temp-table */
+	regexParams = new RegExp(/\b(?:def|define){1}[\s\t]+([inputo\-]*){1}[\s\t]+(?:param|parameter){1}[\s\t]+(?:table){1}[\s\t]+(?:for){1}[\s\t]+([\w\d\-\+]*)(?:\.[^\w\d\-\+]){1}/gim);
+	// 1 = input | output | input-output
+	// 2 = name
+	res = regexParams.exec(text);
+	while(res) {
+		let v = new ABLParameter();
+		try {
+			v.name = res[2].trim();
+			v.asLike = ABL_ASLIKE.AS;
+			v.dataType = 'temp-table'
+			v.line = sourceCode.document.positionAt(res.index).line;
+			if (res[1].toLowerCase() == 'input')
+				v.direction = ABL_PARAM_DIRECTION.IN;
+			else if (res[1].toLowerCase() == 'output')
+				v.direction = ABL_PARAM_DIRECTION.OUT;
+			else
+				v.direction = ABL_PARAM_DIRECTION.INOUT;
+			result.push(v);
+		}
+		catch {} // suppress errors
+		res = regexParams.exec(text);
+	}
+	//
+	return result.sort(function (v1,v2) {
+		return v1.line - v2.line;
+	});
 }
 
 export function getAllTempTables(sourceCode: SourceCode): ABLTempTable[] {

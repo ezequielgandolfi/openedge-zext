@@ -72,24 +72,28 @@ export class ABLCodeCompletion implements vscode.CompletionItemProvider {
 			// Methods
 			let md: vscode.CompletionItem[] = [];
 			doc.methods.forEach(m => {
-				let _mi = new vscode.CompletionItem(m.name);
+				let _mi = new vscode.CompletionItem(m.name, vscode.CompletionItemKind.Method);
 				if (m.params.length > 0) {
-					_mi.insertText = m.name + '(';
 					let pf = true;
+					let snip: vscode.SnippetString = new vscode.SnippetString();
+					snip.appendText(m.name + '(');
 					m.params.forEach(p => {
 						if (!pf)
-							_mi.insertText += ',\n\t';
+							snip.appendText(',\n\t');
 						else
 							pf = false;
 						if (p.direction == ABL_PARAM_DIRECTION.IN)
-							_mi.insertText += 'input ';
+							snip.appendText('input ');
 						else if (p.direction == ABL_PARAM_DIRECTION.OUT)
-							_mi.insertText += 'output ';
+							snip.appendText('output ');
 						else
-							_mi.insertText += 'input-output ';
-						_mi.insertText += p.name;
+							snip.appendText('input-output ');
+						if (p.dataType == 'temp-table')
+							snip.appendText('table ');
+						snip.appendPlaceholder(p.name);
 					});
-					_mi.insertText += ')';
+					snip.appendText(')');
+					_mi.insertText = snip;
 				}
 				md.push(_mi);
 			});
