@@ -1,6 +1,9 @@
+import * as vscode from "vscode";
+
 enum CommentType { SingleLine, MultiLine }
 
 export class SourceCode {
+    document: vscode.TextDocument;
     fullSource: string;
     sourceWithoutComments: string;
     sourceWithoutStrings: string;
@@ -8,8 +11,11 @@ export class SourceCode {
 
 export class SourceParser {
 
-    public getSourceCode(source: string): SourceCode {
+    public getSourceCode(document: vscode.TextDocument): SourceCode {
+        let source = document.getText();
+
         let code: SourceCode = new SourceCode();
+        code.document = document;
         code.fullSource = source;
         code.sourceWithoutComments = '';
         code.sourceWithoutStrings = '';

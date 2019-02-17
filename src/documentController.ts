@@ -6,8 +6,7 @@ import { SYMBOL_TYPE, ABLVariable, ABLMethod, ABLParameter, ABLInclude, ABLTempT
 import { ABLHoverProvider } from "./hover";
 import { ABLCodeCompletion } from "./codeCompletion";
 import { getAllIncludes, getAllMethods, getAllVariables, getAllParameters, getAllTempTables } from "./processDocument";
-import { getConfig } from "./ablConfig";
-import { SourceParser } from "./sourceParser";
+import { SourceCode, SourceParser } from "./sourceParser";
 
 let thisInstance: ABLDocumentController;
 export function getDocumentController(): ABLDocumentController {
@@ -60,8 +59,6 @@ class ABLDocument {
 		this._symbols = [];
 		this.externalDocument = [];
 
-		//let sourceCode = new SourceParser().getSourceCode(this.document.getText());
-
 		let refreshIncludes = this.refreshIncludes.bind(this);
 		let refreshMethods = this.refreshMethods.bind(this);
 		let refreshVariables = this.refreshVariables.bind(this);
@@ -69,24 +66,26 @@ class ABLDocument {
 		let refreshTempTables = this.refreshTempTables.bind(this);
 		let self = this;
 
+		let sourceCode = new SourceParser().getSourceCode(this._document);
+
 		// comandos abaixos estão demorando, e pendura as extensoes... verificar...
 		// >> o motivo são algumas expressões regulares... modificar para testes
 		let result = new Promise<ABLDocument>(function(resolve,reject) {
 			//let tm = (new Date()).getTime();
 			//console.log(self.document.uri.fsPath);
-			refreshIncludes();
+			refreshIncludes(sourceCode);
 			//console.log('refreshIncludes', (new Date()).getTime() - tm);
 			//tm = (new Date()).getTime();
-			refreshMethods();
+			refreshMethods(sourceCode);
 			//console.log('refreshMethods', (new Date()).getTime() - tm);
 			//tm = (new Date()).getTime();
-			refreshVariables();
+			refreshVariables(sourceCode);
 			//console.log('refreshVariables', (new Date()).getTime() - tm);
 			//tm = (new Date()).getTime();
-			refreshParameters();
+			refreshParameters(sourceCode);
 			//console.log('refreshParameters', (new Date()).getTime() - tm);
 			//tm = (new Date()).getTime();
-			refreshTempTables();
+			refreshTempTables(sourceCode);
 			//console.log('refreshTempTables', (new Date()).getTime() - tm);
 			resolve(self);
 		});
@@ -99,8 +98,8 @@ class ABLDocument {
 		return result;
 	}
 
-	private refreshIncludes() {
-		this._includes = getAllIncludes(this._document);
+	private refreshIncludes(sourceCode: SourceCode) {
+		this._includes = getAllIncludes(sourceCode);
 		this._includes.forEach(item => {
 			vscode.workspace.workspaceFolders.forEach(folder => {
 				let uri = folder.uri.with({path: [folder.uri.path,item.name].join('/')});
@@ -117,15 +116,15 @@ class ABLDocument {
 		});
 	}
 
-	private refreshMethods() {
-		this._methods = getAllMethods(this._document);
+	private refreshMethods(sourceCode: SourceCode) {
+		this._methods = getAllMethods(sourceCode);
 		this._methods.forEach(item => {
 			let s = new vscode.SymbolInformation(item.name, vscode.SymbolKind.Variable, SYMBOL_TYPE.METHOD, new vscode.Location(this._document.uri, new vscode.Position(item.lineAt, 0)));
 			this._symbols.push(s);
 		});
 	}
 
-	/*private refreshReferences(): Thenable<any> {
+	/*private refreshReferences(sourceCode: SourceCode): Thenable<any> {
 		let document = this._document;
 		let symbols = this._symbols;
 
@@ -147,8 +146,8 @@ class ABLDocument {
 		});
 	}*/
 
-	private refreshVariables() {
-		this._vars = getAllVariables(this._document);
+	private refreshVariables(sourceCode: SourceCode) {
+		this._vars = getAllVariables(sourceCode);
 		this._vars.forEach(item => {
 			let method = this._methods.find(m => (m.lineAt <= item.line && m.lineEnd >= item.line));
 			let nm = item.name;
@@ -162,8 +161,8 @@ class ABLDocument {
 		});
 	}
 
-	private refreshParameters() {
-		this._params = getAllParameters(this._document);
+	private refreshParameters(sourceCode: SourceCode) {
+		this._params = getAllParameters(sourceCode);
 		this._params.forEach(item => {
 			let method = this._methods.find(m => (m.lineAt <= item.line && m.lineEnd >= item.line));
 			let nm = item.name;
@@ -177,8 +176,8 @@ class ABLDocument {
 		});
 	}
 
-	private refreshTempTables() {
-		this._temps = getAllTempTables(this._document);
+	private refreshTempTables(sourceCode: SourceCode) {
+		this._temps = getAllTempTables(sourceCode);
 		this._temps.forEach(item => {
 			let s = new vscode.SymbolInformation(item.label, vscode.SymbolKind.Variable, SYMBOL_TYPE.TEMPTABLE, new vscode.Location(this._document.uri, new vscode.Position(item.line, 0)));
 			this._symbols.push(s);

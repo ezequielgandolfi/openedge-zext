@@ -30,6 +30,8 @@ OpenEdge ABL Extension for Visual Studio Code
 - "ALL FIELDS" snippet for tables / temp-tables
 - Formatter (supports: trim right). Enable options in settings file
 
+See [CHANGELOG](CHANGELOG) for more information.
+
 ## Requirements
 
 - OpenEdge Progress 11
