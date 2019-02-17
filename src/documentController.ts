@@ -78,6 +78,7 @@ class ABLDocument {
 		});
 		
 		// refresh temp-table "like" from other temp-tables (check if external document has been processed)
+		// create procedure snippets with parameters
 
 		// finaliza processo
 		let finish = () => {this._processed = true};
@@ -157,6 +158,7 @@ class ABLDocument {
 			if (method) {
 				nm+='@'+method.name;
 				st = SYMBOL_TYPE.LOCAL_PARAM;
+				method.params.push(item);
 			}
 			let s = new vscode.SymbolInformation(nm, vscode.SymbolKind.Property, st, new vscode.Location(this._document.uri, new vscode.Position(item.line, 0)));
 			this._symbols.push(s);

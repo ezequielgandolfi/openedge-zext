@@ -15,6 +15,10 @@ OpenEdge ABL Extension for Visual Studio Code
 
 ## What's new
 
+### 0.0.22
+- New source parser
+- Auto-complete for internal methods with parameters snippet
+
 ### 0.0.21
 - Hover tooltip new behavior
 - XCode compile option
@@ -115,8 +119,6 @@ Create a file named ".openedge-zext.json" in root path of the workspace.
 ## Known Issues
 
 - Variables inside trigger events are referencing as global variables
-- Source mapping ignores strings / comments blocks
-- Source mapping freezes sometimes
 
 ## Roadmap
 

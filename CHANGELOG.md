@@ -1,5 +1,11 @@
 # Change Log
 
+## 0.0.22
+
+### Improvements
+- New source parser
+- Auto-complete for internal methods with parameters snippet
+
 ## 0.0.21
 
 ### Improvements

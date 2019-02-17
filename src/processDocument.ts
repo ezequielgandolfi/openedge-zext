@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { ABLVariable, ABL_ASLIKE, ABLMethod, ABLParameter, ABLInclude, ABLTempTable, ABLFieldDefinition, ABLIndexDefinition, ABLTableDefinition } from "./definition";
+import { ABLVariable, ABL_ASLIKE, ABLMethod, ABLParameter, ABLInclude, ABLTempTable, ABLFieldDefinition, ABLIndexDefinition, ABLTableDefinition, ABL_PARAM_DIRECTION } from "./definition";
 import { removeInvalidRightChar, updateTableCompletionList } from "./utils";
 import { SourceCode } from "./sourceParser";
 
@@ -82,6 +82,7 @@ export function getAllMethods(sourceCode: SourceCode): ABLMethod[] {
 				m.name = resStart[2];
 				m.lineAt = sourceCode.document.positionAt(resStart.index).line;
 				m.lineEnd = sourceCode.document.positionAt(regexEnd.lastIndex).line;
+				m.params = [];
 				result.push(m);
 			}
 			catch {} // suppress errors
@@ -110,6 +111,12 @@ export function getAllParameters(sourceCode: SourceCode): ABLParameter[] {
 			v.asLike = <ABL_ASLIKE>res[3].trim();
 			v.dataType = removeInvalidRightChar(res[4].trim()); // removeInvalidRightChar to remove special chars because is accepted in this capture group
 			v.line = sourceCode.document.positionAt(res.index).line;
+			if (res[1].toLowerCase() == 'input')
+				v.direction = ABL_PARAM_DIRECTION.IN;
+			else if (res[1].toLowerCase() == 'output')
+				v.direction = ABL_PARAM_DIRECTION.OUT;
+			else
+				v.direction = ABL_PARAM_DIRECTION.INOUT;
 			result.push(v);
 		}
 		catch {} // suppress errors

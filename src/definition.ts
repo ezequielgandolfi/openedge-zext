@@ -77,6 +77,7 @@ export class ABLMethod {
     name: string;
     lineAt: number;
     lineEnd: number;
+    params: ABLParameter[];
 }
 
 export class ABLParameter extends ABLVariable {

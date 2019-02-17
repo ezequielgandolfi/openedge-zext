@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as promisify from 'util.promisify';
-import { ABLTableDefinition } from './definition';
+import { ABLTableDefinition, ABL_PARAM_DIRECTION } from './definition';
 import { ABLDocumentController } from './documentController';
 import { updateTableCompletionList, getText } from './utils';
 
@@ -69,7 +69,32 @@ export class ABLCodeCompletion implements vscode.CompletionItemProvider {
 					externalTt = [...externalTt,..._ti];
 				}
 			});
-			return new vscode.CompletionList([...tb,...tt,...externalTt]);
+			// Methods
+			let md: vscode.CompletionItem[] = [];
+			doc.methods.forEach(m => {
+				let _mi = new vscode.CompletionItem(m.name);
+				if (m.params.length > 0) {
+					_mi.insertText = m.name + '(';
+					let pf = true;
+					m.params.forEach(p => {
+						if (!pf)
+							_mi.insertText += ',\n\t';
+						else
+							pf = false;
+						if (p.direction == ABL_PARAM_DIRECTION.IN)
+							_mi.insertText += 'input ';
+						else if (p.direction == ABL_PARAM_DIRECTION.OUT)
+							_mi.insertText += 'output ';
+						else
+							_mi.insertText += 'input-output ';
+						_mi.insertText += p.name;
+					});
+					_mi.insertText += ')';
+				}
+				md.push(_mi);
+			});
+			//
+			return new vscode.CompletionList([...tb,...tt,...externalTt,...md]);
 		}
 		return [];
 	}
