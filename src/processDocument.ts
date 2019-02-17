@@ -5,18 +5,30 @@ import { SourceCode } from "./sourceParser";
 
 export function getAllIncludes(sourceCode: SourceCode): ABLInclude[] {
 	let result: ABLInclude[] = [];
-	let regexInclude: RegExp = new RegExp(/\{{1}([\w\d\-\\\/\.]+)(?:.|\n)*?\}{1}/gim);
+	//let regexInclude: RegExp = new RegExp(/\{{1}([\w\d\-\\\/\.]+)(?:.|\n)*?\}{1}/gim);
 	// 1 = include name
+	let regexStart: RegExp = new RegExp(/\{{1}([\w\d\-\\\/\.]+)/gim);
+	// 1 = include name
+	let regexEnd: RegExp = new RegExp(/\}{1}/gim);
+	//
 	let text = sourceCode.sourceWithoutStrings;
-	let res = regexInclude.exec(text);
-	while(res) {
-		let nm = res[1].trim().toLowerCase();
-		if (!result.find(item => item.name == nm)) {
-			let v = new ABLInclude();	
-			v.name = nm;
-			result.push(v);
+	let resStart = regexStart.exec(text);
+	let resEnd;
+	while(resStart) {
+		regexEnd.lastIndex = regexStart.lastIndex;
+		resEnd = regexEnd.exec(text);
+		if (resEnd) {
+			let nm = resStart[1].trim().toLowerCase();
+			if (!result.find(item => item.name == nm)) {
+				let v = new ABLInclude();	
+				v.name = nm;
+				result.push(v);
+			}
+			resStart = regexStart.exec(text);
 		}
-		res = regexInclude.exec(text);
+		else {
+			break;
+		}
 	}
 	return result;
 }
@@ -52,28 +64,28 @@ export function getAllMethods(sourceCode: SourceCode): ABLMethod[] {
 	// 3 = aditional details (returns xxx...)
 	// 4 = code block (incomplete)
 
-	let regexMethodStart = new RegExp(/\b(proc|procedure|func|function){1}[\s\t]+([\w\d\-]+)(.*?)[\.\:]{1}/gim);
+	let regexStart = new RegExp(/\b(proc|procedure|func|function){1}[\s\t]+([\w\d\-]+)(.*?)(?:[\.\:][^\w\d\-\+])/gim);
 	// 1 = function | procedure
 	// 2 = name
 	// 3 = aditional details (returns xxx...)
-	let regexMethodEnd = new RegExp(/\b(?:end\s(proc|procedure|func|function)){1}\b/gim);
-	// no capture group
+	let regexEnd = new RegExp(/\b(?:end\s(proc|procedure|func|function)){1}\b/gim);
+	//
 	let text = sourceCode.sourceWithoutStrings;
-	let resStart = regexMethodStart.exec(text);
+	let resStart = regexStart.exec(text);
 	let resEnd;
 	while(resStart) {
-		regexMethodEnd.lastIndex = regexMethodStart.lastIndex;
-		resEnd = regexMethodEnd.exec(text);
+		regexEnd.lastIndex = regexStart.lastIndex;
+		resEnd = regexEnd.exec(text);
 		if (resEnd) {
 			let m = new ABLMethod();
 			try {
 				m.name = resStart[2];
 				m.lineAt = sourceCode.document.positionAt(resStart.index).line;
-				m.lineEnd = sourceCode.document.positionAt(regexMethodEnd.lastIndex).line;
+				m.lineEnd = sourceCode.document.positionAt(regexEnd.lastIndex).line;
 				result.push(m);
 			}
 			catch {} // suppress errors
-			resStart = regexMethodStart.exec(text);
+			resStart = regexStart.exec(text);
 		}
 		else {
 			break;
@@ -108,25 +120,37 @@ export function getAllParameters(sourceCode: SourceCode): ABLParameter[] {
 
 export function getAllTempTables(sourceCode: SourceCode): ABLTempTable[] {
 	let result: ABLTempTable[] = [];
-	let regexTT: RegExp = new RegExp(/(?:def|define){1}(?:[\s\t]|new|global|shared)+(?:temp-table){1}[\s\t\n\r]+([\w\d\-]*)[\s\t\n\r]+([\w\W]*?)(?:\.(?!\w))/gim);
+	//let regexTT: RegExp = new RegExp(/(?:def|define){1}(?:[\s\t]|new|global|shared)+(?:temp-table){1}[\s\t\n\r]+([\w\d\-]*)[\s\t\n\r]+([\w\W]*?)(?:\.(?!\w))/gim);
+	let regexStart: RegExp = new RegExp(/\b(?:def|define){1}(?:[\s\t]|new|global|shared)+(?:temp-table){1}[\s\t\n\r]+([\w\d\-\+]*)[^\w\d\-\+]/gim);
 	// 1 = name
-	// 2 = content
-	let text = sourceCode.sourceWithoutComments;
-	let res = regexTT.exec(text);
-	while(res) {
-		let v = new ABLTempTable();
-		try {
-			v.label = res[1];
-			v.kind = vscode.CompletionItemKind.Struct;
-			v.detail = '';
-			v.fields = getTempTableFields(res[2], sourceCode);
-			v.indexes = getTempTableIndexes(res[2]);
-			v.line = sourceCode.document.positionAt(res.index).line;
-			updateTableCompletionList(v);
-			result.push(v);
+	let regexEnd: RegExp = new RegExp(/\.[^\w\d\-\+]/gim);
+	// 
+	let text = sourceCode.sourceWithoutStrings;
+	let innerText;
+	let resStart = regexStart.exec(text);
+	let resEnd;
+	while(resStart) {
+		regexEnd.lastIndex = regexStart.lastIndex;
+		resEnd = regexEnd.exec(text);
+		if (resEnd) {
+			innerText = text.substring(regexStart.lastIndex, resEnd.index);
+			let v = new ABLTempTable();
+			try {
+				v.label = resStart[1];
+				v.kind = vscode.CompletionItemKind.Struct;
+				v.detail = '';
+				v.fields = getTempTableFields(innerText, sourceCode);
+				v.indexes = getTempTableIndexes(innerText);
+				v.line = sourceCode.document.positionAt(resStart.index).line;
+				updateTableCompletionList(v);
+				result.push(v);
+			}
+			catch {} // suppress errors
+			resStart = regexStart.exec(text);
 		}
-		catch {} // suppress errors
-		res = regexTT.exec(text);
+		else {
+			break;
+		}
 	}
 	return result;
 }

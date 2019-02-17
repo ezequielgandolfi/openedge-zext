@@ -42,20 +42,28 @@ export class SourceParser {
 			switch (thisChar) {
                 case '/':
                     if (!inString) {
-                        charWOComments = ' ';
-                        charWOStrings = ' ';
                         // If we are not in a comment
                         if (!inComment && nextChar == '/' || prevChar == '/') {
                             inComment = true;
                             commentType = CommentType.SingleLine;
+                            charWOComments = ' ';
+                            charWOStrings = ' ';
                         } else if (!inComment && nextChar == '*') {
                             inComment = true;
                             commentType = CommentType.MultiLine;
+                            charWOComments = ' ';
+                            charWOStrings = ' ';
                         }
                         // If we are in a comment and it is multiline
                         else if (inComment && commentType == CommentType.MultiLine && prevChar == '*') {
                             inComment = false;
                             commentType = null;
+                            charWOComments = ' ';
+                            charWOStrings = ' ';
+                        }
+                        else if (inComment) {
+                            charWOComments = ' ';
+                            charWOStrings = ' ';
                         }
                     }
                     else {

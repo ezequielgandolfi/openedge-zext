@@ -68,25 +68,12 @@ class ABLDocument {
 
 		let sourceCode = new SourceParser().getSourceCode(this._document);
 
-		// comandos abaixos estão demorando, e pendura as extensoes... verificar...
-		// >> o motivo são algumas expressões regulares... modificar para testes
 		let result = new Promise<ABLDocument>(function(resolve,reject) {
-			//let tm = (new Date()).getTime();
-			//console.log(self.document.uri.fsPath);
 			refreshIncludes(sourceCode);
-			//console.log('refreshIncludes', (new Date()).getTime() - tm);
-			//tm = (new Date()).getTime();
 			refreshMethods(sourceCode);
-			//console.log('refreshMethods', (new Date()).getTime() - tm);
-			//tm = (new Date()).getTime();
 			refreshVariables(sourceCode);
-			//console.log('refreshVariables', (new Date()).getTime() - tm);
-			//tm = (new Date()).getTime();
 			refreshParameters(sourceCode);
-			//console.log('refreshParameters', (new Date()).getTime() - tm);
-			//tm = (new Date()).getTime();
 			refreshTempTables(sourceCode);
-			//console.log('refreshTempTables', (new Date()).getTime() - tm);
 			resolve(self);
 		});
 		

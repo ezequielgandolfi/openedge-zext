@@ -1,7 +1,6 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as promisify from 'util.promisify';
-import * as jsonminify from 'jsonminify';
 import { ABLTableDefinition } from './definition';
 import { ABLDocumentController } from './documentController';
 import { updateTableCompletionList, getText } from './utils';
@@ -80,7 +79,7 @@ export function loadDumpFile(filename: string): Thenable<any> {
     if (!filename)
         return Promise.resolve({});
     return readFileAsync(filename, { encoding: 'utf8' }).then(text => {
-        return JSON.parse(jsonminify(text));
+        return JSON.parse(text);
     });
 }
 
