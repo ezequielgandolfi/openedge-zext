@@ -4,6 +4,7 @@
 
 ### Improvements
 - New command "ABL: Save Map File" to write a json map file
+- Included a few controls to prevent crashing
 
 ## 0.0.22
 

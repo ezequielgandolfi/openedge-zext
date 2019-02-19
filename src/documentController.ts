@@ -315,6 +315,10 @@ export class ABLDefinitionProvider implements vscode.DefinitionProvider {
 		// go-to definition
 		let selection = utils.getText(document, position);
 		let doc = this._ablDocumentController.getDocument(document);
+		if (!doc)
+			return;
+		if (!doc.processed)
+			return;
 
 		let symbol;
 		// search full statement
@@ -330,11 +334,13 @@ export class ABLDefinitionProvider implements vscode.DefinitionProvider {
 			if (symbol)
 				return;
 			let extDoc = this._ablDocumentController.getDocument(ext);
-			// search full statement
-			symbol = extDoc.symbols.find(item => item.name.toLowerCase() == selection.statement);
-			// search word statement
-			if (!symbol)
-				symbol = extDoc.symbols.find(item => item.name.toLowerCase() == selection.word);
+			if ((extDoc)&&(extDoc.processed)) {
+				// search full statement
+				symbol = extDoc.symbols.find(item => item.name.toLowerCase() == selection.statement);
+				// search word statement
+				if (!symbol)
+					symbol = extDoc.symbols.find(item => item.name.toLowerCase() == selection.word);
+			}
 		});
 		if (symbol)
 			return Promise.resolve(symbol.location);

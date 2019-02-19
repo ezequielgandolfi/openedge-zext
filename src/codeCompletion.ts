@@ -39,7 +39,7 @@ export class ABLCodeCompletion implements vscode.CompletionItemProvider {
 			doc.externalDocument.forEach(external => {
 				if (!extTt) {
 					let extDoc = this._ablDocumentController.getDocument(external);
-					if (extDoc) {
+					if ((extDoc)&&(extDoc.processed)) {
 						extTt = extDoc.tempTables.find(item => item.label.toLowerCase() == words[0]);
 						if (extTt) {
 							extTt = extTt.completion;
@@ -62,7 +62,7 @@ export class ABLCodeCompletion implements vscode.CompletionItemProvider {
 			doc.externalDocument.forEach(external => {
 				let _ti = [];
 				let extDoc = this._ablDocumentController.getDocument(external);
-				if (extDoc) {
+				if ((extDoc)&&(extDoc.processed)) {
 					_ti = doc.tempTables.map(item => {
 						return new vscode.CompletionItem(item.label);
 					});

@@ -15,7 +15,12 @@ export class ABLHoverProvider implements HoverProvider {
     provideHover(document: TextDocument, position: Position, token: CancellationToken): ProviderResult<Hover> {
         let doc = this._ablDocumentController.getDocument(document);
         let selection = utils.getText(document, position);
-        let words = utils.cleanArray(selection.statement.split(/[\.\:\s\t]/));
+        if (!selection)
+            return;
+        let split = selection.statement.split(/[\.\:\s\t]/);
+        if (split.length == 0)
+            return;
+        let words = utils.cleanArray(split);
         if (words.length > 0) {
             if ((words.length == 1)||
                 ((words.length > 1)&&(selection.word == words[0]))) {
@@ -35,7 +40,7 @@ export class ABLHoverProvider implements HoverProvider {
                 doc.externalDocument.forEach(external => {
                     if (!extTt) {
                         let extDoc = this._ablDocumentController.getDocument(external);
-                        if (extDoc) {
+                        if ((extDoc)&&(extDoc.processed)) {
                             extTt = extDoc.tempTables.find(item => item.label.toLowerCase() == words[0]);
                             if (extTt) {
                                 extTt = new Hover([selection.word, 'Temp-table *'+extTt.label+'*'], selection.wordRange);
@@ -77,7 +82,7 @@ export class ABLHoverProvider implements HoverProvider {
                 doc.externalDocument.forEach(external => {
                     if (!extTt) {
                         let extDoc = this._ablDocumentController.getDocument(external);
-                        if (extDoc) {
+                        if ((extDoc)&&(extDoc.processed)) {
                             extTt = extDoc.tempTables.find(item => item.label.toLowerCase() == words[0]);
                             if (extTt) {
                                 let fd = extTt.fields.find(item => item.name.toLowerCase() == words[1]);

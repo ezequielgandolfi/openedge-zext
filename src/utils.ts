@@ -5,14 +5,17 @@ import cp = require('child_process');
 import { TextSelection, ABLTableDefinition, ABLIndexDefinition } from "./definition";
 import { getConfig } from "./ablConfig";
 import { getXcodeBin } from "./environment";
+import { isArray } from "util";
 
 let regexInvalidWordEnd: RegExp = new RegExp(/[\.|\:|\-|\_|\\|\/]$/);
 
 export function getText(document: vscode.TextDocument, position: vscode.Position, escapeEndChars?: boolean): TextSelection {
 	let res = new TextSelection();
-	res.wordRange = document.getWordRangeAtPosition(position, /[\w\d\-\_]+/);
+	res.wordRange = document.getWordRangeAtPosition(position, /[\w\d\-\+]+/);
+	if (!res.wordRange)
+		return;
 	res.word = document.getText(res.wordRange).toLowerCase();
-	res.statementRange = document.getWordRangeAtPosition(position, /[\w\d\-\_\.\:\\\/]+/);
+	res.statementRange = document.getWordRangeAtPosition(position, /[\w\d\-\+\.\:\\\/]+/);
 	res.statement = document.getText(res.statementRange).toLowerCase();
 	if (escapeEndChars !== true) {
 		while(regexInvalidWordEnd.test(res.statement)) 
@@ -22,6 +25,8 @@ export function getText(document: vscode.TextDocument, position: vscode.Position
 }
 
 export function cleanArray(arr: string[]): string[] {
+	if (!arr)
+		return [];
 	for (var i = 0; i < arr.length; i++) {
 		if (arr[i] == '') {
 			arr.splice(i, 1);
