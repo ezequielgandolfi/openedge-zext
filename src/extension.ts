@@ -14,6 +14,7 @@ import { OutlineNavigatorProvider } from './outlineNavigator';
 import { ABL_MODE } from './environment';
 import { hideStatusBar, initDiagnostic } from './notification';
 import { getAllVariables } from './processDocument';
+import { isArray } from 'util';
 
 export function activate(ctx: vscode.ExtensionContext): void {
 	//const symbolOutlineProvider = new OutlineNavigatorProvider(ctx);
@@ -61,8 +62,17 @@ export function activate(ctx: vscode.ExtensionContext): void {
 	ctx.subscriptions.push(vscode.commands.registerCommand('abl.currentFile.compileOptions', () => {
 		chooseCompileOption();
 	}));
-	ctx.subscriptions.push(vscode.commands.registerCommand('abl.currentFile.saveMap', () => {
-		saveMapFile(vscode.window.activeTextEditor.document);
+	ctx.subscriptions.push(vscode.commands.registerCommand('abl.currentFile.saveMap', (args) => {
+		let doc = vscode.window.activeTextEditor.document;
+		let filename = doc.uri.fsPath + '.oe-map';
+		if (args) {
+			if ((isArray(args))&&(args.length>0))
+				filename = args[0];
+			else
+				filename = args;
+		}
+		saveMapFile(doc, filename);
+		return filename;
 	}));
 
 	/*ctx.subscriptions.push(vscode.commands.registerCommand('abl.propath', () => {
@@ -127,12 +137,12 @@ function chooseCompileOption() {
 	});
 }
 
-function saveMapFile(document: vscode.TextDocument) {
+function saveMapFile(document: vscode.TextDocument, filename: string) {
 	let doc = getDocumentController().getDocument(document);
 	if (doc) {
 		let data = doc.getMap();
 		if (data) {
-			fs.writeFileSync(doc.document.uri.fsPath + '.oe-map', JSON.stringify(data));
+			fs.writeFileSync(filename, JSON.stringify(data));
 			vscode.window.showInformationMessage('File ' + path.basename(doc.document.uri.fsPath) + '.oe-map created!');
 		}
 		else {
