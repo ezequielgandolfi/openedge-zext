@@ -2,7 +2,7 @@
     "name": "openedge-zext",
     "displayName": "OpenEdge ABL (Progress 4GL)",
     "description": "OpenEdge ABL Extension for VSCode",
-    "version": "0.0.22",
+    "version": "0.1.0",
     "publisher": "ezequielgandolfi",
     "author": "Ezequiel Gandolfi",
     "license": "Apache-2.0",
@@ -61,34 +61,39 @@
         ],
         "commands": [
             {
-                "command": "abl.run.currentFile",
+                "command": "abl.currentFile.run",
                 "title": "ABL: Run",
                 "description": "Run the current file"
             },
             {
-                "command": "abl.checkSyntax",
+                "command": "abl.currentFile.checkSyntax",
                 "title": "ABL: CheckSyntax",
                 "description": "Check the syntax for the current file"
             },
             {
-                "command": "abl.compile",
+                "command": "abl.currentFile.compile",
                 "title": "ABL: Compile & Deploy",
                 "description": "Compile the current file and deploy the R-Code"
             },
             {
-                "command": "abl.deploy.currentFile",
+                "command": "abl.currentFile.deploySource",
                 "title": "ABL: Deploy Source",
                 "description": "Deploy the current file to remote host"
             },
             {
-                "command": "abl.dictionary.read",
+                "command": "abl.dictionary.dumpDefinition",
                 "title": "ABL: Read Dictionary Structure",
                 "description": "Read the DataDictionary structure for further use"
             },
             {
-                "command": "abl.ask.currentFile",
+                "command": "abl.currentFile.compileOptions",
                 "title": "ABL: Compile with Options",
                 "description": "Compile the current file with some options"
+            },
+            {
+                "command": "abl.currentFile.saveMap",
+                "title": "ABL: Save Map File",
+                "description": "Save the OpenEdge-ZExt map from current file"
             }
         ],
         "breakpoints": [
@@ -356,27 +361,27 @@
         "keybindings": [
             {
                 "when": "editorTextFocus && editorLangId == 'abl'",
-                "command": "abl.checkSyntax",
+                "command": "abl.currentFile.checkSyntax",
                 "key": "Shift+F2"
             },
             {
                 "when": "editorTextFocus && editorLangId == 'abl'",
-                "command": "abl.run.currentFile",
+                "command": "abl.currentFile.run",
                 "key": "F2"
             },
             {
                 "when": "editorTextFocus && editorLangId == 'abl'",
-                "command": "abl.compile",
+                "command": "abl.currentFile.compile",
                 "key": "Alt+F1"
             },
             {
                 "when": "editorTextFocus && editorLangId == 'abl'",
-                "command": "abl.deploy.currentFile",
+                "command": "abl.currentFile.deploySource",
                 "key": "Alt+F2"
             },
             {
                 "when": "editorTextFocus && editorLangId == 'abl'",
-                "command": "abl.ask.currentFile",
+                "command": "abl.currentFile.compileOptions",
                 "key": "Alt+F3"
             }
         ]

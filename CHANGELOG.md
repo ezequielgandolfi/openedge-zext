@@ -1,5 +1,10 @@
 # Change Log
 
+## 0.1.0
+
+### Improvements
+- New command "ABL: Save Map File" to write a json map file
+
 ## 0.0.22
 
 ### Improvements

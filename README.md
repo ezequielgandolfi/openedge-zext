@@ -15,6 +15,9 @@ OpenEdge ABL Extension for Visual Studio Code
 
 ## What's new
 
+### 0.1.0
+- New command "ABL: Save Map File" to write a json map file
+
 ### 0.0.22
 - New source parser
 - Auto-complete for internal methods with parameters snippet
@@ -34,7 +37,7 @@ OpenEdge ABL Extension for Visual Studio Code
 - "ALL FIELDS" snippet for tables / temp-tables
 - Formatter (supports: trim right). Enable options in settings file
 
-See [CHANGELOG](CHANGELOG) for more information.
+See CHANGELOG.md for more information.
 
 ## Requirements
 

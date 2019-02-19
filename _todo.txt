@@ -54,7 +54,7 @@ Commands:
     "editor/context": [
         {
             "when": "editorTextFocus && config.abl.editorContextMenuCommands.checkSyntax && resourceLangId == abl",
-            "command": "abl.checkSyntax",
+            "command": "abl.currentFile.checkSyntax",
             "group": "ABL group 1"
         },
         {

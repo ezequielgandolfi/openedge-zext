@@ -54,6 +54,23 @@ class ABLDocument {
 	public get document(): vscode.TextDocument {return this._document}
 	public get processed(): boolean {return this._processed}
 
+	public getMap(): Object {
+		if (this._processed) {
+			// remove "completion" items from temp-table map
+			let tt = this._temps.map(item => {
+				return Object.assign({}, item, {completion: undefined, completionFields: undefined, completionIndexes: undefined, completionAdditional: undefined});
+			});
+
+			return {
+				methods: this._methods,
+				variables: this._vars,
+				tempTables: tt,
+				includes: this._includes
+			};
+		}
+		return;
+	}
+
 	public refreshDocument(): Promise<ABLDocument> {
 		this._processed = false;
 		this._symbols = [];

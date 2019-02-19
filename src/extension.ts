@@ -1,4 +1,6 @@
 import * as vscode from 'vscode';
+import * as fs from 'fs';
+import * as path from 'path';
 import { execCheckSyntax } from './ablCheckSyntax';
 import { execRun } from './ablRun';
 import { openDataDictionary, readDataDictionary } from './ablDataDictionary';
@@ -7,7 +9,7 @@ import { loadDictDumpFiles } from './codeCompletion';
 import { execCompile, COMPILE_OPTIONS } from './ablCompile';
 import { documentDeploy } from './deploy';
 import { ABLFormatter } from './formatter';
-import { ABLDocumentController, initDocumentController } from './documentController';
+import { ABLDocumentController, initDocumentController, getDocumentController } from './documentController';
 import { OutlineNavigatorProvider } from './outlineNavigator';
 import { ABL_MODE } from './environment';
 import { hideStatusBar, initDiagnostic } from './notification';
@@ -28,7 +30,7 @@ export function activate(ctx: vscode.ExtensionContext): void {
 	//vscode.workspace.getConfiguration('files').update('encoding', 'iso88591', false);
 	//vscode.workspace.getConfiguration('editor').update('tabSize', 4, false);
 	/*let config = vscode.workspace.getConfiguration('abl');
-	config.update('editor.tabSize', 8, false);
+	config.update('editor.tabSize', 4, false);
 	config.update('editor.insertSpaces', true, false);
 	config.update('editor.detectIdentation', false, false);*/
 	// Set default workspace
@@ -37,27 +39,30 @@ export function activate(ctx: vscode.ExtensionContext): void {
 	config.update('insertSpaces', true, false);
 	config.update('detectIdentation', false, false);*/
 
-	ctx.subscriptions.push(vscode.commands.registerCommand('abl.checkSyntax', () => {
+	ctx.subscriptions.push(vscode.commands.registerCommand('abl.currentFile.checkSyntax', () => {
 		let ablConfig = vscode.workspace.getConfiguration(ABL_MODE.language);
 		execCheckSyntax(vscode.window.activeTextEditor.document, ablConfig);
 	}));
-	ctx.subscriptions.push(vscode.commands.registerCommand('abl.compile', () => {
+	ctx.subscriptions.push(vscode.commands.registerCommand('abl.currentFile.compile', () => {
 		let ablConfig = vscode.workspace.getConfiguration(ABL_MODE.language);
 		execCompile(vscode.window.activeTextEditor.document, ablConfig, [COMPILE_OPTIONS.COMPILE]);
 	}));
-	ctx.subscriptions.push(vscode.commands.registerCommand('abl.run.currentFile', () => {
+	ctx.subscriptions.push(vscode.commands.registerCommand('abl.currentFile.run', () => {
 		let ablConfig = vscode.workspace.getConfiguration(ABL_MODE.language);
 		execRun(vscode.window.activeTextEditor.document, ablConfig);
 	}));
-	ctx.subscriptions.push(vscode.commands.registerCommand('abl.deploy.currentFile', () => {
+	ctx.subscriptions.push(vscode.commands.registerCommand('abl.currentFile.deploySource', () => {
 		documentDeploy(vscode.window.activeTextEditor.document);
 	}));
-	ctx.subscriptions.push(vscode.commands.registerCommand('abl.dictionary.read', () => {
+	ctx.subscriptions.push(vscode.commands.registerCommand('abl.dictionary.dumpDefinition', () => {
 		let ablConfig = vscode.workspace.getConfiguration(ABL_MODE.language);
 		readDataDictionary(ablConfig);
 	}));
-	ctx.subscriptions.push(vscode.commands.registerCommand('abl.ask.currentFile', () => {
+	ctx.subscriptions.push(vscode.commands.registerCommand('abl.currentFile.compileOptions', () => {
 		chooseCompileOption();
+	}));
+	ctx.subscriptions.push(vscode.commands.registerCommand('abl.currentFile.saveMap', () => {
+		saveMapFile(vscode.window.activeTextEditor.document);
 	}));
 
 	/*ctx.subscriptions.push(vscode.commands.registerCommand('abl.propath', () => {
@@ -120,4 +125,18 @@ function chooseCompileOption() {
 		let ablConfig = vscode.workspace.getConfiguration(ABL_MODE.language);
 		execCompile(vscode.window.activeTextEditor.document, ablConfig, v);
 	});
+}
+
+function saveMapFile(document: vscode.TextDocument) {
+	let doc = getDocumentController().getDocument(document);
+	if (doc) {
+		let data = doc.getMap();
+		if (data) {
+			fs.writeFileSync(doc.document.uri.fsPath + '.oe-map', JSON.stringify(data));
+			vscode.window.showInformationMessage('File ' + path.basename(doc.document.uri.fsPath) + '.oe-map created!');
+		}
+		else {
+			vscode.window.showErrorMessage('Erro mapping file');
+		}
+	}
 }
