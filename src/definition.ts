@@ -64,6 +64,10 @@ export class ABLTableDefinition {
     completionIndexes: vscode.CompletionList;
     completionAdditional: vscode.CompletionList;
     completion: vscode.CompletionList;
+
+    get allFields(): ABLVariable[] {
+        return this.fields;
+    }
 }
 
 export class ABLVariable {
@@ -91,4 +95,12 @@ export class ABLInclude {
 
 export class ABLTempTable extends ABLTableDefinition {
     line: number;
+    likeTable: string;
+    likeFields: ABLVariable[];
+
+    get allFields(): ABLVariable[] {
+        if (this.likeFields)
+            return [...this.likeFields,...this.fields];
+        return this.fields;
+    }
 }

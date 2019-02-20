@@ -11,12 +11,11 @@ let regexInvalidWordEnd: RegExp = new RegExp(/[\.|\:|\-|\_|\\|\/]$/);
 
 export function getText(document: vscode.TextDocument, position: vscode.Position, escapeEndChars?: boolean): TextSelection {
 	let res = new TextSelection();
-	let p = new vscode.Position(position.line, position.character-1);
-	res.wordRange = document.getWordRangeAtPosition(p, /[\w\d\-\+]+/);
+	res.wordRange = document.getWordRangeAtPosition(position, /[\w\d\-\+]+/);
 	if (!res.wordRange)
 		return;
 	res.word = document.getText(res.wordRange).toLowerCase();
-	res.statementRange = document.getWordRangeAtPosition(p, /[\w\d\-\+\.\:\\\/]+/);
+	res.statementRange = document.getWordRangeAtPosition(position, /[\w\d\-\+\.\:\\\/]+/);
 	res.statement = document.getText(res.statementRange).toLowerCase();
 	if (escapeEndChars !== true) {
 		while(regexInvalidWordEnd.test(res.statement)) 
@@ -51,7 +50,7 @@ export function removeInvalidRightChar(text: string): string {
 }
 
 export function updateTableCompletionList(table: ABLTableDefinition) {
-	table.completionFields = new vscode.CompletionList(table.fields.map(field => {
+	table.completionFields = new vscode.CompletionList(table.allFields.map(field => {
 		return new vscode.CompletionItem(field.name, vscode.CompletionItemKind.Variable);
 	}));
 	table.completionIndexes = mapIndexCompletionList(table, table.indexes);
@@ -131,9 +130,9 @@ function getAllFieldsSnippet(table: ABLTableDefinition): vscode.SnippetString {
 	let first: boolean = true;
 	let size = 0;
 	// get max field name size
-	table.fields.forEach(field => { if(field.name.length > size) size = field.name.length });
-	// fields snippet 
-	table.fields.forEach(field => {
+	table.allFields.forEach(field => { if(field.name.length > size) size = field.name.length });
+	// allFields snippet 
+	table.allFields.forEach(field => {
 		if(first) {
 			first = false;
 		}

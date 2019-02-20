@@ -158,11 +158,14 @@ export function getAllTempTables(sourceCode: SourceCode): ABLTempTable[] {
 	let regexStart: RegExp = new RegExp(/\b(?:def|define){1}(?:[\s\t]|new|global|shared)+(?:temp-table){1}[\s\t\n\r]+([\w\d\-\+]*)[^\w\d\-\+]/gim);
 	// 1 = name
 	let regexEnd: RegExp = new RegExp(/\.[^\w\d\-\+]/gim);
-	// 
+	//
+	let regexLike: RegExp = new RegExp(/\b(?:like){1}[\s\t\n]+([\w\d\-\+]+)[\s\t\n]*(?:\.[^\w\d\-\+]+|field|index)(?!field|index)/im);
+	// 1 = temp-table like
 	let text = sourceCode.sourceWithoutStrings;
 	let innerText;
 	let resStart = regexStart.exec(text);
 	let resEnd;
+	let resLike;
 	while(resStart) {
 		regexEnd.lastIndex = regexStart.lastIndex;
 		resEnd = regexEnd.exec(text);
@@ -170,6 +173,12 @@ export function getAllTempTables(sourceCode: SourceCode): ABLTempTable[] {
 			innerText = text.substring(regexStart.lastIndex, resEnd.index);
 			let v = new ABLTempTable();
 			try {
+				regexLike.lastIndex = regexStart.lastIndex;
+				resLike = regexLike.exec(text);
+				if ((resLike)&&(resLike.index < regexEnd.lastIndex)) {
+					v.likeTable = resLike[1];
+				}
+
 				v.label = resStart[1];
 				v.kind = vscode.CompletionItemKind.Struct;
 				v.detail = '';

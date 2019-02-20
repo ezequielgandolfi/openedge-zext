@@ -1,5 +1,12 @@
 # Change Log
 
+## 0.1.2
+
+### Improvements
+- Broadcast changes to referenced documents
+- Request file name to save map file
+- Display all fields from temp-table "like"
+
 ## 0.1.1
 
 ### Improvements

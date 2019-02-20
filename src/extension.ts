@@ -64,7 +64,7 @@ export function activate(ctx: vscode.ExtensionContext): void {
 	}));
 	ctx.subscriptions.push(vscode.commands.registerCommand('abl.currentFile.saveMap', (args) => {
 		let doc = vscode.window.activeTextEditor.document;
-		let filename = doc.uri.fsPath + '.oe-map';
+		let filename = null;
 		if (args) {
 			if ((isArray(args))&&(args.length>0))
 				filename = args[0];
@@ -137,16 +137,26 @@ function chooseCompileOption() {
 	});
 }
 
-function saveMapFile(document: vscode.TextDocument, filename: string) {
+function saveMapFile(document: vscode.TextDocument, filename?: string) {
 	let doc = getDocumentController().getDocument(document);
 	if (doc) {
-		let data = doc.getMap();
-		if (data) {
-			fs.writeFileSync(filename, JSON.stringify(data));
-			vscode.window.showInformationMessage('File ' + path.basename(doc.document.uri.fsPath) + '.oe-map created!');
+		let save = (fname) => {
+			let data = doc.getMap();
+			if (data) {
+				fs.writeFileSync(fname, JSON.stringify(data));
+				vscode.window.showInformationMessage('File ' + path.basename(fname) + ' created!');
+			}
+			else {
+				vscode.window.showErrorMessage('Erro mapping file');
+			}
+		}
+		//
+		if (filename) {
+			save(filename);
 		}
 		else {
-			vscode.window.showErrorMessage('Erro mapping file');
+			let opt: vscode.InputBoxOptions = {prompt: 'Save into file', value: doc.document.uri.fsPath + '.oe-map'};
+			vscode.window.showInputBox(opt).then(fname => { if(fname) save(fname) });
 		}
 	}
 }

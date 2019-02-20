@@ -15,6 +15,10 @@ OpenEdge ABL Extension for Visual Studio Code
 
 ## What's new
 
+### 0.1.2
+- Broadcast changes to referenced documents
+- Request file name to save map file
+
 ### 0.1.1
 - Fixed the include temp-table auto-complete
 - Map file exports all data from includes

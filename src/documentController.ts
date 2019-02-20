@@ -76,7 +76,8 @@ export class ABLDocument {
 				methods: this._methods,
 				variables: this._vars,
 				tempTables: tt,
-				includes: inc
+				includes: inc,
+				external: this.externalDocument
 			};
 		}
 		return;
@@ -128,7 +129,7 @@ export class ABLDocument {
 		return [...tt,...md];
 	}
 
-	public getSignal(document: ABLDocument) {
+	public pushDocumentSignal(document: ABLDocument) {
 		if (this.processed) {
 			let extDoc = this.externalDocument.find(item => item == document.document);
 			if (extDoc)
@@ -164,16 +165,43 @@ export class ABLDocument {
 
 		// finaliza processo
 		let finish = () => {
-			this.refreshExternalReferences();
 			this._processed = true;
-			getDocumentController().broadcastChange(this);
+			getDocumentController().broadcastDocumentChange(this);
 		};
 		result.then(() => finish());
 		return result;
 	}
 
-	public refreshExternalReferences() {
+	public refreshExternalReferences(document: vscode.TextDocument) {
 		// find references from includes inside the program
+
+		// temp-tables
+		this.tempTables.filter(item => item.likeTable).forEach(item => {
+			item.likeFields = this.getDeclaredTempTableFields(item.likeTable, document);
+		});
+	}
+
+	private insertExternalDocument(doc: vscode.TextDocument) {
+		this.externalDocument.push(doc);
+		this.refreshExternalReferences(doc);
+	}
+
+	public getDeclaredTempTableFields(filename: string, document?: vscode.TextDocument): ABLVariable[] {
+		let name = filename.toLowerCase();
+		let tt = this._temps.find(item => item.label.toLowerCase() == name);
+		if (tt)
+			return tt.fields;
+		//
+		let items;
+		if ((document)&&(this.externalDocument.find(item => item == document))) {
+			let extDoc = getDocumentController().getDocument(document);
+			if ((extDoc)&&(extDoc.processed)) {
+				items = extDoc.getDeclaredTempTableFields(filename);
+			}
+		}
+		if (items)
+			return items;
+		return;
 	}
 
 	private refreshIncludes(sourceCode: SourceCode) {
@@ -188,7 +216,7 @@ export class ABLDocument {
 						this._symbols.push(s);
 					}
 					if(!this.externalDocument.find(item => item.uri.fsPath == uri.fsPath)) {
-						vscode.workspace.openTextDocument(uri).then(doc => this.externalDocument.push(doc));
+						vscode.workspace.openTextDocument(uri).then(doc => this.insertExternalDocument(doc));
 					}
 				}
 			})
@@ -376,10 +404,10 @@ export class ABLDocumentController {
 		ablDoc.refreshDocument();
 	}
 
-	public broadcastChange(ablDoc: ABLDocument) {
+	public broadcastDocumentChange(ablDoc: ABLDocument) {
 		for(let item in this._documents) {
 			if (item != ablDoc.document.uri.fsPath)
-				this._documents[item].getSignal(ablDoc);
+				this._documents[item].pushDocumentSignal(ablDoc);
 		}
 	}
 

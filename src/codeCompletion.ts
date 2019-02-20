@@ -18,7 +18,8 @@ export class ABLCodeCompletion implements vscode.CompletionItemProvider {
 	
 	public provideCompletionItems(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken, context: vscode.CompletionContext) {
 		let doc  = this._ablDocumentController.getDocument(document);
-		let selection = getText(document, position, true);
+		let p = new vscode.Position(position.line, position.character-1); // get the previous char to compare previous statement
+		let selection = getText(document, p, true);
 		let words = selection.statement.split('.');
 		if (words.length == 2) {
 			let result = this.getCompletionFields(words[0]);
