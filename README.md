@@ -15,6 +15,10 @@ OpenEdge ABL Extension for Visual Studio Code
 
 ## What's new
 
+### 0.1.1
+- Fixed the include temp-table auto-complete
+- Map file exports all data from includes
+
 ### 0.1.0
 - New command "ABL: Save Map File" to write a json map file
 - Included a few controls to prevent crashing
@@ -22,21 +26,6 @@ OpenEdge ABL Extension for Visual Studio Code
 ### 0.0.22
 - New source parser
 - Auto-complete for internal methods with parameters snippet
-
-### 0.0.21
-- Hover tooltip new behavior
-- XCode compile option
-
-### 0.0.20
-- New command to compile with additional options (Alt+F3)
-
-### 0.0.19
-- More code snippets
-- Ask to save dirty files before run commands
-
-### 0.0.18
-- "ALL FIELDS" snippet for tables / temp-tables
-- Formatter (supports: trim right). Enable options in settings file
 
 See [CHANGELOG](CHANGELOG.md) for more information.
 

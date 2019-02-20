@@ -11,11 +11,12 @@ let regexInvalidWordEnd: RegExp = new RegExp(/[\.|\:|\-|\_|\\|\/]$/);
 
 export function getText(document: vscode.TextDocument, position: vscode.Position, escapeEndChars?: boolean): TextSelection {
 	let res = new TextSelection();
-	res.wordRange = document.getWordRangeAtPosition(position, /[\w\d\-\+]+/);
+	let p = new vscode.Position(position.line, position.character-1);
+	res.wordRange = document.getWordRangeAtPosition(p, /[\w\d\-\+]+/);
 	if (!res.wordRange)
 		return;
 	res.word = document.getText(res.wordRange).toLowerCase();
-	res.statementRange = document.getWordRangeAtPosition(position, /[\w\d\-\+\.\:\\\/]+/);
+	res.statementRange = document.getWordRangeAtPosition(p, /[\w\d\-\+\.\:\\\/]+/);
 	res.statement = document.getText(res.statementRange).toLowerCase();
 	if (escapeEndChars !== true) {
 		while(regexInvalidWordEnd.test(res.statement)) 

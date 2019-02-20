@@ -1,5 +1,13 @@
 # Change Log
 
+## 0.1.1
+
+### Improvements
+- Map file exports all data from includes
+
+### Fixes
+- Fixed the include temp-table auto-complete
+
 ## 0.1.0
 
 ### Improvements

@@ -60,12 +60,23 @@ class ABLDocument {
 			let tt = this._temps.map(item => {
 				return Object.assign({}, item, {completion: undefined, completionFields: undefined, completionIndexes: undefined, completionAdditional: undefined});
 			});
+			let inc = this._includes.map(item => {
+				let r = Object.assign({}, item);
+				let doc = vscode.workspace.textDocuments.find(d => d.uri.fsPath == item.fsPath);
+				if (doc) {
+					let extDoc = getDocumentController().getDocument(doc);
+					if (extDoc) {
+						r = Object.assign(r, { map: extDoc.getMap() });
+					}
+				}
+				return r;
+			});
 
 			return {
 				methods: this._methods,
 				variables: this._vars,
 				tempTables: tt,
-				includes: this._includes
+				includes: inc
 			};
 		}
 		return;
@@ -109,6 +120,7 @@ class ABLDocument {
 			vscode.workspace.workspaceFolders.forEach(folder => {
 				let uri = folder.uri.with({path: [folder.uri.path,item.name].join('/')});
 				if (fs.existsSync(uri.fsPath)) {
+					item.fsPath = uri.fsPath;
 					if(!this._symbols.find(s => (s.name == item.name) && (s.containerName == SYMBOL_TYPE.INCLUDE) )) {
 						let s = new vscode.SymbolInformation(item.name, vscode.SymbolKind.File, SYMBOL_TYPE.INCLUDE, new vscode.Location(uri, new vscode.Position(0, 0)));
 						this._symbols.push(s);

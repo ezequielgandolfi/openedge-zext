@@ -86,6 +86,7 @@ export class ABLParameter extends ABLVariable {
 
 export class ABLInclude {
     name: string;
+    fsPath: string;
 }
 
 export class ABLTempTable extends ABLTableDefinition {
