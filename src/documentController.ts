@@ -129,9 +129,11 @@ export class ABLDocument {
 	}
 
 	public getSignal(document: ABLDocument) {
-		let extDoc = this.externalDocument.find(item => item == document.document);
-		if (extDoc)
-			this.refreshExternalReferences();
+		if (this.processed) {
+			let extDoc = this.externalDocument.find(item => item == document.document);
+			if (extDoc)
+				this.refreshExternalReferences();
+		}
 	}
 
 	public refreshDocument(): Promise<ABLDocument> {
@@ -171,8 +173,7 @@ export class ABLDocument {
 	}
 
 	public refreshExternalReferences() {
-		//
-		console.log(new Date(), this._document.uri.fsPath, 'refreshExternalReferences');
+		// find references from includes inside the program
 	}
 
 	private refreshIncludes(sourceCode: SourceCode) {

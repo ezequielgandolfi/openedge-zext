@@ -16,6 +16,14 @@
             "$0"
         ]
     },
+    "DEF BUFFER": {
+        "prefix": "defb",
+        "description": "Define a buffer",
+        "body": [
+            "def buffer b-${1:ttName} for $1.",
+            "$0"
+        ]
+    },
     "DEF PARAM": {
         "prefix": "par",
         "description": "Define a parameter",
@@ -53,9 +61,9 @@
     },
     "LOG": {
         "prefix": "log",
-        "description": "Log manager output (paste clipboard content)",
+        "description": "Log manager output",
         "body": [
-            "log-manager:write-message(\"${1}${CLIPBOARD}\",\"${2}MY-LOG\").",
+            "log-manager:write-message(\"${1}\",\"${2}MY-LOG\").",
             "$0"
         ]
     },
