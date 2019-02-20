@@ -1,8 +1,8 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as promisify from 'util.promisify';
-import { ABLTableDefinition, ABL_PARAM_DIRECTION } from './definition';
-import { ABLDocumentController } from './documentController';
+import { ABLTableDefinition, ABL_PARAM_DIRECTION, TextSelection } from './definition';
+import { ABLDocumentController, ABLDocument } from './documentController';
 import { updateTableCompletionList, getText } from './utils';
 
 let watcher: vscode.FileSystemWatcher = null;
@@ -18,87 +18,53 @@ export class ABLCodeCompletion implements vscode.CompletionItemProvider {
 	
 	public provideCompletionItems(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken, context: vscode.CompletionContext) {
 		let doc  = this._ablDocumentController.getDocument(document);
-		/*let temps: ABLTempTable[] = [];
-		if (doc)
-			temps = doc.tempTables;*/
 		let selection = getText(document, position, true);
 		let words = selection.statement.split('.');
 		if (words.length == 2) {
-			// Tables
-			let tb = _tableCollection.items.find((item) => item.label.toLowerCase() == words[0]);
-			if (tb) {
-				return tb['completion'];
-			}
-			// Temp-tables
-			let tt = doc.tempTables.find(item => item.label.toLowerCase() == words[0]);
-			if (tt) {
-				return tt.completion;
-			}
+			let result = this.getCompletionFields(words[0]);
+			if ((result)&&(result.length>0))
+				return new vscode.CompletionList(result);
+
+			result = doc.getCompletionTempTableFields(words[0]);
+			if ((result)&&(result.length>0))
+				return new vscode.CompletionList(result);
+
 			// External Temp-tables
-			let extTt;
 			doc.externalDocument.forEach(external => {
-				if (!extTt) {
+				if ((!result)||(result.length==0)) {
 					let extDoc = this._ablDocumentController.getDocument(external);
 					if ((extDoc)&&(extDoc.processed)) {
-						extTt = extDoc.tempTables.find(item => item.label.toLowerCase() == words[0]);
-						if (extTt) {
-							extTt = extTt.completion;
-						}
+						result = extDoc.getCompletionTempTableFields(words[0]);
 					}
 				}
 			});
-			if (extTt)
-				return extTt;
+			if ((result)&&(result.length>0))
+				return new vscode.CompletionList(result);
 		}
 		else if (words.length == 1) {
 			// Tables
 			let tb = _tableCollection.items;
-			// Temp-tables
-			let tt: vscode.CompletionItem[] = doc.tempTables.map(item => {
-				return new vscode.CompletionItem(item.label);
-			});
-			// External Temp-tables
-			let externalTt: vscode.CompletionItem[] = [];
+			// Symbols
+			let docSym = doc.getCompletionSymbols();
+			// External Symbols
+			let extSym: vscode.CompletionItem[] = [];
 			doc.externalDocument.forEach(external => {
-				let _ti = [];
 				let extDoc = this._ablDocumentController.getDocument(external);
 				if ((extDoc)&&(extDoc.processed)) {
-					_ti = extDoc.tempTables.map(item => {
-						return new vscode.CompletionItem(item.label);
-					});
-					externalTt = [...externalTt,..._ti];
+					extSym = [...extSym,...extDoc.getCompletionSymbols()];
 				}
-			});
-			// Methods
-			let md: vscode.CompletionItem[] = [];
-			doc.methods.forEach(m => {
-				let _mi = new vscode.CompletionItem(m.name, vscode.CompletionItemKind.Method);
-				if (m.params.length > 0) {
-					let pf = true;
-					let snip: vscode.SnippetString = new vscode.SnippetString();
-					snip.appendText(m.name + '(');
-					m.params.forEach(p => {
-						if (!pf)
-							snip.appendText(',\n\t');
-						else
-							pf = false;
-						if (p.direction == ABL_PARAM_DIRECTION.IN)
-							snip.appendText('input ');
-						else if (p.direction == ABL_PARAM_DIRECTION.OUT)
-							snip.appendText('output ');
-						else
-							snip.appendText('input-output ');
-						if (p.dataType == 'temp-table')
-							snip.appendText('table ');
-						snip.appendPlaceholder(p.name);
-					});
-					snip.appendText(')');
-					_mi.insertText = snip;
-				}
-				md.push(_mi);
 			});
 			//
-			return new vscode.CompletionList([...tb,...tt,...externalTt,...md]);
+			return new vscode.CompletionList([...tb,...docSym,...extSym]);
+		}
+		return;
+	}
+
+	private getCompletionFields(prefix: string): vscode.CompletionItem[] {
+		// Tables
+		let tb = _tableCollection.items.find((item) => item.label.toLowerCase() == prefix);
+		if (tb) {
+			return tb['completion'].items;
 		}
 		return [];
 	}

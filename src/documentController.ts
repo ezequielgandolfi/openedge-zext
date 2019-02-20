@@ -2,7 +2,7 @@ import * as vscode from "vscode";
 import * as utils from './utils';
 import * as fs from 'fs';
 import { ABL_MODE } from "./environment";
-import { SYMBOL_TYPE, ABLVariable, ABLMethod, ABLParameter, ABLInclude, ABLTempTable } from "./definition";
+import { SYMBOL_TYPE, ABLVariable, ABLMethod, ABLParameter, ABLInclude, ABLTempTable, ABL_PARAM_DIRECTION } from "./definition";
 import { ABLHoverProvider } from "./hover";
 import { ABLCodeCompletion } from "./codeCompletion";
 import { getAllIncludes, getAllMethods, getAllVariables, getAllParameters, getAllTempTables } from "./processDocument";
@@ -17,7 +17,7 @@ export function initDocumentController(context: vscode.ExtensionContext): ABLDoc
 	return thisInstance;
 }
 
-class ABLDocument {
+export class ABLDocument {
 	private _document: vscode.TextDocument;
 	private _symbols: vscode.SymbolInformation[];
 	private _vars: ABLVariable[];
@@ -82,6 +82,58 @@ class ABLDocument {
 		return;
 	}
 
+	public getCompletionTempTableFields(prefix: string): vscode.CompletionItem[] {
+		// Temp-tables
+		let tt = this.tempTables.find(item => item.label.toLowerCase() == prefix);
+		if (tt) {
+			return tt.completion.items;
+		}
+		return [];
+	}
+
+	public getCompletionSymbols(): vscode.CompletionItem[] {
+		// Temp-tables
+		let tt: vscode.CompletionItem[] = this._temps.map(item => {
+			return new vscode.CompletionItem(item.label);
+		});
+		// Methods
+		let md: vscode.CompletionItem[] = [];
+		this._methods.forEach(m => {
+			let _mi = new vscode.CompletionItem(m.name, vscode.CompletionItemKind.Method);
+			if (m.params.length > 0) {
+				let pf = true;
+				let snip: vscode.SnippetString = new vscode.SnippetString();
+				snip.appendText(m.name + '(');
+				m.params.forEach(p => {
+					if (!pf)
+						snip.appendText(',\n\t');
+					else
+						pf = false;
+					if (p.direction == ABL_PARAM_DIRECTION.IN)
+						snip.appendText('input ');
+					else if (p.direction == ABL_PARAM_DIRECTION.OUT)
+						snip.appendText('output ');
+					else
+						snip.appendText('input-output ');
+					if (p.dataType == 'temp-table')
+						snip.appendText('table ');
+					snip.appendPlaceholder(p.name);
+				});
+				snip.appendText(')');
+				_mi.insertText = snip;
+			}
+			md.push(_mi);
+		});
+		//
+		return [...tt,...md];
+	}
+
+	public getSignal(document: ABLDocument) {
+		let extDoc = this.externalDocument.find(item => item == document.document);
+		if (extDoc)
+			this.refreshExternalReferences();
+	}
+
 	public refreshDocument(): Promise<ABLDocument> {
 		this._processed = false;
 		this._symbols = [];
@@ -109,9 +161,18 @@ class ABLDocument {
 		// create procedure snippets with parameters
 
 		// finaliza processo
-		let finish = () => {this._processed = true};
+		let finish = () => {
+			this.refreshExternalReferences();
+			this._processed = true;
+			getDocumentController().broadcastChange(this);
+		};
 		result.then(() => finish());
 		return result;
+	}
+
+	public refreshExternalReferences() {
+		//
+		console.log(new Date(), this._document.uri.fsPath, 'refreshExternalReferences');
 	}
 
 	private refreshIncludes(sourceCode: SourceCode) {
@@ -312,6 +373,13 @@ export class ABLDocumentController {
 
 	private invokeUpdateDocument(ablDoc: ABLDocument) {
 		ablDoc.refreshDocument();
+	}
+
+	public broadcastChange(ablDoc: ABLDocument) {
+		for(let item in this._documents) {
+			if (item != ablDoc.document.uri.fsPath)
+				this._documents[item].getSignal(ablDoc);
+		}
 	}
 
 }
