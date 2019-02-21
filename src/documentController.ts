@@ -133,7 +133,7 @@ export class ABLDocument {
 		if (this.processed) {
 			let extDoc = this.externalDocument.find(item => item == document.document);
 			if (extDoc)
-				this.refreshExternalReferences();
+				this.refreshExternalReferences(extDoc);
 		}
 	}
 
@@ -176,8 +176,12 @@ export class ABLDocument {
 		// find references from includes inside the program
 
 		// temp-tables
-		this.tempTables.filter(item => item.likeTable).forEach(item => {
-			item.likeFields = this.getDeclaredTempTableFields(item.likeTable, document);
+		this.tempTables.filter(item => item.referenceTable).forEach(item => {
+			let fields = this.getDeclaredTempTableFields(item.referenceTable, document);
+			if (fields) {
+				item.referenceFields = fields;
+				utils.updateTableCompletionList(item);
+			}
 		});
 	}
 
@@ -186,15 +190,15 @@ export class ABLDocument {
 		this.refreshExternalReferences(doc);
 	}
 
-	public getDeclaredTempTableFields(filename: string, document?: vscode.TextDocument): ABLVariable[] {
+	public getDeclaredTempTableFields(filename: string, changedDocument?: vscode.TextDocument): ABLVariable[] {
 		let name = filename.toLowerCase();
 		let tt = this._temps.find(item => item.label.toLowerCase() == name);
 		if (tt)
 			return tt.fields;
 		//
 		let items;
-		if ((document)&&(this.externalDocument.find(item => item == document))) {
-			let extDoc = getDocumentController().getDocument(document);
+		if ((changedDocument)&&(this.externalDocument.find(item => item == changedDocument))) {
+			let extDoc = getDocumentController().getDocument(changedDocument);
 			if ((extDoc)&&(extDoc.processed)) {
 				items = extDoc.getDeclaredTempTableFields(filename);
 			}

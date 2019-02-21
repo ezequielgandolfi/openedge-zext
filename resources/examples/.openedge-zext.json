@@ -1,0 +1,46 @@
+{
+    "proPath": [
+        "c:\\myEnv\\localSource",
+        "c:\\myEnv\\release",
+        "${workspaceFolder}"
+    ],
+    "proPathMode": "append",
+    "dlcPath": "c:\\dlc116",
+    "parameterFiles": [
+        "c:\\myEnv\\default.pf",
+        "c:\\myEnv\\somethingElse.pf"
+    ],
+    "configFile": "c:\\myEnv\\default.ini",
+    "dbDictionary": [
+        "myFirstDatabase",
+        "mySecondDatabase"
+    ],
+    "workingDirectory": "${workspaceFolder}",
+    "deployment": [
+        {
+            "taskType": "current.r-code",
+            "path": "c:\\out\\compiled",
+            "postAction": [
+                {
+                    "actionType": "URL",
+                    "command": "http://localhost:8080/postAction"
+                }
+            ]
+        },
+        {
+            "taskType": "current.source",
+            "path": "c:\\out\\just-copy"
+        },
+        {
+            "taskType": "current.xcode",
+            "path": "c:\\out\\xcoded"
+        },
+        {
+            "taskType": "current.all-compile",
+            "path": "c:\\out\\everythingGoesHere"
+        }
+    ],
+    "format": {
+        "trim": "right"
+    }
+}

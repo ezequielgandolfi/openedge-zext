@@ -155,7 +155,7 @@ function saveMapFile(document: vscode.TextDocument, filename?: string) {
 			save(filename);
 		}
 		else {
-			let opt: vscode.InputBoxOptions = {prompt: 'Save into file', value: doc.document.uri.fsPath + '.oe-map'};
+			let opt: vscode.InputBoxOptions = {prompt: 'Save into file', value: doc.document.uri.fsPath + '.oe-map.json'};
 			vscode.window.showInputBox(opt).then(fname => { if(fname) save(fname) });
 		}
 	}

@@ -159,7 +159,7 @@ export function getAllTempTables(sourceCode: SourceCode): ABLTempTable[] {
 	// 1 = name
 	let regexEnd: RegExp = new RegExp(/\.[^\w\d\-\+]/gim);
 	//
-	let regexLike: RegExp = new RegExp(/\b(?:like){1}[\s\t\n]+([\w\d\-\+]+)[\s\t\n]*(?:\.[^\w\d\-\+]+|field|index)(?!field|index)/im);
+	let regexLike: RegExp = new RegExp(/\b(?:like){1}[\s\t\n]+([\w\d\-\+]+)[\s\t\n]*(?:\.[^\w\d\-\+]+|field|index|[\s\t\r])(?!field|index)/gim);
 	// 1 = temp-table like
 	let text = sourceCode.sourceWithoutStrings;
 	let innerText;
@@ -175,8 +175,8 @@ export function getAllTempTables(sourceCode: SourceCode): ABLTempTable[] {
 			try {
 				regexLike.lastIndex = regexStart.lastIndex;
 				resLike = regexLike.exec(text);
-				if ((resLike)&&(resLike.index < regexEnd.lastIndex)) {
-					v.likeTable = resLike[1];
+				if ((resLike)&&(resLike.index <= regexEnd.lastIndex)&&(resLike.index >= regexStart.lastIndex)) {
+					v.referenceTable = resLike[1];
 				}
 
 				v.label = resStart[1];

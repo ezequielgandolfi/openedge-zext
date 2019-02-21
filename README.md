@@ -4,18 +4,19 @@ OpenEdge ABL Extension for Visual Studio Code
 
 ## Features
 
+- Auto-complete (tables, fields, methods)
+- Source navigation
 - Check syntax
 - Compile
 - Run
 - Deploy
 - Syntax highlighting
 - Code snippets
-- Auto-complete
-- Source navigation
 
 ## What's new
 
 ### 0.1.2
+- Auto-complete fields from referenced temp-table
 - Broadcast changes to referenced documents
 - Request file name to save map file
 
@@ -26,10 +27,6 @@ OpenEdge ABL Extension for Visual Studio Code
 ### 0.1.0
 - New command "ABL: Save Map File" to write a json map file
 - Included a few controls to prevent crashing
-
-### 0.0.22
-- New source parser
-- Auto-complete for internal methods with parameters snippet
 
 See [CHANGELOG](CHANGELOG.md) for more information.
 
@@ -71,6 +68,7 @@ See [CHANGELOG](CHANGELOG.md) for more information.
 ## Extension Settings
 
 Create a file named ".openedge-zext.json" in root path of the workspace.
+> Download base configuration file [here](resources/examples/.openedge-zext.json).
 
 ```JSON
 {
@@ -115,6 +113,8 @@ Create a file named ".openedge-zext.json" in root path of the workspace.
 
 ## Known Issues
 
+Visit [Issues page on GitHub](https://github.com/ezequielgandolfi/openedge-zext/issues) to report any problem.
+
 - Variables within trigger events are being referenced as global variables
 - Source mapper doesn't map buffer, table-handle, dataset, dataset-handle, worktable, work-file types
 - Source mapper doesn't map return parameters
@@ -125,24 +125,16 @@ Create a file named ".openedge-zext.json" in root path of the workspace.
 
 _No promises..._ :-)
 
-### 1.0.0
-
 - Configuration for "source directory" to work with multiple folders in workspace
 - Temp-table definitions
     - Insert "like" condition to temp-tables (insert all fields from original temp-table)
 - Key bind to open help file
 - Change case (lower, upper, camel)
 - More snippets
-
-### 1.1.0
-
 - Map classes
     - using
     - auto-complete
     - read definitions / methods
-
-### 1.2.0
-
 - Generate swagger file to current source
 - Generate test case to current source (or method)
     - Creates a new source file with methods to create test data and run it

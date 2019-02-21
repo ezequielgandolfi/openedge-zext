@@ -95,12 +95,12 @@ export class ABLInclude {
 
 export class ABLTempTable extends ABLTableDefinition {
     line: number;
-    likeTable: string;
-    likeFields: ABLVariable[];
+    referenceTable: string;
+    referenceFields: ABLVariable[];
 
     get allFields(): ABLVariable[] {
-        if (this.likeFields)
-            return [...this.likeFields,...this.fields];
+        if (this.referenceFields)
+            return [...this.referenceFields,...this.fields];
         return this.fields;
     }
 }
