@@ -35,7 +35,7 @@ export function getAllIncludes(sourceCode: SourceCode): ABLInclude[] {
 
 export function getAllVariables(sourceCode: SourceCode): ABLVariable[] {
 	let result: ABLVariable[] = [];
-	let regexDefineVar: RegExp = new RegExp(/(?:def|define){1}(?:[\s\t]|new|shared)+(?:var|variable){1}(?:[\s\t]+)([\w\d\-]+)[\s\t]+(as|like){1}[\s\t]+([\w\d\-\.]+)/gim);
+	let regexDefineVar: RegExp = new RegExp(/(?:def|define){1}(?:[\s\t\n]|new|shared)+(?:var|variable){1}(?:[\s\t\n]+)([\w\d\-]+)[\s\t\n]+(as|like){1}[\s\t\n]+([\w\d\-\.]+)/gim);
 	// 1 = var name
 	// 2 = as | like
 	// 3 = type | field like
@@ -58,13 +58,13 @@ export function getAllVariables(sourceCode: SourceCode): ABLVariable[] {
 
 export function getAllMethods(sourceCode: SourceCode): ABLMethod[] {
 	let result: ABLMethod[] = [];
-	//let regexMethod = new RegExp(/\b(proc|procedure|func|function){1}[\s\t]+([\w\d\-]+)(.*?)[\.\:]{1}(.|[\n\s])*?(?:end\s(proc|procedure|func|function)){1}\b/gim);
+	//let regexMethod = new RegExp(/\b(proc|procedure|func|function){1}[\s\t\n]+([\w\d\-]+)(.*?)[\.\:]{1}(.|[\n\s])*?(?:end\s(proc|procedure|func|function)){1}\b/gim);
 	// 1 = function | procedure
 	// 2 = name
 	// 3 = aditional details (returns xxx...)
 	// 4 = code block (incomplete)
 
-	let regexStart = new RegExp(/\b(proc|procedure|func|function){1}[\s\t]+([\w\d\-]+)(.*?)(?:[\.\:][^\w\d\-\+])/gim);
+	let regexStart = new RegExp(/\b(proc|procedure|func|function){1}[\s\t\n]+([\w\d\-]+)(.*?)(?:[\.\:][^\w\d\-\+])/gim);
 	// 1 = function | procedure
 	// 2 = name
 	// 3 = aditional details (returns xxx...)
@@ -98,7 +98,7 @@ export function getAllMethods(sourceCode: SourceCode): ABLMethod[] {
 export function getAllParameters(sourceCode: SourceCode): ABLParameter[] {
 	let result: ABLParameter[] = [];
 	/* Primitive types */
-	let regexParams: RegExp = new RegExp(/\b(?:def|define){1}[\s\t]+([inputo\-]*){1}[\s\t]+(?:param|parameter){1}[\s\t]+([\w\d\-\.]*){1}[\s\t]+(as|like){1}[\s\t]+([\w\d\-\.]+)/gim);
+	let regexParams: RegExp = new RegExp(/\b(?:def|define){1}[\s\t\n]+([inputo\-]*){1}[\s\t\n]+(?:param|parameter){1}[\s\t\n]+([\w\d\-\.]*){1}[\s\t\n]+(as|like){1}[\s\t\n]+([\w\d\-\.]+)/gim);
 	// 1 = input | output | input-output
 	// 2 = name
 	// 3 = as | like
@@ -124,7 +124,7 @@ export function getAllParameters(sourceCode: SourceCode): ABLParameter[] {
 		res = regexParams.exec(text);
 	}
 	/* Temp-table */
-	regexParams = new RegExp(/\b(?:def|define){1}[\s\t]+([inputo\-]*){1}[\s\t]+(?:param|parameter){1}[\s\t]+(?:table){1}[\s\t]+(?:for){1}[\s\t]+([\w\d\-\+]*)(?:\.[^\w\d\-\+]){1}/gim);
+	regexParams = new RegExp(/\b(?:def|define){1}[\s\t\n]+([inputo\-]*){1}[\s\t\n]+(?:param|parameter){1}[\s\t\n]+(?:table){1}[\s\t\n]+(?:for){1}[\s\t\n]+([\w\d\-\+]*)(?:\.[^\w\d\-\+]){1}/gim);
 	// 1 = input | output | input-output
 	// 2 = name
 	res = regexParams.exec(text);
@@ -154,12 +154,12 @@ export function getAllParameters(sourceCode: SourceCode): ABLParameter[] {
 
 export function getAllTempTables(sourceCode: SourceCode): ABLTempTable[] {
 	let result: ABLTempTable[] = [];
-	//let regexTT: RegExp = new RegExp(/(?:def|define){1}(?:[\s\t]|new|global|shared)+(?:temp-table){1}[\s\t\n\r]+([\w\d\-]*)[\s\t\n\r]+([\w\W]*?)(?:\.(?!\w))/gim);
-	let regexStart: RegExp = new RegExp(/\b(?:def|define){1}(?:[\s\t]|new|global|shared)+(?:temp-table){1}[\s\t\n\r]+([\w\d\-\+]*)[^\w\d\-\+]/gim);
+	//let regexTT: RegExp = new RegExp(/(?:def|define){1}(?:[\s\t\n]|new|global|shared)+(?:temp-table){1}[\s\t\n\r]+([\w\d\-]*)[\s\t\n\r]+([\w\W]*?)(?:\.(?!\w))/gim);
+	let regexStart: RegExp = new RegExp(/\b(?:def|define){1}(?:[\s\t\n]|new|global|shared)+(?:temp-table){1}[\s\t\n\r]+([\w\d\-\+]*)[^\w\d\-\+]/gim);
 	// 1 = name
 	let regexEnd: RegExp = new RegExp(/\.[^\w\d\-\+]/gim);
 	//
-	let regexLike: RegExp = new RegExp(/\b(?:like){1}[\s\t\n]+([\w\d\-\+]+)[\s\t\n]*(?:\.[^\w\d\-\+]+|field|index|[\s\t\r])(?!field|index)/gim);
+	let regexLike: RegExp = new RegExp(/\b(?:like){1}[\s\t\n]+([\w\d\-\+]+)[\s\t\n]*(?:\.[^\w\d\-\+]+|field|index|[\s\t\n\r])(?!field|index)/gim);
 	// 1 = temp-table like
 	let text = sourceCode.sourceWithoutStrings;
 	let innerText;
@@ -200,7 +200,7 @@ export function getAllTempTables(sourceCode: SourceCode): ABLTempTable[] {
 
 function getTempTableFields(text: string, sourceCode: SourceCode): ABLVariable[] {
 	let result: ABLVariable[] = [];
-	let regexDefineField: RegExp = new RegExp(/(?:field){1}(?:[\s\t]+)([\w\d\-]+)[\s\t]+(as|like){1}[\s\t]+([\w\d\-\.]+)/gim);
+	let regexDefineField: RegExp = new RegExp(/(?:field){1}(?:[\s\t\n]+)([\w\d\-]+)[\s\t\n]+(as|like){1}[\s\t\n]+([\w\d\-\.]+)/gim);
 	// 1 = var name
 	// 2 = as | like
 	// 3 = type | field like
