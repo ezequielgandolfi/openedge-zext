@@ -90,16 +90,20 @@ function findDumpFiles() {
 function loadAndSetDumpFile(filename: string) {
 	unloadDumpFile(filename);
 	return readFileAsync(filename, { encoding: 'utf8' }).then(text => {
-		let res:ABLTableDefinition[] = JSON.parse(text);
-		if(res) {
-			res.map(tb => {
-				tb.filename = filename;
-				tb.fields.map(fd => fd.name = fd['label']);
-				updateTableCompletionList(tb);
-			});
-			res.forEach(tb => {
-				_tableCollection.items.push(tb);	
-			});
+		let fileDataResult:ABLTableDefinition[] = JSON.parse(text);
+		if(fileDataResult) {
+			fileDataResult
+				.map(tb => {
+					let obj: ABLTableDefinition = new ABLTableDefinition();
+					Object.assign(obj, tb);
+					obj.filename = filename;
+					obj.fields.map(fd => fd.name = fd['label']);
+					updateTableCompletionList(obj);
+					return obj;
+				})
+				.forEach(tb => {
+					_tableCollection.items.push(tb);	
+				});
 		}
     });
 }
