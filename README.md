@@ -17,6 +17,7 @@ OpenEdge ABL Extension for Visual Studio Code
 
 ### 0.1.3
 - Source navigation to definition working with local variables/parameters
+- Correction in database table/field auto-complete
 
 ### 0.1.2
 - Auto-complete fields from referenced temp-table

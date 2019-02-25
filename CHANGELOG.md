@@ -4,6 +4,7 @@
 
 ### Fixes
 - [Issue #1](https://github.com/ezequielgandolfi/openedge-zext/issues/1) Source navigation to definition working with local variables/parameters
+- [Issue #2](https://github.com/ezequielgandolfi/openedge-zext/issues/2) Correction in database table/field auto-complete
 
 ## 0.1.2
 
