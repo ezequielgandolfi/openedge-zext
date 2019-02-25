@@ -442,6 +442,14 @@ export class ABLDefinitionProvider implements vscode.DefinitionProvider {
 		symbol = doc.symbols.find(item => item.name.toLowerCase() == selection.word);
 		if (symbol) 
 			return Promise.resolve(symbol.location);
+		// search method scoped symbols
+		let method = doc.methods.find(m => (m.lineAt <= position.line && m.lineEnd >= position.line));
+		if (method) {
+			let scopedName = selection.word + '@' + method.name.toLowerCase();
+			symbol = doc.symbols.find(item => item.name.toLowerCase() == scopedName);
+			if (symbol) 
+				return Promise.resolve(symbol.location);
+		}
 		// search external documents
 		doc.externalDocument.forEach(ext => {
 			if (symbol)

@@ -1,5 +1,10 @@
 # Change Log
 
+## 0.1.3
+
+### Fixes
+- [Issue #1](https://github.com/ezequielgandolfi/openedge-zext/issues/1) Source navigation to definition working with local variables/parameters
+
 ## 0.1.2
 
 ### Improvements
