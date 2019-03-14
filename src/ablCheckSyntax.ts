@@ -23,8 +23,9 @@ export function execCheckSyntax(document: vscode.TextDocument, ablConfig: vscode
 	hideStatusBar();
 
 	let uri = document.uri;
+	let wf = vscode.workspace.getWorkspaceFolder(uri);
 	let doCheckSyntax = () => {
-		checkSyntax(uri.fsPath, ablConfig).then(errors => {
+		checkSyntax(wf, uri.fsPath, ablConfig).then(errors => {
 			errorDiagnosticCollection.clear();
 			warningDiagnosticCollection.clear();
 
@@ -71,7 +72,7 @@ export function execCheckSyntax(document: vscode.TextDocument, ablConfig: vscode
 	saveAndExec(document, doCheckSyntax);
 }
 
-function checkSyntax(filename: string, ablConfig: vscode.WorkspaceConfiguration): Promise<ICheckResult[]> {
+function checkSyntax(workspace: vscode.WorkspaceFolder, filename: string, ablConfig: vscode.WorkspaceConfiguration): Promise<ICheckResult[]> {
 	outputChannel.clear();
 	showStatusBar('Checking syntax', STATUS_COLOR.INFO);
 
@@ -79,16 +80,16 @@ function checkSyntax(filename: string, ablConfig: vscode.WorkspaceConfiguration)
 	let cmd = getProBin();
 
 	let oeConfig = getConfig();
-	let env = setupEnvironmentVariables(process.env, oeConfig, vscode.workspace.rootPath);
+	let env = setupEnvironmentVariables(process.env, oeConfig, workspace.uri.fsPath);
 	let args = createProArgs({
 		parameterFiles: oeConfig.parameterFiles,
 		configFile: oeConfig.configFile,
 		batchMode: true,
 		startupProcedure: path.join(__dirname, '../abl-src/check-syntax.p'),
 		param: filename,
-		workspaceRoot: vscode.workspace.rootPath
+		workspaceRoot: workspace.uri.fsPath
 	});
-	cwd = oeConfig.workingDirectory ? oeConfig.workingDirectory.replace('${workspaceRoot}', vscode.workspace.rootPath).replace('${workspaceFolder}', vscode.workspace.rootPath) : cwd;
+	cwd = oeConfig.workingDirectory ? oeConfig.workingDirectory.replace('${workspaceRoot}', workspace.uri.fsPath).replace('${workspaceFolder}', workspace.uri.fsPath) : cwd;
 	return new Promise<ICheckResult[]>((resolve, reject) => {
 		cp.execFile(cmd, args, { env: env, cwd: cwd }, (err, stdout, stderr) => {
 			try {
