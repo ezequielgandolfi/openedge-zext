@@ -10,6 +10,7 @@ export function execRun(document: vscode.TextDocument, ablConfig: vscode.Workspa
 	outputChannel.clear();
 	hideStatusBar();
 	let filename = document.uri.fsPath;
+	let workspace = vscode.workspace.getWorkspaceFolder(document.uri);
 	let cwd = path.dirname(filename);
 	let cmd = getProwinBin();
 
@@ -19,16 +20,16 @@ export function execRun(document: vscode.TextDocument, ablConfig: vscode.Workspa
 		outputChannel.appendLine('> Program name = ' + filename);
 
 		let oeConfig = getConfig();
-		let env = setupEnvironmentVariables(process.env, oeConfig, vscode.workspace.rootPath);
+		let env = setupEnvironmentVariables(process.env, oeConfig, workspace.uri.fsPath);
 		let args = createProArgs({
 			parameterFiles: oeConfig.parameterFiles,
 			configFile: oeConfig.configFile,
 			batchMode: false,
 			startupProcedure: path.join(__dirname, '../abl-src/run.p'),
 			param: filename,
-			workspaceRoot: vscode.workspace.rootPath
+			workspaceRoot: workspace.uri.fsPath
 		});
-		cwd = oeConfig.workingDirectory ? oeConfig.workingDirectory.replace('${workspaceRoot}', vscode.workspace.rootPath).replace('${workspaceFolder}', vscode.workspace.rootPath) : cwd;
+		cwd = oeConfig.workingDirectory ? oeConfig.workingDirectory.replace('${workspaceRoot}', workspace.uri.fsPath).replace('${workspaceFolder}', workspace.uri.fsPath) : cwd;
 		let result = create(cmd, args, { env: env, cwd: cwd }, outputChannel);
 		result.then(() => outputChannel.appendLine('> End'));
 	}

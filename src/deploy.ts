@@ -21,25 +21,26 @@ export enum TASK_TYPE {
 
 export function documentDeploy(document: vscode.TextDocument) {
 	let filename = document.uri.fsPath;
+	let workspace = vscode.workspace.getWorkspaceFolder(document.uri);
 	let oeConfig = getConfig();
 	if (oeConfig.deployment) {
 		let tasks = oeConfig.deployment.filter(item => item.taskType == TASK_TYPE.DEPLOY_SOURCE);
-		deploy(filename, path.dirname(filename), tasks);
+		deploy(workspace, filename, path.dirname(filename), tasks);
 	}
 }
 
-export function rcodeDeploy(filename: string) {
-	return fileDeploy(filename, '.r', [TASK_TYPE.DEPLOY_RCODE,TASK_TYPE.DEPLOY_ALL]);
+export function rcodeDeploy(workspace: vscode.WorkspaceFolder, filename: string) {
+	return fileDeploy(workspace, filename, '.r', [TASK_TYPE.DEPLOY_RCODE,TASK_TYPE.DEPLOY_ALL]);
 }
 
-export function fileDeploy(filename: string, ext:string, taskTypes: string[]) {
+export function fileDeploy(workspace: vscode.WorkspaceFolder, filename: string, ext:string, taskTypes: string[]) {
 	let oeConfig = getConfig();
 	if (oeConfig.deployment) {
 		let fname = filename.substring(0, filename.lastIndexOf('.')) + ext;
-		fname = [vscode.workspace.rootPath, path.basename(fname)].join('\\');
+		fname = [workspace.uri.fsPath, path.basename(fname)].join('\\');
 		let dirname = path.dirname(filename);
 		let tasks = oeConfig.deployment.filter(item => taskTypes.find(t => t == item.taskType));
-		deploy(fname, dirname, tasks).then(() => {
+		deploy(workspace, fname, dirname, tasks).then(() => {
 			// if has deployment task, delete original file
 			if (tasks.length > 0)
 				fs.unlinkSync(fname);
@@ -47,13 +48,13 @@ export function fileDeploy(filename: string, ext:string, taskTypes: string[]) {
 	}
 }
 
-function deploy(filename: string, dirname: string, tasks: DeploymentTask[]): Promise<any> {
+function deploy(workspace: vscode.WorkspaceFolder, filename: string, dirname: string, tasks: DeploymentTask[]): Promise<any> {
 	let oeConfig = getConfig();
 	return new Promise(function(resolve,reject) {
 		tasks.forEach(task => {
 			// copy file
 			let fname = [dirname, path.basename(filename)].join('\\');
-			fname = fname.replace(vscode.workspace.rootPath, task.path);
+			fname = fname.replace(workspace.uri.fsPath, task.path);
 			let cwd = path.dirname(fname);
 			if (!fs.existsSync(cwd))
 				mkdir(cwd);

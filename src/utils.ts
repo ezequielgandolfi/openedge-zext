@@ -189,9 +189,9 @@ export function saveAndExec(document: vscode.TextDocument, action: Function) {
 		action();
 }
 
-export function xcode(filename: string): Promise<boolean> {
+export function xcode(workspace: vscode.WorkspaceFolder, filename: string): Promise<boolean> {
 	let baseName = path.basename(filename);
-	let tmpDir = vscode.workspace.rootPath;
+	let tmpDir = workspace.uri.fsPath;
 	// temp xcode dir
 	tmpDir = [tmpDir,'.xc'+Math.floor(Math.random()*100000).toString()].join('\\');
 	// temp xcode output
@@ -199,7 +199,7 @@ export function xcode(filename: string): Promise<boolean> {
 	// mkdir (outDir is inside tmpDir)
 	mkdir(outDir);
 	// copy file to temp dir
-	let oldFilename = [vscode.workspace.rootPath, baseName].join('\\');
+	let oldFilename = [workspace.uri.fsPath, baseName].join('\\');
 	let newFilename = [tmpDir, baseName].join('\\');
 	fs.copyFileSync(oldFilename, newFilename);
 	// exec xcode
@@ -227,4 +227,8 @@ export function xcode(filename: string): Promise<boolean> {
 				resolve(true);
 		});
 	});
+}
+
+export function currentFolder(): vscode.WorkspaceFolder {
+	return vscode.workspace.getWorkspaceFolder(vscode.window.activeTextEditor.document.uri);
 }

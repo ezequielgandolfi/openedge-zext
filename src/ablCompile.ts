@@ -35,8 +35,9 @@ export function execCompile(document: vscode.TextDocument, ablConfig: vscode.Wor
 	hideStatusBar();
 
 	let uri = document.uri;
+	let wf = vscode.workspace.getWorkspaceFolder(uri);
 	let doCompile = () => { 
-		compile(uri.fsPath, ablConfig, options).then(errors => {
+		compile(wf, uri.fsPath, ablConfig, options).then(errors => {
 			errorDiagnosticCollection.clear();
 			warningDiagnosticCollection.clear();
 
@@ -83,7 +84,7 @@ export function execCompile(document: vscode.TextDocument, ablConfig: vscode.Wor
 	saveAndExec(document, doCompile);
 }
 
-function compile(filename: string, ablConfig: vscode.WorkspaceConfiguration, options:COMPILE_OPTIONS[]): Promise<ICheckResult[]> {
+function compile(workspace: vscode.WorkspaceFolder, filename: string, ablConfig: vscode.WorkspaceConfiguration, options:COMPILE_OPTIONS[]): Promise<ICheckResult[]> {
 	outputChannel.clear();
 	if (options.length == 0)
 		return;
@@ -97,21 +98,21 @@ function compile(filename: string, ablConfig: vscode.WorkspaceConfiguration, opt
 	let oeConfig = getConfig();
 	// output path (.R) only if has post actions
 	if ((oeConfig.deployment)&&(oeConfig.deployment.find(item => (item.taskType == TASK_TYPE.DEPLOY_RCODE)||(item.taskType == TASK_TYPE.DEPLOY_ALL))))
-		par.push(vscode.workspace.rootPath);
+		par.push(workspace.uri.fsPath);
 	else
 		par.push('');
 	// compile options
 	par.push(Object.keys(options).map(k => {return options[k]}).join('|'));
-	let env = setupEnvironmentVariables(process.env, oeConfig, vscode.workspace.rootPath);
+	let env = setupEnvironmentVariables(process.env, oeConfig, workspace.uri.fsPath);
 	let args = createProArgs({
 		parameterFiles: oeConfig.parameterFiles,
 		configFile: oeConfig.configFile,
 		batchMode: true,
 		startupProcedure: path.join(__dirname, '../abl-src/compile.p'),
 		param: par.join(','),
-		workspaceRoot: vscode.workspace.rootPath
+		workspaceRoot: workspace.uri.fsPath
 	});
-	cwd = oeConfig.workingDirectory ? oeConfig.workingDirectory.replace('${workspaceRoot}', vscode.workspace.rootPath).replace('${workspaceFolder}', vscode.workspace.rootPath) : cwd;
+	cwd = oeConfig.workingDirectory ? oeConfig.workingDirectory.replace('${workspaceRoot}', workspace.uri.fsPath).replace('${workspaceFolder}', workspace.uri.fsPath) : cwd;
 	return new Promise<ICheckResult[]>((resolve, reject) => {
 		cp.execFile(cmd, args, { env: env, cwd: cwd }, (err, stdout, stderr) => {
 			try {
@@ -164,30 +165,30 @@ function compile(filename: string, ablConfig: vscode.WorkspaceConfiguration, opt
 			options.forEach(opt => {
 				switch(opt) {
 					case COMPILE_OPTIONS.COMPILE:
-						rcodeDeploy(filename);
+						rcodeDeploy(workspace, filename);
 						break;
 					case COMPILE_OPTIONS.LISTING:
-						fileDeploy(filename+'.listing', '.listing', [TASK_TYPE.DEPLOY_LISTING,TASK_TYPE.DEPLOY_ALL]);
+						fileDeploy(workspace, filename+'.listing', '.listing', [TASK_TYPE.DEPLOY_LISTING,TASK_TYPE.DEPLOY_ALL]);
 						break;
 					case COMPILE_OPTIONS.XREF:
-						fileDeploy(filename+'.xref', '.xref', [TASK_TYPE.DEPLOY_XREF,TASK_TYPE.DEPLOY_ALL]);
+						fileDeploy(workspace, filename+'.xref', '.xref', [TASK_TYPE.DEPLOY_XREF,TASK_TYPE.DEPLOY_ALL]);
 						break;
 					case COMPILE_OPTIONS.XREFXML:
-						fileDeploy(filename+'.xref-xml', '.xref-xml', [TASK_TYPE.DEPLOY_XREFXML,TASK_TYPE.DEPLOY_ALL]);
+						fileDeploy(workspace, filename+'.xref-xml', '.xref-xml', [TASK_TYPE.DEPLOY_XREFXML,TASK_TYPE.DEPLOY_ALL]);
 						break;
 					case COMPILE_OPTIONS.STRINGXREF:
-						fileDeploy(filename+'.string-xref', '.string-xref', [TASK_TYPE.DEPLOY_STRINGXREF,TASK_TYPE.DEPLOY_ALL]);
+						fileDeploy(workspace, filename+'.string-xref', '.string-xref', [TASK_TYPE.DEPLOY_STRINGXREF,TASK_TYPE.DEPLOY_ALL]);
 						break;
 					case COMPILE_OPTIONS.DEBUGLIST:
-						fileDeploy(filename+'.debug-list', '.debug-list', [TASK_TYPE.DEPLOY_DEBUGLIST,TASK_TYPE.DEPLOY_ALL]);
+						fileDeploy(workspace, filename+'.debug-list', '.debug-list', [TASK_TYPE.DEPLOY_DEBUGLIST,TASK_TYPE.DEPLOY_ALL]);
 						break;
 					case COMPILE_OPTIONS.PREPROCESS:
-						fileDeploy(filename+'.preprocess', '.preprocess', [TASK_TYPE.DEPLOY_PREPROCESS,TASK_TYPE.DEPLOY_ALL]);
+						fileDeploy(workspace, filename+'.preprocess', '.preprocess', [TASK_TYPE.DEPLOY_PREPROCESS,TASK_TYPE.DEPLOY_ALL]);
 						break;
 					case COMPILE_OPTIONS.XCODE:
-						xcode(filename+'.xcode').then(ok => {
+						xcode(workspace, filename+'.xcode').then(ok => {
 							if (ok)
-								fileDeploy(filename+'.xcode', '.xcode', [TASK_TYPE.DEPLOY_XCODE,TASK_TYPE.DEPLOY_ALL]);
+								fileDeploy(workspace, filename+'.xcode', '.xcode', [TASK_TYPE.DEPLOY_XCODE,TASK_TYPE.DEPLOY_ALL]);
 						});
 						break;
 				}
