@@ -1,5 +1,11 @@
 # Change Log
 
+## 0.2.1
+
+### Fixes
+- [Issue #4](https://github.com/ezequielgandolfi/openedge-zext/issues/4) Update auto-complete after command "Read database structure" without restart VSCode
+- Database structure files adjustment to work with multi-root workspace
+
 ## 0.2.0
 
 ### Improvements

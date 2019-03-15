@@ -15,6 +15,10 @@ OpenEdge ABL Extension for Visual Studio Code
 
 ## What's new
 
+### 0.2.1
+- Update auto-complete options after command "Read database structure" without restart VSCode
+- Database structure files adjustment to work with multi-root workspace
+
 ### 0.2.0
 - Multi-root workspace
 

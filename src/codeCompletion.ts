@@ -116,7 +116,7 @@ export function loadDictDumpFiles() {
     return new Promise<null>((resolve, reject) => {
         watcher = vscode.workspace.createFileSystemWatcher('**/.openedge-zext.db.*');
 		watcher.onDidChange(uri => loadAndSetDumpFile(uri.fsPath));
-		watcher.onDidCreate(uri => loadAndSetDumpFile(uri.fsPath));
+		//watcher.onDidCreate(uri => loadAndSetDumpFile(uri.fsPath));
 		watcher.onDidDelete(uri => unloadDumpFile(uri.fsPath));
 		findDumpFiles().then(filename => { filename.forEach((f) => { loadAndSetDumpFile(f.fsPath) })});
 		resolve();
