@@ -1,5 +1,10 @@
 # Change Log
 
+## 0.2.0
+
+### Improvements
+- [Issue #5](https://github.com/ezequielgandolfi/openedge-zext/issues/5) Multi-root workspace
+
 ## 0.1.3
 
 ### Fixes

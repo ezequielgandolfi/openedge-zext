@@ -140,23 +140,24 @@ function chooseCompileOption() {
 function saveMapFile(document: vscode.TextDocument, filename?: string) {
 	let doc = getDocumentController().getDocument(document);
 	if (doc) {
-		let save = (fname) => {
+		let save = (fname:string, showMessage:boolean) => {
 			let data = doc.getMap();
 			if (data) {
 				fs.writeFileSync(fname, JSON.stringify(data));
-				vscode.window.showInformationMessage('File ' + path.basename(fname) + ' created!');
+				if (showMessage)
+					vscode.window.showInformationMessage('File ' + path.basename(fname) + ' created!');
 			}
-			else {
-				vscode.window.showErrorMessage('Erro mapping file');
+			else if (showMessage) {
+				vscode.window.showErrorMessage('Error mapping file');
 			}
 		}
 		//
 		if (filename) {
-			save(filename);
+			save(filename, false);
 		}
 		else {
 			let opt: vscode.InputBoxOptions = {prompt: 'Save into file', value: doc.document.uri.fsPath + '.oe-map.json'};
-			vscode.window.showInputBox(opt).then(fname => { if(fname) save(fname) });
+			vscode.window.showInputBox(opt).then(fname => { if(fname) save(fname, true) });
 		}
 	}
 }

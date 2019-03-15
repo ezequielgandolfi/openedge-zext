@@ -15,6 +15,9 @@ OpenEdge ABL Extension for Visual Studio Code
 
 ## What's new
 
+### 0.2.0
+- Multi-root workspace
+
 ### 0.1.3
 - Source navigation to definition working with local variables/parameters
 - Correction in database table/field auto-complete
@@ -115,34 +118,9 @@ Create a file named ".openedge-zext.json" in root path of the workspace.
     - `proPath`: workspaceRoot
     - `workingDirectory`: folder of active source file
 
-## Known Issues
+## Known Issues & Enhancements
 
-Visit [Issues page on GitHub](https://github.com/ezequielgandolfi/openedge-zext/issues) to report any problem.
-
-- Variables within trigger events are being referenced as global variables
-- Source mapper doesn't map buffer, table-handle, dataset, dataset-handle, worktable, work-file types
-- Source mapper doesn't map return parameters
-- Source mapper is incompatible with extent variables/parameters/fields
-- Source mapper is incompatible with "define variable" statement with additional information (format, serialize-name, label, etc)
-
-## Roadmap
-
-_No promises..._ :-)
-
-- Configuration for "source directory" to work with multiple folders in workspace
-- Temp-table definitions
-    - Insert "like" condition to temp-tables (insert all fields from original temp-table)
-- Key bind to open help file
-- Change case (lower, upper, camel)
-- More snippets
-- Map classes
-    - using
-    - auto-complete
-    - read definitions / methods
-- Generate swagger file to current source
-- Generate test case to current source (or method)
-    - Creates a new source file with methods to create test data and run it
-- CRUD generator
+Visit [Issues page on GitHub](https://github.com/ezequielgandolfi/openedge-zext/issues) to report any problem or submit an enhancement.
 
 ## Greetings
 Inspired by ZaphyrVonGenevese (https://github.com/ZaphyrVonGenevese/vscode-abl) and ChrisCamicas (https://github.com/chriscamicas/vscode-abl) work.
