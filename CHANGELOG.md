@@ -1,5 +1,16 @@
 # Change Log
 
+## 0.2.2
+
+### Fixes
+- Grammar file adjustment
+
+### Improvements
+- New commands for integration support
+    - abl.currentFile.getMap: get json map for current file
+    - abl.tables: get table list (DB structure)
+    - abl.table(tableName): get table detail (fields, indexes, etc)
+
 ## 0.2.1
 
 ### Fixes

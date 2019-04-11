@@ -5,7 +5,7 @@ import { execCheckSyntax } from './ablCheckSyntax';
 import { execRun } from './ablRun';
 import { openDataDictionary, readDataDictionary } from './ablDataDictionary';
 import { loadOpenEdgeConfig, getConfig } from './ablConfig';
-import { loadDictDumpFiles } from './codeCompletion';
+import { loadDictDumpFiles, getTableCollection } from './codeCompletion';
 import { execCompile, COMPILE_OPTIONS } from './ablCompile';
 import { documentDeploy } from './deploy';
 import { ABLFormatter } from './formatter';
@@ -73,6 +73,19 @@ export function activate(ctx: vscode.ExtensionContext): void {
 		}
 		saveMapFile(doc, filename);
 		return filename;
+	}));
+	ctx.subscriptions.push(vscode.commands.registerCommand('abl.currentFile.getMap', () => {
+		let doc = vscode.window.activeTextEditor.document;
+		if (doc)
+			return getDocumentController().getDocument(doc).getMap();
+		else
+			return {};
+	}));
+	ctx.subscriptions.push(vscode.commands.registerCommand('abl.tables', () => {
+		return getTableCollection().items.map(item => item.label);
+	}));
+	ctx.subscriptions.push(vscode.commands.registerCommand('abl.table', (tableName) => {
+		return getTableCollection().items.find(item => item.label == tableName);
 	}));
 
 	/*ctx.subscriptions.push(vscode.commands.registerCommand('abl.propath', () => {
