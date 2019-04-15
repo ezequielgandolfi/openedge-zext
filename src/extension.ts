@@ -15,6 +15,7 @@ import { ABL_MODE } from './environment';
 import { hideStatusBar, initDiagnostic } from './notification';
 import { getAllVariables } from './processDocument';
 import { isArray } from 'util';
+import { KeyBindings } from './keyBindings';
 
 export function activate(ctx: vscode.ExtensionContext): void {
 	//const symbolOutlineProvider = new OutlineNavigatorProvider(ctx);
@@ -27,6 +28,7 @@ export function activate(ctx: vscode.ExtensionContext): void {
 	startFormatCommand(ctx.subscriptions);
 	startDocumentWatcher(ctx);
 	initDiagnostic(ctx);
+	new KeyBindings(ctx);
 
 	//vscode.workspace.getConfiguration('files').update('encoding', 'iso88591', false);
 	//vscode.workspace.getConfiguration('editor').update('tabSize', 4, false);

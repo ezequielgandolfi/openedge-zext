@@ -278,12 +278,15 @@ export class ABLDocument {
 			let method = this._methods.find(m => (m.lineAt <= item.line && m.lineEnd >= item.line));
 			let nm = item.name;
 			let st = SYMBOL_TYPE.GLOBAL_PARAM;
+			let knd = vscode.SymbolKind.Property;
 			if (method) {
 				nm+='@'+method.name;
+				if (item.dataType.toLowerCase().startsWith(SYMBOL_TYPE.TEMPTABLE.toLowerCase()))
+					knd = vscode.SymbolKind.Struct;
 				st = SYMBOL_TYPE.LOCAL_PARAM;
 				method.params.push(item);
 			}
-			let s = new vscode.SymbolInformation(nm, vscode.SymbolKind.Property, st, new vscode.Location(this._document.uri, new vscode.Position(item.line, 0)));
+			let s = new vscode.SymbolInformation(nm, knd, st, new vscode.Location(this._document.uri, new vscode.Position(item.line, 0)));
 			this._symbols.push(s);
 		});
 	}
@@ -291,7 +294,7 @@ export class ABLDocument {
 	private refreshTempTables(sourceCode: SourceCode) {
 		this._temps = getAllTempTables(sourceCode);
 		this._temps.forEach(item => {
-			let s = new vscode.SymbolInformation(item.label, vscode.SymbolKind.Variable, SYMBOL_TYPE.TEMPTABLE, new vscode.Location(this._document.uri, new vscode.Position(item.line, 0)));
+			let s = new vscode.SymbolInformation(item.label, vscode.SymbolKind.Struct, SYMBOL_TYPE.TEMPTABLE, new vscode.Location(this._document.uri, new vscode.Position(item.line, 0)));
 			this._symbols.push(s);
 		});
 	}
@@ -446,7 +449,8 @@ export class ABLDefinitionProvider implements vscode.DefinitionProvider {
 		let method = doc.methods.find(m => (m.lineAt <= position.line && m.lineEnd >= position.line));
 		if (method) {
 			let scopedName = selection.word + '@' + method.name.toLowerCase();
-			symbol = doc.symbols.find(item => item.name.toLowerCase() == scopedName);
+			// remove temp-table search for method parameters
+			symbol = doc.symbols.filter(item => item.kind != vscode.SymbolKind.Struct).find(item => item.name.toLowerCase() == scopedName);
 			if (symbol) 
 				return Promise.resolve(symbol.location);
 		}

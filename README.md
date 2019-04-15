@@ -15,6 +15,11 @@ OpenEdge ABL Extension for Visual Studio Code
 
 ## What's new
 
+### 0.3.0
+- Shortcut do method start line (Ctrl+Up)
+- Grammar file adjustment for class type method parameters
+- Source navigation to temp-table definition when received as method parameter
+
 ### 0.2.2
 - Grammar file adjustment
 - New commands for integration support
@@ -25,23 +30,6 @@ OpenEdge ABL Extension for Visual Studio Code
 
 ### 0.2.0
 - Multi-root workspace
-
-### 0.1.3
-- Source navigation to definition working with local variables/parameters
-- Correction in database table/field auto-complete
-
-### 0.1.2
-- Auto-complete fields from referenced temp-table
-- Broadcast changes to referenced documents
-- Request file name to save map file
-
-### 0.1.1
-- Fixed the include temp-table auto-complete
-- Map file exports all data from includes
-
-### 0.1.0
-- New command "ABL: Save Map File" to write a json map file
-- Included a few controls to prevent crashing
 
 See [CHANGELOG](CHANGELOG.md) for more information.
 

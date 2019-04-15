@@ -2,7 +2,7 @@
     "name": "openedge-zext",
     "displayName": "OpenEdge ABL (Progress 4GL)",
     "description": "OpenEdge ABL Extension for VSCode",
-    "version": "0.2.2",
+    "version": "0.3.0",
     "publisher": "ezequielgandolfi",
     "author": "Ezequiel Gandolfi",
     "license": "Apache-2.0",
@@ -383,6 +383,11 @@
                 "when": "editorTextFocus && editorLangId == 'abl'",
                 "command": "abl.currentFile.compileOptions",
                 "key": "Alt+F3"
+            },
+            {
+                "when": "editorTextFocus && editorLangId == 'abl'",
+                "command": "abl.editor.gotoMethodStart",
+                "key": "Ctrl+up"
             }
         ]
     },

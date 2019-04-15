@@ -1,5 +1,14 @@
 # Change Log
 
+## 0.3.0
+
+### Fixes
+- [Issue #12](https://github.com/ezequielgandolfi/openedge-zext/issues/12) Grammar file adjustment for class type method parameters
+
+### Improvements
+- [Issue #13](https://github.com/ezequielgandolfi/openedge-zext/issues/13) Shortcut do method start line (Ctrl+Up)
+- [Issue #11](https://github.com/ezequielgandolfi/openedge-zext/issues/11) Source navigation to temp-table definition when received as method parameter
+
 ## 0.2.2
 
 ### Fixes
