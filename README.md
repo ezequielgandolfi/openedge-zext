@@ -15,6 +15,9 @@ OpenEdge ABL Extension for Visual Studio Code
 
 ## What's new
 
+### 0.3.1
+- Internal changes only
+
 ### 0.3.0
 - Shortcut do method start line (Ctrl+Up)
 - Grammar file adjustment for class type method parameters

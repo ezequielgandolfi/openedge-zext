@@ -90,6 +90,15 @@ export function activate(ctx: vscode.ExtensionContext): void {
 		return getTableCollection().items.find(item => item.label == tableName);
 	}));
 
+	ctx.subscriptions.push(vscode.commands.registerCommand('abl.compile', (fileName: string) => {
+		let ablConfig = vscode.workspace.getConfiguration(ABL_MODE.language);
+		return new Promise(function(resolve,reject) {
+			vscode.workspace.openTextDocument(fileName).then(doc => {
+				execCompile(doc, ablConfig, [COMPILE_OPTIONS.COMPILE]).then(v => resolve(v));
+			});
+		})
+	}));
+
 	/*ctx.subscriptions.push(vscode.commands.registerCommand('abl.propath', () => {
 		vscode.window.showInformationMessage('PROPATH : ' + (getConfig().proPath || ''));
 	}));*/

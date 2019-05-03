@@ -178,15 +178,19 @@ export function mkdir(path: string) {
 	}
 }
 
-export function saveAndExec(document: vscode.TextDocument, action: Function) {
+export function saveAndExec(document: vscode.TextDocument, action: () => Promise<any>) {
 	if (document.isDirty) {
-		vscode.window.showInformationMessage('Current file has unsaved changes!', ...['Save', 'Cancel']).then(result => {
-			if (result == 'Save') 
-				document.save().then(saved => { if (saved) { action(); }});
+		return new Promise(function(resolve,reject) {
+			vscode.window.showInformationMessage('Current file has unsaved changes!', ...['Save', 'Cancel']).then(result => {
+				if (result == 'Save') 
+					document.save().then(saved => { if (saved) { action().then(v => resolve(v)); }});
+				else
+					resolve(null);
+			});
 		});
 	}
 	else
-		action();
+		return action();
 }
 
 export function xcode(workspace: vscode.WorkspaceFolder, filename: string): Promise<boolean> {

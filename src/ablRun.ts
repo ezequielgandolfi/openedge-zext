@@ -14,7 +14,7 @@ export function execRun(document: vscode.TextDocument, ablConfig: vscode.Workspa
 	let cwd = path.dirname(filename);
 	let cmd = getProwinBin();
 
-	let doRun = () => {
+	let doRun = (): Promise<any> => {
 		// output information
 		outputChannel.appendLine('> OpenEdge executable = ' + cmd);
 		outputChannel.appendLine('> Program name = ' + filename);
@@ -32,7 +32,8 @@ export function execRun(document: vscode.TextDocument, ablConfig: vscode.Workspa
 		cwd = oeConfig.workingDirectory ? oeConfig.workingDirectory.replace('${workspaceRoot}', workspace.uri.fsPath).replace('${workspaceFolder}', workspace.uri.fsPath) : cwd;
 		let result = create(cmd, args, { env: env, cwd: cwd }, outputChannel);
 		result.then(() => outputChannel.appendLine('> End'));
+		return result;
 	}
 
-	saveAndExec(document, doRun);
+	return saveAndExec(document, doRun);
 }

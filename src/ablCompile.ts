@@ -19,7 +19,7 @@ export enum COMPILE_OPTIONS {
 	XCODE = 'XCODE'
 };
 
-export function execCompile(document: vscode.TextDocument, ablConfig: vscode.WorkspaceConfiguration, options:COMPILE_OPTIONS[]) {
+export function execCompile(document: vscode.TextDocument, ablConfig: vscode.WorkspaceConfiguration, options:COMPILE_OPTIONS[], silent?: boolean): Promise<any> {
 
 	function mapSeverityToVSCodeSeverity(sev: string) {
 		switch (sev) {
@@ -36,8 +36,11 @@ export function execCompile(document: vscode.TextDocument, ablConfig: vscode.Wor
 
 	let uri = document.uri;
 	let wf = vscode.workspace.getWorkspaceFolder(uri);
-	let doCompile = () => { 
-		compile(wf, uri.fsPath, ablConfig, options).then(errors => {
+	let doCompile = (): Promise<any> => { 
+		let result = compile(wf, uri.fsPath, ablConfig, options);
+		result.then(errors => {
+			if (silent === true)
+				return;
 			errorDiagnosticCollection.clear();
 			warningDiagnosticCollection.clear();
 
@@ -79,12 +82,13 @@ export function execCompile(document: vscode.TextDocument, ablConfig: vscode.Wor
 		}).catch(err => {
 			vscode.window.showInformationMessage('Error: ' + err);
 		});
+		return result;
 	}
 
-	saveAndExec(document, doCompile);
+	return saveAndExec(document, doCompile);
 }
 
-function compile(workspace: vscode.WorkspaceFolder, filename: string, ablConfig: vscode.WorkspaceConfiguration, options:COMPILE_OPTIONS[]): Promise<ICheckResult[]> {
+function compile(workspace: vscode.WorkspaceFolder, filename: string, ablConfig: vscode.WorkspaceConfiguration, options:COMPILE_OPTIONS[], silent?: boolean): Promise<ICheckResult[]> {
 	outputChannel.clear();
 	if (options.length == 0)
 		return;
@@ -160,6 +164,8 @@ function compile(workspace: vscode.WorkspaceFolder, filename: string, ablConfig:
 			}
 		});
 	}).then(results => {
+		if (!silent)
+			return results;
 		if (results.length === 0) {
 			showStatusBar('Compiled', STATUS_COLOR.SUCCESS);
 			options.forEach(opt => {

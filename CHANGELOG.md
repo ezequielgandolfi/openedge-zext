@@ -1,5 +1,10 @@
 # Change Log
 
+## 0.3.1
+
+### Improvements
+- Internal changes only
+
 ## 0.3.0
 
 ### Fixes

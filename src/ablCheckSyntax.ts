@@ -24,8 +24,9 @@ export function execCheckSyntax(document: vscode.TextDocument, ablConfig: vscode
 
 	let uri = document.uri;
 	let wf = vscode.workspace.getWorkspaceFolder(uri);
-	let doCheckSyntax = () => {
-		checkSyntax(wf, uri.fsPath, ablConfig).then(errors => {
+	let doCheckSyntax = (): Promise<any> => {
+		let result = checkSyntax(wf, uri.fsPath, ablConfig);
+		result.then(errors => {
 			errorDiagnosticCollection.clear();
 			warningDiagnosticCollection.clear();
 
@@ -67,9 +68,10 @@ export function execCheckSyntax(document: vscode.TextDocument, ablConfig: vscode
 		}).catch(err => {
 			vscode.window.showInformationMessage('Error: ' + err);
 		});
+		return result;
 	}
 
-	saveAndExec(document, doCheckSyntax);
+	return saveAndExec(document, doCheckSyntax);
 }
 
 function checkSyntax(workspace: vscode.WorkspaceFolder, filename: string, ablConfig: vscode.WorkspaceConfiguration): Promise<ICheckResult[]> {
