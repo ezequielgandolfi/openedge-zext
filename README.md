@@ -15,7 +15,7 @@ OpenEdge ABL Extension for Visual Studio Code
 
 ## What's new
 
-### 0.3.1
+### 0.3.1 / 0.3.2
 - Internal changes only
 
 ### 0.3.0

@@ -164,7 +164,7 @@ function compile(workspace: vscode.WorkspaceFolder, filename: string, ablConfig:
 			}
 		});
 	}).then(results => {
-		if (!silent)
+		if (silent === true)
 			return results;
 		if (results.length === 0) {
 			showStatusBar('Compiled', STATUS_COLOR.SUCCESS);
