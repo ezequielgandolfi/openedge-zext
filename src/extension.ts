@@ -94,7 +94,7 @@ export function activate(ctx: vscode.ExtensionContext): void {
 		let ablConfig = vscode.workspace.getConfiguration(ABL_MODE.language);
 		return new Promise(function(resolve,reject) {
 			vscode.workspace.openTextDocument(fileName).then(doc => {
-				execCompile(doc, ablConfig, [COMPILE_OPTIONS.COMPILE]).then(v => resolve(v));
+				execCompile(doc, ablConfig, [COMPILE_OPTIONS.COMPILE], true).then(v => resolve(v));
 			});
 		})
 	}));

@@ -37,10 +37,11 @@ export function execCompile(document: vscode.TextDocument, ablConfig: vscode.Wor
 	let uri = document.uri;
 	let wf = vscode.workspace.getWorkspaceFolder(uri);
 	let doCompile = (): Promise<any> => { 
-		let result = compile(wf, uri.fsPath, ablConfig, options);
+		let result = compile(wf, uri.fsPath, ablConfig, options, silent);
 		result.then(errors => {
-			if (silent === true)
+			if (silent === true) {
 				return;
+			}
 			errorDiagnosticCollection.clear();
 			warningDiagnosticCollection.clear();
 
@@ -93,7 +94,8 @@ function compile(workspace: vscode.WorkspaceFolder, filename: string, ablConfig:
 	if (options.length == 0)
 		return;
 
-	showStatusBar('Compiling...', STATUS_COLOR.INFO);
+	if (silent !== true)
+		showStatusBar('Compiling...', STATUS_COLOR.INFO);
 
 	let cwd = path.dirname(filename);
 	let cmd = getProwinBin();
@@ -164,8 +166,9 @@ function compile(workspace: vscode.WorkspaceFolder, filename: string, ablConfig:
 			}
 		});
 	}).then(results => {
-		if (silent === true)
+		if (silent === true) {
 			return results;
+		}
 		if (results.length === 0) {
 			showStatusBar('Compiled', STATUS_COLOR.SUCCESS);
 			options.forEach(opt => {
