@@ -1,8 +1,8 @@
 import * as jsonminify from 'jsonminify';
 import { readFile } from 'fs';
-import * as promisify from 'util.promisify';
+import * as util from 'util';
 
-const readFileAsync = promisify(readFile);
+const readFileAsync = util.promisify(readFile);
 
 export const OPENEDGE_CONFIG_FILENAME = '.openedge-zext.json';
 

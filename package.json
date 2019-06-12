@@ -400,18 +400,13 @@
         "build": "vsce package"
     },
     "dependencies": {
-        "glob": "^7.1.2",
-        "jsonminify": "^0.4.1",
-        "minimatch": "^3.0.4",
-        "rimraf": "^2.6.2",
-        "util.promisify": "^1.0.0",
-        "xml2js": "^0.4.19"
+        "jsonminify": "^0.4.1"
     },
     "devDependencies": {
         "typescript": "^3.1.4",
-        "vscode": "^1.1.25",
-        "vsce": "^1.47.0",
-        "tslint": "^5.8.0",
+        "vscode": "^1.1.34",
+        "vsce": "^1.63.0",
+        "tslint": "^5.17.0",
         "@types/node": "^8.10.25",
         "@types/mocha": "^2.2.42"
     }

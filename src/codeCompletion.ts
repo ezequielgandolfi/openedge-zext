@@ -1,13 +1,13 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
-import * as promisify from 'util.promisify';
+import * as util from 'util';
 import { ABLTableDefinition, ABL_PARAM_DIRECTION, TextSelection } from './definition';
 import { ABLDocumentController, ABLDocument } from './documentController';
 import { updateTableCompletionList, getText } from './utils';
 
 let watcher: vscode.FileSystemWatcher = null;
 let _tableCollection: vscode.CompletionList = new vscode.CompletionList();
-const readFileAsync = promisify(fs.readFile);
+const readFileAsync = util.promisify(fs.readFile);
 
 export class ABLCodeCompletion implements vscode.CompletionItemProvider {
 	private _ablDocumentController: ABLDocumentController;
