@@ -14,54 +14,59 @@ def var isPK as logical no-undo.
 
 aJsonTable = new JsonArray().
 
-for each _file:
+def buffer dbFile for dictdb._file.
+def buffer dbField for dictdb._field.
+def buffer dbIndex for dictdb._index.
+def buffer dbIndexField for dictdb._index-field.
+
+for each dbFile:
 
     oTable = new JsonObject().
-    oTable:add("label", _file._file-name).
+    oTable:add("label", dbFile._file-name).
     oTable:add("kind", 5). /*Variable*/
-    oTable:add("detail", _file._Desc).
+    oTable:add("detail", dbFile._Desc).
     aJsonTable:add(oTable).
 
     aJsonField = new JsonArray().
     oTable:add("fields", aJsonField).
 
-    for each _field
-       where _field._file-recid = recid(_file):
+    for each dbField
+       where dbField._file-recid = recid(dbFile):
         oField = new JsonObject().
-        oField:add("label", _field._field-name).
+        oField:add("label", dbField._field-name).
         oField:add("kind", 4). /*Field*/
-        oField:add("detail", _field._Desc).
-        oField:add("dataType", _field._data-type).
-        oField:add("mandatory", _field._mandatory).
-        oField:add("format", _field._format).
+        oField:add("detail", dbField._Desc).
+        oField:add("dataType", dbField._data-type).
+        oField:add("mandatory", dbField._mandatory).
+        oField:add("format", dbField._format).
         aJsonField:add(oField).
     end.
 
     aJsonIndex = new JsonArray().
     oTable:add("indexes", aJsonIndex).
 
-    for each _index
-        where _index._file-recid = recid(_file):
+    for each dbIndex
+        where dbIndex._file-recid = recid(dbFile):
 
-            assign isPK = (recid(_index) = _file._prime-index).
+            assign isPK = (recid(dbIndex) = dbFile._prime-index).
 
             oIndex = new JsonObject().
-            oIndex:add("label", _index._index-name).
+            oIndex:add("label", dbIndex._index-name).
             oIndex:add("kind", 14). /*Snippet*/
-            oIndex:add("detail", _index._Desc).
-            oIndex:add("unique", _index._unique).
+            oIndex:add("detail", dbIndex._Desc).
+            oIndex:add("unique", dbIndex._unique).
             oIndex:add("primary", isPK).
 
             aJsonField = new JsonArray().
-            for each _index-field
-                where _index-field._index-recid = recid(_index),
-                first _field
-                where recid(_field) = _index-field._field-recid:
+            for each dbIndexField
+                where dbIndexField._index-recid = recid(dbIndex),
+                first dbField
+                where recid(dbField) = dbIndexField._field-recid:
 
                     oField = new JsonObject().
-                    oField:add("label", _field._field-name).
+                    oField:add("label", dbField._field-name).
                     //oField:add("kind", 17). /*Reference*/
-                    //oField:add("detail", _field._Desc).
+                    //oField:add("detail", dbField._Desc).
                     aJsonField:add(oField).
             end.
             oIndex:add("fields", aJsonField).

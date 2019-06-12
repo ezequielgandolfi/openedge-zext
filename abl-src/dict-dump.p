@@ -12,6 +12,7 @@ repeat ix = 1 to num-dbs:
     then do:
         create alias "DICTDB" for database value(ldbname(ix)).
         run VALUE(REPLACE(PROGRAM-NAME(1), "dict-dump.p", "dict-dump-exec.p")) (nm-dir-aux).
+        delete alias "DICTDB".
     end.
 end.
 

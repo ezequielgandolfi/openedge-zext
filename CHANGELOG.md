@@ -1,6 +1,11 @@
 # Change Log
 
-## 0.3.1 / 0.3.2
+## 0.3.4
+
+### Fixes
+- Adjustment in "Read dictionary structure" for multi-database
+
+## 0.3.1 / 0.3.2 / 0.3.3
 
 ### Improvements
 - Internal changes only

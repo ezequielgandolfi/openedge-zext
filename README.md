@@ -15,7 +15,10 @@ OpenEdge ABL Extension for Visual Studio Code
 
 ## What's new
 
-### 0.3.1 / 0.3.2
+### 0.3.4
+- Adjustment in "Read dictionary structure" for multi-database
+
+### 0.3.1 / 0.3.2 / 0.3.3
 - Internal changes only
 
 ### 0.3.0
