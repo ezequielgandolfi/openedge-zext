@@ -1,19 +1,25 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as util from 'util';
-import { ABLTableDefinition, ABL_PARAM_DIRECTION, TextSelection } from './definition';
-import { ABLDocumentController, ABLDocument } from './documentController';
+import { ABLTableDefinition } from './definition';
+import { ABLDocumentController, getDocumentController } from './documentController';
 import { updateTableCompletionList, getText } from './utils';
+import { ABL_MODE } from './environment';
 
 let watcher: vscode.FileSystemWatcher = null;
 let _tableCollection: vscode.CompletionList = new vscode.CompletionList();
 const readFileAsync = util.promisify(fs.readFile);
 
-export class ABLCodeCompletion implements vscode.CompletionItemProvider {
+export class ABLCodeCompletionProvider implements vscode.CompletionItemProvider {
 	private _ablDocumentController: ABLDocumentController;
 
-	constructor(controller: ABLDocumentController) {
-		this._ablDocumentController = controller;
+	constructor(context: vscode.ExtensionContext) {
+		this.initialize(context);
+	}
+
+	private initialize(context: vscode.ExtensionContext) {
+		this._ablDocumentController = getDocumentController();
+		context.subscriptions.push(vscode.languages.registerCompletionItemProvider(ABL_MODE.language, this, '.'));
 	}
 	
 	public provideCompletionItems(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken, context: vscode.CompletionContext) {

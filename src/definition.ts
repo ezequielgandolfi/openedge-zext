@@ -22,7 +22,8 @@ export enum SYMBOL_TYPE {
     GLOBAL_VAR = 'Global Variable',
     LOCAL_PARAM = 'Local Parameter',
     GLOBAL_PARAM = 'Global Parameter',
-    TEMPTABLE = 'Temp-table'
+    TEMPTABLE = 'Temp-table',
+    TEMPTABLE_FIELD = 'Temp-table field'
 }
 
 export enum ABL_ASLIKE {
@@ -82,6 +83,11 @@ export class ABLMethod {
     lineAt: number;
     lineEnd: number;
     params: ABLParameter[];
+    localVars: ABLVariable[];
+    constructor() {
+        this.params = [];
+        this.localVars = [];
+    }
 }
 
 export class ABLParameter extends ABLVariable {
@@ -103,4 +109,11 @@ export class ABLTempTable extends ABLTableDefinition {
             return [...this.referenceFields,...this.fields];
         return this.fields;
     }
+}
+
+export interface ABLSymbol {
+    type: SYMBOL_TYPE;
+    value: ABLTempTable | ABLVariable | ABLMethod | ABLParameter | ABLInclude;
+    origin?: ABLTempTable | ABLMethod;
+    location?: vscode.Location;
 }

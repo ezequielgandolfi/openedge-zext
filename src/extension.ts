@@ -3,19 +3,21 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { execCheckSyntax } from './ablCheckSyntax';
 import { execRun } from './ablRun';
-import { openDataDictionary, readDataDictionary } from './ablDataDictionary';
-import { loadOpenEdgeConfig, getConfig } from './ablConfig';
-import { loadDictDumpFiles, getTableCollection } from './codeCompletion';
+import { readDataDictionary } from './ablDataDictionary';
+import { loadOpenEdgeConfig } from './ablConfig';
 import { execCompile, COMPILE_OPTIONS } from './ablCompile';
 import { documentDeploy } from './deploy';
-import { ABLFormatter } from './formatter';
-import { ABLDocumentController, initDocumentController, getDocumentController } from './documentController';
-import { OutlineNavigatorProvider } from './outlineNavigator';
+import { ABLFormattingProvider as ABLFormattingProvider } from './formattingProvider';
+import { initDocumentController, getDocumentController } from './documentController';
 import { ABL_MODE } from './environment';
 import { hideStatusBar, initDiagnostic } from './notification';
-import { getAllVariables } from './processDocument';
-import { isArray } from 'util';
+import { isArray, isNullOrUndefined } from 'util';
 import { KeyBindings } from './keyBindings';
+import { ABLHoverProvider } from './hoverProvider';
+import { ABLDefinitionProvider } from './definitionProvider';
+import { ABLSymbolProvider } from './symbolProvider';
+import { OpenEdgeConfig } from './openEdgeConfigFile';
+import { ABLCodeCompletionProvider, getTableCollection, loadDictDumpFiles } from './codeCompletionProvider';
 
 export function activate(ctx: vscode.ExtensionContext): void {
 	//const symbolOutlineProvider = new OutlineNavigatorProvider(ctx);
@@ -25,8 +27,8 @@ export function activate(ctx: vscode.ExtensionContext): void {
 	startConfigFileWatcher();
 	startDictWatcher();
 	startCleanStatusWatcher(ctx.subscriptions);
-	startFormatCommand(ctx.subscriptions);
 	startDocumentWatcher(ctx);
+	initProviders(ctx);
 	initDiagnostic(ctx);
 	new KeyBindings(ctx);
 
@@ -48,7 +50,7 @@ export function activate(ctx: vscode.ExtensionContext): void {
 	}));
 	ctx.subscriptions.push(vscode.commands.registerCommand('abl.currentFile.compile', () => {
 		let ablConfig = vscode.workspace.getConfiguration(ABL_MODE.language);
-		execCompile(vscode.window.activeTextEditor.document, ablConfig, [COMPILE_OPTIONS.COMPILE]);
+		execCompile(vscode.window.activeTextEditor.document, null, ablConfig, [COMPILE_OPTIONS.COMPILE]);
 	}));
 	ctx.subscriptions.push(vscode.commands.registerCommand('abl.currentFile.run', () => {
 		let ablConfig = vscode.workspace.getConfiguration(ABL_MODE.language);
@@ -90,11 +92,22 @@ export function activate(ctx: vscode.ExtensionContext): void {
 		return getTableCollection().items.find(item => item.label == tableName);
 	}));
 
-	ctx.subscriptions.push(vscode.commands.registerCommand('abl.compile', (fileName: string) => {
+	ctx.subscriptions.push(vscode.commands.registerCommand('abl.compile', (fileName: string, mergeOeConfig?: OpenEdgeConfig) => {
+		/*if (!isNullOrUndefined(options)) {
+			let fileName: string;
+			let mergeOeConfig: OpenEdgeConfig;
+			if (!Array.isArray(options)) {
+				fileName = options;
+			}
+			else {
+				fileName = (options.length >= 1 ? options[0] : '');
+				mergeOeConfig = (options.length >= 2 ? options[1] : null);
+			}
+		}*/
 		let ablConfig = vscode.workspace.getConfiguration(ABL_MODE.language);
 		return new Promise(function(resolve,reject) {
 			vscode.workspace.openTextDocument(fileName).then(doc => {
-				execCompile(doc, ablConfig, [COMPILE_OPTIONS.COMPILE], true).then(v => resolve(v));
+				execCompile(doc, mergeOeConfig, ablConfig, [COMPILE_OPTIONS.COMPILE], true).then(v => resolve(v));
 			});
 		})
 	}));
@@ -143,21 +156,23 @@ function startDictWatcher() {
 	loadDictDumpFiles();
 }
 
-function startFormatCommand(subscriptions: vscode.Disposable[]) {
-	const ablFormatter = new ABLFormatter();
-	subscriptions.push(vscode.languages.registerDocumentFormattingEditProvider(ABL_MODE.language, ablFormatter));
-	//subscriptions.push(vscode.languages.registerOnTypeFormattingEditProvider(ABL_MODE.language, ablFormatter, '\n', '\r\n'));
-}
-
 function startDocumentWatcher(context: vscode.ExtensionContext) {
 	initDocumentController(context);
+}
+
+function initProviders(context: vscode.ExtensionContext) {
+	new ABLCodeCompletionProvider(context);
+	new ABLHoverProvider(context);
+	new ABLDefinitionProvider(context);
+	new ABLSymbolProvider(context);
+	new ABLFormattingProvider(context);
 }
 
 function chooseCompileOption() {
 	let options = Object.keys(COMPILE_OPTIONS).map(k => {return COMPILE_OPTIONS[k]});
 	vscode.window.showQuickPick(options, {placeHolder: 'Compile option', canPickMany: true}).then(v => {
 		let ablConfig = vscode.workspace.getConfiguration(ABL_MODE.language);
-		execCompile(vscode.window.activeTextEditor.document, ablConfig, v);
+		execCompile(vscode.window.activeTextEditor.document, null, ablConfig, v);
 	});
 }
 

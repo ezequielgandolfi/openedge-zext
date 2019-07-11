@@ -15,6 +15,10 @@ OpenEdge ABL Extension for Visual Studio Code
 
 ## What's new
 
+### 0.4.0
+- New Symbol provider for breadcrumbs
+- Improved definition and hover providers
+
 ### 0.3.4
 - Adjustment in "Read dictionary structure" for multi-database
 
@@ -25,17 +29,6 @@ OpenEdge ABL Extension for Visual Studio Code
 - Shortcut do method start line (Ctrl+Up)
 - Grammar file adjustment for class type method parameters
 - Source navigation to temp-table definition when received as method parameter
-
-### 0.2.2
-- Grammar file adjustment
-- New commands for integration support
-
-### 0.2.1
-- Update auto-complete options after command "Read database structure" without restart VSCode
-- Database structure files adjustment to work with multi-root workspace
-
-### 0.2.0
-- Multi-root workspace
 
 See [CHANGELOG](CHANGELOG.md) for more information.
 

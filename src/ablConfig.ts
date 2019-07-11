@@ -1,5 +1,6 @@
-import { FileSystemWatcher, window, workspace, WorkspaceFolder } from 'vscode';
+import { FileSystemWatcher, workspace, WorkspaceFolder } from 'vscode';
 import { OpenEdgeConfig, loadConfigFile, OPENEDGE_CONFIG_FILENAME } from './openEdgeConfigFile';
+import { isNullOrUndefined } from 'util';
 
 
 let _openEdgeConfig: OpenEdgeConfig = null;
@@ -38,6 +39,10 @@ export function loadOpenEdgeConfig() {
         }
     });
 }
-export function getConfig() {
-    return _openEdgeConfig;
+export function getConfig(mergeConfig?: OpenEdgeConfig) {
+    let result = _openEdgeConfig || {};
+    if (isNullOrUndefined(mergeConfig))
+        return result;
+    else
+        return Object.assign(result, mergeConfig);
 }

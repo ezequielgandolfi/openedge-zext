@@ -1,8 +1,18 @@
+import * as vscode from 'vscode';
 import { workspace, WorkspaceConfiguration, FormattingOptions, DocumentFormattingEditProvider, TextDocument, CancellationToken, TextEdit, Range, Position, OnTypeFormattingEditProvider } from 'vscode';
 import { ABL_MODE } from './environment';
 import { getConfig } from './ablConfig';
 
-export class ABLFormatter implements DocumentFormattingEditProvider, OnTypeFormattingEditProvider {
+export class ABLFormattingProvider implements DocumentFormattingEditProvider, OnTypeFormattingEditProvider {
+
+    constructor(context: vscode.ExtensionContext) {
+		this.initialize(context);
+	}
+
+	private initialize(context: vscode.ExtensionContext) {
+		context.subscriptions.push(vscode.languages.registerDocumentFormattingEditProvider(ABL_MODE.language, this));
+    }
+    
 	public provideDocumentFormattingEdits(document: TextDocument, options: FormattingOptions, token: CancellationToken): Thenable<TextEdit[]> {
 		if (document.languageId !== ABL_MODE.language) { return; }
 		return format(document, null, options);
