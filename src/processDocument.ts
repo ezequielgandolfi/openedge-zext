@@ -68,7 +68,7 @@ export function getAllMethods(sourceCode: SourceCode): ABLMethod[] {
 	// 1 = function | procedure
 	// 2 = name
 	// 3 = aditional details (returns xxx...)
-	let regexEnd = new RegExp(/\b(?:end\s(proc|procedure|func|function)){1}\b/gim);
+	let regexEnd = new RegExp(/\b(?:end[\s\t]+(proc|procedure|func|function)){1}\b/gim);
 	//
 	let text = sourceCode.sourceWithoutStrings;
 	let resStart = regexStart.exec(text);

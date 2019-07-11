@@ -1,5 +1,12 @@
 # Change Log
 
+## 0.4.0
+
+### Improvements
+- New Symbol provider for breadcrumbs
+- Improved definition and hover providers
+- New parameters for compile command (integration with other extensios)
+
 ## 0.3.4
 
 ### Fixes

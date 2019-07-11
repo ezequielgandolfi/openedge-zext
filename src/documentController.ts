@@ -2,11 +2,10 @@ import * as vscode from "vscode";
 import * as utils from './utils';
 import * as fs from 'fs';
 import { ABL_MODE } from "./environment";
-import { SYMBOL_TYPE, ABLVariable, ABLMethod, ABLParameter, ABLInclude, ABLTempTable, ABL_PARAM_DIRECTION } from "./definition";
-import { ABLHoverProvider } from "./hover";
-import { ABLCodeCompletion } from "./codeCompletion";
+import { SYMBOL_TYPE, ABLVariable, ABLMethod, ABLParameter, ABLInclude, ABLTempTable, ABL_PARAM_DIRECTION, TextSelection, ABLSymbol } from "./definition";
 import { getAllIncludes, getAllMethods, getAllVariables, getAllParameters, getAllTempTables } from "./processDocument";
 import { SourceCode, SourceParser } from "./sourceParser";
+import { isNullOrUndefined } from "util";
 
 let thisInstance: ABLDocumentController;
 export function getDocumentController(): ABLDocumentController {
@@ -22,7 +21,6 @@ export class ABLDocument {
 	private _symbols: vscode.SymbolInformation[];
 	private _vars: ABLVariable[];
 	private _methods: ABLMethod[];
-	private _params: ABLParameter[];
 	private _includes: ABLInclude[];
 	private _temps: ABLTempTable[];
 
@@ -37,7 +35,6 @@ export class ABLDocument {
 		this._symbols = [];
 		this._vars = [];
 		this._methods = [];
-		this._params = [];
 		this._includes = [];
 		this._temps = [];
 		this._processed = false;
@@ -139,7 +136,6 @@ export class ABLDocument {
 
 	public refreshDocument(): Promise<ABLDocument> {
 		this._processed = false;
-		this._symbols = [];
 		this.externalDocument = [];
 
 		let refreshIncludes = this.refreshIncludes.bind(this);
@@ -147,6 +143,7 @@ export class ABLDocument {
 		let refreshVariables = this.refreshVariables.bind(this);
 		let refreshParameters = this.refreshParameters.bind(this);
 		let refreshTempTables = this.refreshTempTables.bind(this);
+		let refreshSymbols = this.refreshSymbols.bind(this);
 		let self = this;
 
 		let sourceCode = new SourceParser().getSourceCode(this._document);
@@ -157,6 +154,7 @@ export class ABLDocument {
 			refreshVariables(sourceCode);
 			refreshParameters(sourceCode);
 			refreshTempTables(sourceCode);
+			refreshSymbols();
 			resolve(self);
 		});
 		
@@ -166,6 +164,7 @@ export class ABLDocument {
 		// finaliza processo
 		let finish = () => {
 			this._processed = true;
+			this.refreshExternalReferences(this._document);
 			getDocumentController().broadcastDocumentChange(this);
 		};
 		result.then(() => finish());
@@ -215,10 +214,6 @@ export class ABLDocument {
 				let uri = folder.uri.with({path: [folder.uri.path,item.name].join('/')});
 				if (fs.existsSync(uri.fsPath)) {
 					item.fsPath = uri.fsPath;
-					if(!this._symbols.find(s => (s.name == item.name) && (s.containerName == SYMBOL_TYPE.INCLUDE) )) {
-						let s = new vscode.SymbolInformation(item.name, vscode.SymbolKind.File, SYMBOL_TYPE.INCLUDE, new vscode.Location(uri, new vscode.Position(0, 0)));
-						this._symbols.push(s);
-					}
 					if(!this.externalDocument.find(item => item.uri.fsPath == uri.fsPath)) {
 						vscode.workspace.openTextDocument(uri).then(doc => this.insertExternalDocument(doc));
 					}
@@ -229,74 +224,143 @@ export class ABLDocument {
 
 	private refreshMethods(sourceCode: SourceCode) {
 		this._methods = getAllMethods(sourceCode);
-		this._methods.forEach(item => {
-			let s = new vscode.SymbolInformation(item.name, vscode.SymbolKind.Variable, SYMBOL_TYPE.METHOD, new vscode.Location(this._document.uri, new vscode.Position(item.lineAt, 0)));
-			this._symbols.push(s);
+		this.resolveMethodConflicts();
+	}
+
+	private resolveMethodConflicts() {
+		// adjust method start/end lines (missing "procedure" on "end [procedure]")
+		let _prevMethod: ABLMethod;
+		this._methods.forEach(method => {
+			if (!isNullOrUndefined(_prevMethod)) {
+				if (method.lineAt < _prevMethod.lineEnd) {
+					_prevMethod.lineEnd = method.lineAt - 1;
+				}
+			}
+			_prevMethod = method;
 		});
 	}
 
-	/*private refreshReferences(sourceCode: SourceCode): Thenable<any> {
-		let document = this._document;
-		let symbols = this._symbols;
-
-		let line;
-
-		return new Promise(function(resolve,reject) {
-			for(let i = 0; i < document.lineCount; i++) {
-				line = document.lineAt(i);
-				if (!line.isEmptyOrWhitespace) {
-					
-					methodName = utils.getMethodDefinition(line.text);
-					if(methodName != '') {
-						symbols[methodName] = (new vscode.SymbolInformation(methodName, vscode.SymbolKind.Method, document.uri.fsPath, new vscode.Location(document.uri,  new vscode.Position(i, 0))));
-					}
-					
-				}
-			}
-			resolve();
+	private refreshSymbols() {
+		this._symbols = [];
+		// add methods
+		this._methods.forEach(item => {
+			let range: vscode.Range = new vscode.Range(new vscode.Position(item.lineAt, 0), new vscode.Position(item.lineEnd, 0));
+			let sym = new vscode.SymbolInformation(item.name, vscode.SymbolKind.Function, range, this._document.uri, SYMBOL_TYPE.METHOD);
+			this._symbols.push(sym);
 		});
-	}*/
+	}
 
 	private refreshVariables(sourceCode: SourceCode) {
-		this._vars = getAllVariables(sourceCode);
-		this._vars.forEach(item => {
-			let method = this._methods.find(m => (m.lineAt <= item.line && m.lineEnd >= item.line));
-			let nm = item.name;
-			let st = SYMBOL_TYPE.GLOBAL_VAR;
-			if (method) {
-				nm+='@'+method.name;
-				st = SYMBOL_TYPE.LOCAL_VAR;
-			}
-			let s = new vscode.SymbolInformation(nm, vscode.SymbolKind.Variable, st, new vscode.Location(this._document.uri, new vscode.Position(item.line, 0)));
-			this._symbols.push(s);
-		});
+		this._vars = [];
+		let _vars = getAllVariables(sourceCode);
+
+		if (!isNullOrUndefined(_vars) && !isNullOrUndefined(this._methods)) {
+			_vars.forEach(item => {
+				let method = this._methods.find(m => (m.lineAt <= item.line && m.lineEnd >= item.line));
+				if (method)
+					method.localVars.push(item);
+				else
+					this._vars.push(item);
+			});
+		}
 	}
 
 	private refreshParameters(sourceCode: SourceCode) {
-		this._params = getAllParameters(sourceCode);
-		this._params.forEach(item => {
+		let _params = getAllParameters(sourceCode);
+		_params.forEach(item => {
 			let method = this._methods.find(m => (m.lineAt <= item.line && m.lineEnd >= item.line));
-			let nm = item.name;
-			let st = SYMBOL_TYPE.GLOBAL_PARAM;
-			let knd = vscode.SymbolKind.Property;
-			if (method) {
-				nm+='@'+method.name;
-				if (item.dataType.toLowerCase().startsWith(SYMBOL_TYPE.TEMPTABLE.toLowerCase()))
-					knd = vscode.SymbolKind.Struct;
-				st = SYMBOL_TYPE.LOCAL_PARAM;
+			if (method)
 				method.params.push(item);
-			}
-			let s = new vscode.SymbolInformation(nm, knd, st, new vscode.Location(this._document.uri, new vscode.Position(item.line, 0)));
-			this._symbols.push(s);
 		});
 	}
 
 	private refreshTempTables(sourceCode: SourceCode) {
 		this._temps = getAllTempTables(sourceCode);
-		this._temps.forEach(item => {
-			let s = new vscode.SymbolInformation(item.label, vscode.SymbolKind.Struct, SYMBOL_TYPE.TEMPTABLE, new vscode.Location(this._document.uri, new vscode.Position(item.line, 0)));
-			this._symbols.push(s);
-		});
+	}
+
+	public getMethodInPosition(position?: vscode.Position): ABLMethod {
+		if (!isNullOrUndefined(position))
+			return this._methods.find(item =>  {
+				return (item.lineAt <= position.line) && (item.lineEnd >= position.line);
+			});
+		return;
+	}
+
+	public searchSymbol(words: string[], selectedWord?: string, position?: vscode.Position, deepSearch?:boolean): ABLSymbol {
+		selectedWord = ('' || selectedWord).toLowerCase();
+		let location: vscode.Location;
+		if ((words.length == 1) || ((words.length > 0)&&(words[0].toLowerCase() == selectedWord))) {
+			let word = words[0].toLowerCase();
+
+			// temp-table
+			let tt = this._temps.find(item => item.label.toLowerCase() == word);
+			if (!isNullOrUndefined(tt)) {
+				location = new vscode.Location(this.document.uri, new vscode.Position(tt.line, 0));
+				return { type: SYMBOL_TYPE.TEMPTABLE, value: tt, location: location };
+			}
+			
+			// method
+			let mt = this._methods.find(item => item.name.toLowerCase() == word);
+			if (!isNullOrUndefined(mt)) {
+				location = new vscode.Location(this.document.uri, new vscode.Position(mt.lineAt, 0));
+				return { type: SYMBOL_TYPE.METHOD, value: mt, location: location };
+			}
+
+			// local parameters / variables
+			mt = this.getMethodInPosition(position);
+			if (mt) {
+				let lp = mt.params.find(item => item.name.toLowerCase() == word);
+				if (!isNullOrUndefined(lp)) {
+					location = new vscode.Location(this.document.uri, new vscode.Position(lp.line, 0));
+					return { type: SYMBOL_TYPE.LOCAL_PARAM, value: lp, origin: mt, location: location };
+				}
+				let lv = mt.localVars.find(item => item.name.toLowerCase() == word);
+				if (!isNullOrUndefined(lv)) {
+					location = new vscode.Location(this.document.uri, new vscode.Position(lv.line, 0));
+					return { type: SYMBOL_TYPE.LOCAL_VAR, value: lv, origin: mt, location: location };
+				}
+			}
+
+			// variables
+			let gv = this._vars.find(item => item.name.toLowerCase() == word);
+			if (!isNullOrUndefined(gv)) {
+				location = new vscode.Location(this.document.uri, new vscode.Position(gv.line, 0));
+				return { type: SYMBOL_TYPE.GLOBAL_VAR, value: gv, location: location };
+			}
+		}
+		else if (words.length > 1) {
+			let word0 = words[0].toLowerCase();
+			let word1 = words[1].toLowerCase();
+			// temp-table
+			let tt = this._temps.find(item => item.label.toLowerCase() == word0);
+			if (!isNullOrUndefined(tt)) {
+				let fd = tt.fields.find(item => item.name.toLowerCase() == word1);
+				if (fd) {
+					location = new vscode.Location(this.document.uri, new vscode.Position(tt.line, 0));
+					return { type: SYMBOL_TYPE.TEMPTABLE_FIELD, value: fd, origin: tt, location: location };
+				}
+				else {
+					return;
+				}
+			}
+		}
+			
+		// External documents
+		if (deepSearch) {
+			let extSym;
+			this.externalDocument.forEach(external => {
+				if (isNullOrUndefined(extSym)) {
+					let extDoc = getDocumentController().getDocument(external);
+					if ((extDoc)&&(extDoc.processed)) {
+						extSym = extDoc.searchSymbol(words, selectedWord, position, deepSearch);
+					}
+				}
+			});
+			if (!isNullOrUndefined(extSym))
+				return extSym;
+		}
+
+		return;
 	}
 
 }
@@ -314,23 +378,7 @@ export class ABLDocumentController {
 	}
 
 	private initialize(context: vscode.ExtensionContext) {
-		//
 		context.subscriptions.push(this);
-
-		let ablSymbol = new ABLSymbolProvider(this);
-		context.subscriptions.push(vscode.languages.registerDocumentSymbolProvider(ABL_MODE.language, ablSymbol));
-		
-		let ablDefinition = new ABLDefinitionProvider(this);
-		context.subscriptions.push(vscode.languages.registerDefinitionProvider(ABL_MODE.language, ablDefinition));
-
-		/*let ablReference = new ABLReferenceProvider(ablDocumentController);
-		subscriptions.push(vscode.languages.registerReferenceProvider(ABL_MODE.language, ablReference));*/
-
-		let ablHover = new ABLHoverProvider(this);
-		context.subscriptions.push(vscode.languages.registerHoverProvider(ABL_MODE.language, ablHover));
-
-		let ablCodeCompletion = new ABLCodeCompletion(this);
-		context.subscriptions.push(vscode.languages.registerCompletionItemProvider(ABL_MODE.language, ablCodeCompletion, '.'));
 
 		// Current documents
 		vscode.workspace.textDocuments.forEach(document => {
@@ -419,86 +467,3 @@ export class ABLDocumentController {
 	}
 
 }
-
-export class ABLDefinitionProvider implements vscode.DefinitionProvider {
-	private _ablDocumentController: ABLDocumentController;
-
-	constructor(controller: ABLDocumentController) {
-		this._ablDocumentController = controller;
-	}
-
-	public provideDefinition(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Thenable<vscode.Location> {
-		// go-to definition
-		let selection = utils.getText(document, position);
-		let doc = this._ablDocumentController.getDocument(document);
-		if (!doc)
-			return;
-		if (!doc.processed)
-			return;
-
-		let symbol;
-		// search full statement
-		symbol = doc.symbols.find(item => item.name.toLowerCase() == selection.statement);
-		if (symbol) 
-			return Promise.resolve(symbol.location);
-		// search word statement
-		symbol = doc.symbols.find(item => item.name.toLowerCase() == selection.word);
-		if (symbol) 
-			return Promise.resolve(symbol.location);
-		// search method scoped symbols
-		let method = doc.methods.find(m => (m.lineAt <= position.line && m.lineEnd >= position.line));
-		if (method) {
-			let scopedName = selection.word + '@' + method.name.toLowerCase();
-			// remove temp-table search for method parameters
-			symbol = doc.symbols.filter(item => item.kind != vscode.SymbolKind.Struct).find(item => item.name.toLowerCase() == scopedName);
-			if (symbol) 
-				return Promise.resolve(symbol.location);
-		}
-		// search external documents
-		doc.externalDocument.forEach(ext => {
-			if (symbol)
-				return;
-			let extDoc = this._ablDocumentController.getDocument(ext);
-			if ((extDoc)&&(extDoc.processed)) {
-				// search full statement
-				symbol = extDoc.symbols.find(item => item.name.toLowerCase() == selection.statement);
-				// search word statement
-				if (!symbol)
-					symbol = extDoc.symbols.find(item => item.name.toLowerCase() == selection.word);
-			}
-		});
-		if (symbol)
-			return Promise.resolve(symbol.location);
-		return;
-	}
-}
-
-export class ABLReferenceProvider implements vscode.ReferenceProvider {
-	private _ablDocumentController: ABLDocumentController;
-
-	constructor(controller: ABLDocumentController) {
-		this._ablDocumentController = controller;
-	}
-
-	public provideReferences(document: vscode.TextDocument, position: vscode.Position, options: { includeDeclaration: boolean }, token: vscode.CancellationToken): Thenable<vscode.Location[]> {
-		// find all references
-
-		//
-		//this._ablDocumentController.getDocument(document).symbols
-
-		return;
-	}
-}
-
-export class ABLSymbolProvider implements vscode.DocumentSymbolProvider {
-	private _ablDocumentController: ABLDocumentController;
-
-	constructor(controller: ABLDocumentController) {
-		this._ablDocumentController = controller;
-	}
-
-	public provideDocumentSymbols(document: vscode.TextDocument, token: vscode.CancellationToken): Thenable<vscode.SymbolInformation[]> {
-		return Promise.resolve(this._ablDocumentController.getDocument(document).symbols);
-	}
-}
-

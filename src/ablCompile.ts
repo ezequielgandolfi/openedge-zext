@@ -3,10 +3,11 @@ import cp = require('child_process');
 import path = require('path');
 import { outputChannel, showStatusBar, STATUS_COLOR, errorDiagnosticCollection, warningDiagnosticCollection, hideStatusBar } from './notification';
 import { getConfig } from './ablConfig';
-import { getProBin, createProArgs, setupEnvironmentVariables, getProwinBin, ABL_MODE } from './environment';
+import { createProArgs, setupEnvironmentVariables, getProwinBin, ABL_MODE } from './environment';
 import { rcodeDeploy, fileDeploy, TASK_TYPE } from './deploy';
 import { ICheckResult } from './definition';
 import { saveAndExec, xcode } from './utils';
+import { OpenEdgeConfig } from './openEdgeConfigFile';
 
 export enum COMPILE_OPTIONS {
 	COMPILE = 'COMPILE',
@@ -19,7 +20,7 @@ export enum COMPILE_OPTIONS {
 	XCODE = 'XCODE'
 };
 
-export function execCompile(document: vscode.TextDocument, ablConfig: vscode.WorkspaceConfiguration, options:COMPILE_OPTIONS[], silent?: boolean): Promise<any> {
+export function execCompile(document: vscode.TextDocument, mergeOeConfig: OpenEdgeConfig, ablConfig: vscode.WorkspaceConfiguration, options:COMPILE_OPTIONS[], silent?: boolean): Promise<any> {
 
 	function mapSeverityToVSCodeSeverity(sev: string) {
 		switch (sev) {
@@ -37,7 +38,7 @@ export function execCompile(document: vscode.TextDocument, ablConfig: vscode.Wor
 	let uri = document.uri;
 	let wf = vscode.workspace.getWorkspaceFolder(uri);
 	let doCompile = (): Promise<any> => { 
-		let result = compile(wf, uri.fsPath, ablConfig, options, silent);
+		let result = compile(wf, uri.fsPath, mergeOeConfig, ablConfig, options, silent);
 		result.then(errors => {
 			if (silent === true) {
 				return;
@@ -89,7 +90,7 @@ export function execCompile(document: vscode.TextDocument, ablConfig: vscode.Wor
 	return saveAndExec(document, doCompile);
 }
 
-function compile(workspace: vscode.WorkspaceFolder, filename: string, ablConfig: vscode.WorkspaceConfiguration, options:COMPILE_OPTIONS[], silent?: boolean): Promise<ICheckResult[]> {
+function compile(workspace: vscode.WorkspaceFolder, filename: string, mergeOeConfig: OpenEdgeConfig, ablConfig: vscode.WorkspaceConfiguration, options:COMPILE_OPTIONS[], silent?: boolean): Promise<ICheckResult[]> {
 	outputChannel.clear();
 	if (options.length == 0)
 		return;
@@ -101,7 +102,7 @@ function compile(workspace: vscode.WorkspaceFolder, filename: string, ablConfig:
 	let cmd = getProwinBin();
 	let par = [filename];
 
-	let oeConfig = getConfig();
+	let oeConfig = getConfig(mergeOeConfig);
 	// output path (.R) only if has post actions
 	if ((oeConfig.deployment)&&(oeConfig.deployment.find(item => (item.taskType == TASK_TYPE.DEPLOY_RCODE)||(item.taskType == TASK_TYPE.DEPLOY_ALL))))
 		par.push(workspace.uri.fsPath);

@@ -80,7 +80,7 @@
         "prefix": "writejson",
         "description": "Write-Json from temp-table",
         "body": [
-            "temp-table ${1:ttName}:write-json(\"file\", \"$0/$1\", true)."
+            "temp-table ${1:ttName}:write-json(\"file\", \"$0/$1.json\", true)."
         ]
     }
 }
