@@ -18,18 +18,20 @@ import { ABLDefinitionProvider } from './definitionProvider';
 import { ABLSymbolProvider } from './symbolProvider';
 import { OpenEdgeConfig } from './openEdgeConfigFile';
 import { ABLCodeCompletionProvider, getTableCollection, loadDictDumpFiles } from './codeCompletionProvider';
+import { SourceParser } from './sourceParser';
 
 export function activate(ctx: vscode.ExtensionContext): void {
 	//const symbolOutlineProvider = new OutlineNavigatorProvider(ctx);
 
 
-	startBuildOnSaveWatcher(ctx.subscriptions);
-	startConfigFileWatcher();
+	initOnSaveWatcher(ctx);
+	initConfigFileWatcher();
 	startDictWatcher();
-	startCleanStatusWatcher(ctx.subscriptions);
+	initOnChangeActiveTextWatcher(ctx);
 	startDocumentWatcher(ctx);
 	initProviders(ctx);
 	initDiagnostic(ctx);
+	initExternalCommands(ctx);
 	new KeyBindings(ctx);
 
 	//vscode.workspace.getConfiguration('files').update('encoding', 'iso88591', false);
@@ -78,39 +80,6 @@ export function activate(ctx: vscode.ExtensionContext): void {
 		saveMapFile(doc, filename);
 		return filename;
 	}));
-	ctx.subscriptions.push(vscode.commands.registerCommand('abl.currentFile.getMap', () => {
-		let doc = vscode.window.activeTextEditor.document;
-		if (doc)
-			return getDocumentController().getDocument(doc).getMap();
-		else
-			return {};
-	}));
-	ctx.subscriptions.push(vscode.commands.registerCommand('abl.tables', () => {
-		return getTableCollection().items.map(item => item.label);
-	}));
-	ctx.subscriptions.push(vscode.commands.registerCommand('abl.table', (tableName) => {
-		return getTableCollection().items.find(item => item.label == tableName);
-	}));
-
-	ctx.subscriptions.push(vscode.commands.registerCommand('abl.compile', (fileName: string, mergeOeConfig?: OpenEdgeConfig) => {
-		/*if (!isNullOrUndefined(options)) {
-			let fileName: string;
-			let mergeOeConfig: OpenEdgeConfig;
-			if (!Array.isArray(options)) {
-				fileName = options;
-			}
-			else {
-				fileName = (options.length >= 1 ? options[0] : '');
-				mergeOeConfig = (options.length >= 2 ? options[1] : null);
-			}
-		}*/
-		let ablConfig = vscode.workspace.getConfiguration(ABL_MODE.language);
-		return new Promise(function(resolve,reject) {
-			vscode.workspace.openTextDocument(fileName).then(doc => {
-				execCompile(doc, mergeOeConfig, ablConfig, [COMPILE_OPTIONS.COMPILE], true).then(v => resolve(v));
-			});
-		})
-	}));
 
 	/*ctx.subscriptions.push(vscode.commands.registerCommand('abl.propath', () => {
 		vscode.window.showInformationMessage('PROPATH : ' + (getConfig().proPath || ''));
@@ -127,7 +96,7 @@ export function activate(ctx: vscode.ExtensionContext): void {
 function deactivate() {
 }
 
-function startBuildOnSaveWatcher(subscriptions: vscode.Disposable[]) {
+function initOnSaveWatcher(context: vscode.ExtensionContext) {
 	let ablConfig = vscode.workspace.getConfiguration(ABL_MODE.language);
 	if (ablConfig.get('checkSyntaxOnSave') === 'file') {
 		vscode.workspace.onDidSaveTextDocument(document => {
@@ -135,20 +104,15 @@ function startBuildOnSaveWatcher(subscriptions: vscode.Disposable[]) {
 				return;
 			}
 			execCheckSyntax(document, ablConfig);
-		}, null, subscriptions);
+		}, null, context.subscriptions);
 	}
 }
 
-function startCleanStatusWatcher(subscriptions: vscode.Disposable[]) {
+function initOnChangeActiveTextWatcher(context: vscode.ExtensionContext) {
 	vscode.window.onDidChangeActiveTextEditor(editor => hideStatusBar());
-	/*vscode.workspace.onDidChangeTextDocument(documentEvent => {
-		if (documentEvent.document.languageId === ABL_MODE.language) {
-			hideStatusBar();
-		}
-	}, null, subscriptions);*/
 }
 
-function startConfigFileWatcher() {
+function initConfigFileWatcher() {
 	loadOpenEdgeConfig();
 }
 
@@ -166,6 +130,40 @@ function initProviders(context: vscode.ExtensionContext) {
 	new ABLDefinitionProvider(context);
 	new ABLSymbolProvider(context);
 	new ABLFormattingProvider(context);
+}
+
+function initExternalCommands(context: vscode.ExtensionContext) {
+	// current file commands
+	context.subscriptions.push(vscode.commands.registerCommand('abl.currentFile.getMap', () => {
+		let doc = vscode.window.activeTextEditor.document;
+		if (doc)
+			return getDocumentController().getDocument(doc).getMap();
+		else
+			return {};
+	}));
+	context.subscriptions.push(vscode.commands.registerCommand('abl.currentFile.getSourceCode', () => {
+		let doc = vscode.window.activeTextEditor.document;
+		if (doc)
+			return new SourceParser().getSourceCode(doc);
+		else
+			return;
+	}));
+	// other commands
+	context.subscriptions.push(vscode.commands.registerCommand('abl.tables', () => {
+		return getTableCollection().items.map(item => item.label);
+	}));
+	context.subscriptions.push(vscode.commands.registerCommand('abl.table', (tableName) => {
+		return getTableCollection().items.find(item => item.label == tableName);
+	}));
+
+	context.subscriptions.push(vscode.commands.registerCommand('abl.compile', (fileName: string, mergeOeConfig?: OpenEdgeConfig) => {
+		let ablConfig = vscode.workspace.getConfiguration(ABL_MODE.language);
+		return new Promise(function(resolve,reject) {
+			vscode.workspace.openTextDocument(fileName).then(doc => {
+				execCompile(doc, mergeOeConfig, ablConfig, [COMPILE_OPTIONS.COMPILE], true).then(v => resolve(v));
+			});
+		})
+	}));
 }
 
 function chooseCompileOption() {

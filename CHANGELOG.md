@@ -1,8 +1,17 @@
 # Change Log
 
+## 0.5.0
+
+### Features
+- [Issue #16](https://github.com/ezequielgandolfi/openedge-zext/issues/16) Snippet fields from database for temp-table "like" db table
+- [Issue #18](https://github.com/ezequielgandolfi/openedge-zext/issues/18) Mapping for "buffer" type
+    - Autocomplete fields
+    - Hover feature
+    - Go to definition
+
 ## 0.4.0
 
-### Improvements
+### Features
 - New Symbol provider for breadcrumbs
 - Improved definition and hover providers
 - New parameters for compile command (integration with other extensios)
@@ -14,7 +23,7 @@
 
 ## 0.3.1 / 0.3.2 / 0.3.3
 
-### Improvements
+### Fixes
 - Internal changes only
 
 ## 0.3.0
@@ -22,7 +31,7 @@
 ### Fixes
 - [Issue #12](https://github.com/ezequielgandolfi/openedge-zext/issues/12) Grammar file adjustment for class type method parameters
 
-### Improvements
+### Features
 - [Issue #13](https://github.com/ezequielgandolfi/openedge-zext/issues/13) Shortcut do method start line (Ctrl+Up)
 - [Issue #11](https://github.com/ezequielgandolfi/openedge-zext/issues/11) Source navigation to temp-table definition when received as method parameter
 
@@ -31,7 +40,7 @@
 ### Fixes
 - Grammar file adjustment
 
-### Improvements
+### Features
 - New commands for integration support
     - abl.currentFile.getMap: get json map for current file
     - abl.tables: get table list (DB structure)
@@ -45,7 +54,7 @@
 
 ## 0.2.0
 
-### Improvements
+### Features
 - [Issue #5](https://github.com/ezequielgandolfi/openedge-zext/issues/5) Multi-root workspace
 
 ## 0.1.3
@@ -56,14 +65,14 @@
 
 ## 0.1.2
 
-### Improvements
+### Features
 - Auto-complete fields from referenced temp-table
 - Broadcast changes to referenced documents
 - Request file name to save map file
 
 ## 0.1.1
 
-### Improvements
+### Features
 - Map file exports all data from includes
 
 ### Fixes
@@ -71,19 +80,19 @@
 
 ## 0.1.0
 
-### Improvements
+### Features
 - New command "ABL: Save Map File" to write a json map file
 - Included a few controls to prevent crashing
 
 ## 0.0.22
 
-### Improvements
+### Features
 - New source parser
 - Auto-complete for internal methods with parameters snippet
 
 ## 0.0.21
 
-### Improvements
+### Features
 - Hover tooltip new behavior
 - XCode compile option
 
@@ -92,7 +101,7 @@
 ### Fixes
 - Auto-complete was crashing in some situations
 
-### Improvements
+### Features
 - New command to compile with some flags (Alt+F3)
 
 ## 0.0.19
@@ -100,7 +109,7 @@
 ### Fixes
 - Fixed table name from "ALL FIELDS" snippet
 
-### Improvements
+### Features
 - Update README e CHANGELOG
 - More code snippets
 - Ask to save dirty files before run commands
@@ -112,7 +121,7 @@
 - Fixed the looping problem when trying to run with compile error
 - Fixed key bindings to activate only for ABL files
 
-### Improvements
+### Features
 - "ALL FIELDS" snippet for tables / temp-tables
 - Formatter (supports: trim right). Enable options in settings file
 

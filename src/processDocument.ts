@@ -35,10 +35,12 @@ export function getAllIncludes(sourceCode: SourceCode): ABLInclude[] {
 
 export function getAllVariables(sourceCode: SourceCode): ABLVariable[] {
 	let result: ABLVariable[] = [];
-	let regexDefineVar: RegExp = new RegExp(/(?:def|define){1}(?:[\s\t\n]|new|shared)+(?:var|variable){1}(?:[\s\t\n]+)([\w\d\-]+)[\s\t\n]+(as|like){1}[\s\t\n]+([\w\d\-\.]+)/gim);
+	//let regexDefineVar: RegExp = new RegExp(/(?:def|define){1}(?:[\s\t\n]|new|shared)+(?:var|variable){1}(?:[\s\t\n]+)([\w\d\-]+)[\s\t\n]+(as|like){1}[\s\t\n]+([\w\d\-\.]+)/gim);
+	let regexDefineVar: RegExp = new RegExp(/(?:def|define){1}(?:[\s\t\n]|new|shared)+(?:var|variable){1}(?:[\s\t\n]+)([\w\d\-]+)[\s\t\n]+(as|like){1}[\s\t\n]+([\w\d\-\.]+)([\n\s\t\w\d\-\'\"]*)\./gim);
 	// 1 = var name
 	// 2 = as | like
 	// 3 = type | field like
+	// 4 = details (extent, no-undo, initial, etc)
 	let text = sourceCode.sourceWithoutStrings;
 	let res = regexDefineVar.exec(text);
 	while(res) {
@@ -48,10 +50,35 @@ export function getAllVariables(sourceCode: SourceCode): ABLVariable[] {
 			v.asLike = <ABL_ASLIKE>res[2].trim();
 			v.dataType = removeInvalidRightChar(res[3].trim()); // removeInvalidRightChar to remove special chars because is accepted in this capture group
 			v.line = sourceCode.document.positionAt(res.index).line;
+			v.additional = (res[4] || '').trim();
 			result.push(v);
 		}
 		catch {} // suppress errors
 		res = regexDefineVar.exec(text);
+	}
+	return result;
+}
+
+export function getAllBuffers(sourceCode: SourceCode): ABLVariable[] {
+	let result: ABLVariable[] = [];
+	let regexDefineBuffer: RegExp = new RegExp(/(?:def|define){1}(?:[\s\t\n]|new|shared)+(?:buffer){1}[\s\t\n]+([\w\d\-]+){1}[\s\t\n]+(?:for){1}[\s\t\n]+(temp-table[\s\t\n]+)*([\w\d\-\+]*)(?:\.[^\w\d\-\+])+/gim);
+	// 1 = buffer name
+	// 2 = undefined | temp-table
+	// 3 = buffer value
+	let text = sourceCode.sourceWithoutStrings;
+	let res = regexDefineBuffer.exec(text);
+	while(res) {
+		let v = new ABLVariable();
+		try {
+			v.name = res[1].trim();
+			v.asLike = ABL_ASLIKE.AS;
+			v.dataType = 'buffer';
+			v.line = sourceCode.document.positionAt(res.index).line;
+			v.additional = res[3];
+			result.push(v);
+		}
+		catch {} // suppress errors
+		res = regexDefineBuffer.exec(text);
 	}
 	return result;
 }
@@ -98,11 +125,13 @@ export function getAllMethods(sourceCode: SourceCode): ABLMethod[] {
 export function getAllParameters(sourceCode: SourceCode): ABLParameter[] {
 	let result: ABLParameter[] = [];
 	/* Primitive types */
-	let regexParams: RegExp = new RegExp(/\b(?:def|define){1}[\s\t\n]+([inputo\-]*){1}[\s\t\n]+(?:param|parameter){1}[\s\t\n]+([\w\d\-\.]*){1}[\s\t\n]+(as|like){1}[\s\t\n]+([\w\d\-\.]+)/gim);
+	//let regexParams: RegExp = new RegExp(/\b(?:def|define){1}[\s\t\n]+([inputo\-]*){1}[\s\t\n]+(?:param|parameter){1}[\s\t\n]+([\w\d\-\.]*){1}[\s\t\n]+(as|like){1}[\s\t\n]+([\w\d\-\.]+)/gim);
+	let regexParams: RegExp = new RegExp(/\b(?:def|define){1}[\s\t\n]+([inputo\-]*){1}[\s\t\n]+(?:param|parameter){1}[\s\t\n]+([\w\d\-\.]*){1}[\s\t\n]+(as|like){1}[\s\t\n]+([\w\d\-\.]+)([\n\s\t\w\d\-\'\"]*)\./gim);
 	// 1 = input | output | input-output
 	// 2 = name
 	// 3 = as | like
 	// 4 = type | field like
+	// 5 = details
 	let text = sourceCode.sourceWithoutStrings;
 	let res = regexParams.exec(text);
 	while(res) {
@@ -118,6 +147,7 @@ export function getAllParameters(sourceCode: SourceCode): ABLParameter[] {
 				v.direction = ABL_PARAM_DIRECTION.OUT;
 			else
 				v.direction = ABL_PARAM_DIRECTION.INOUT;
+			v.additional = (res[5] || '').trim();
 			result.push(v);
 		}
 		catch {} // suppress errors
@@ -141,6 +171,26 @@ export function getAllParameters(sourceCode: SourceCode): ABLParameter[] {
 				v.direction = ABL_PARAM_DIRECTION.OUT;
 			else
 				v.direction = ABL_PARAM_DIRECTION.INOUT;
+			result.push(v);
+		}
+		catch {} // suppress errors
+		res = regexParams.exec(text);
+	}
+	/* Buffer */
+	regexParams = new RegExp(/\b(?:def|define){1}[\s\t\n]+(?:param|parameter){1}[\s\t\n]+(?:buffer){1}[\s\t\n]+([\w\d\-]+){1}[\s\t\n]+(?:for){1}[\s\t\n]+(temp-table[\s\t\n]+)*([\w\d\-\+]*)(?:\.[^\w\d\-\+])+/gim);
+	// 1 = name
+	// 2 = undefined | temp-table
+	// 3 = buffer reference
+	res = regexParams.exec(text);
+	while(res) {
+		let v = new ABLParameter();
+		try {
+			v.name = res[1].trim();
+			v.asLike = ABL_ASLIKE.AS;
+			v.dataType = 'buffer'
+			v.line = sourceCode.document.positionAt(res.index).line;
+			v.direction = ABL_PARAM_DIRECTION.IN;
+			v.additional = res[3];
 			result.push(v);
 		}
 		catch {} // suppress errors

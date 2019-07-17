@@ -3,9 +3,10 @@ import * as utils from './utils';
 import * as fs from 'fs';
 import { ABL_MODE } from "./environment";
 import { SYMBOL_TYPE, ABLVariable, ABLMethod, ABLParameter, ABLInclude, ABLTempTable, ABL_PARAM_DIRECTION, TextSelection, ABLSymbol } from "./definition";
-import { getAllIncludes, getAllMethods, getAllVariables, getAllParameters, getAllTempTables } from "./processDocument";
+import { getAllIncludes, getAllMethods, getAllVariables, getAllParameters, getAllTempTables, getAllBuffers } from "./processDocument";
 import { SourceCode, SourceParser } from "./sourceParser";
 import { isNullOrUndefined } from "util";
+import { getTableCollection } from "./codeCompletionProvider";
 
 let thisInstance: ABLDocumentController;
 export function getDocumentController(): ABLDocumentController {
@@ -89,7 +90,7 @@ export class ABLDocument {
 		return [];
 	}
 
-	public getCompletionSymbols(): vscode.CompletionItem[] {
+	public getCompletionSymbols(position?: vscode.Position): vscode.CompletionItem[] {
 		// Temp-tables
 		let tt: vscode.CompletionItem[] = this._temps.map(item => {
 			return new vscode.CompletionItem(item.label);
@@ -107,14 +108,19 @@ export class ABLDocument {
 						snip.appendText(',\n\t');
 					else
 						pf = false;
-					if (p.direction == ABL_PARAM_DIRECTION.IN)
-						snip.appendText('input ');
-					else if (p.direction == ABL_PARAM_DIRECTION.OUT)
-						snip.appendText('output ');
-					else
-						snip.appendText('input-output ');
-					if (p.dataType == 'temp-table')
-						snip.appendText('table ');
+					if (p.dataType == 'buffer') {
+						snip.appendText('buffer ');
+					}
+					else {
+						if (p.direction == ABL_PARAM_DIRECTION.IN)
+							snip.appendText('input ');
+						else if (p.direction == ABL_PARAM_DIRECTION.OUT)
+							snip.appendText('output ');
+						else
+							snip.appendText('input-output ');
+						if (p.dataType == 'temp-table')
+							snip.appendText('table ');
+					}
 					snip.appendPlaceholder(p.name);
 				});
 				snip.appendText(')');
@@ -122,8 +128,24 @@ export class ABLDocument {
 			}
 			md.push(_mi);
 		});
+		// buffers
+		let gb = this._vars.filter(v => v.dataType == 'buffer').map(item => {
+			return new vscode.CompletionItem(item.name);
+		});
+		// method buffers
+		let lb = [];
+		let lp = [];
+		let m = this.getMethodInPosition(position);
+		if (!isNullOrUndefined(m)) {
+			lb = m.localVars.filter(v => v.dataType == 'buffer').map(item => {
+				return new vscode.CompletionItem(item.name);
+			});
+			lp = m.params.filter(v => v.dataType == 'buffer').map(item => {
+				return new vscode.CompletionItem(item.name);
+			});
+		}
 		//
-		return [...tt,...md];
+		return [...tt,...md,...gb,...lb,...lp];
 	}
 
 	public pushDocumentSignal(document: ABLDocument) {
@@ -172,8 +194,6 @@ export class ABLDocument {
 	}
 
 	public refreshExternalReferences(document: vscode.TextDocument) {
-		// find references from includes inside the program
-
 		// temp-tables
 		this.tempTables.filter(item => item.referenceTable).forEach(item => {
 			let fields = this.getDeclaredTempTableFields(item.referenceTable, document);
@@ -252,7 +272,7 @@ export class ABLDocument {
 
 	private refreshVariables(sourceCode: SourceCode) {
 		this._vars = [];
-		let _vars = getAllVariables(sourceCode);
+		let _vars = [].concat(getAllVariables(sourceCode)).concat(getAllBuffers(sourceCode));
 
 		if (!isNullOrUndefined(_vars) && !isNullOrUndefined(this._methods)) {
 			_vars.forEach(item => {
@@ -276,6 +296,14 @@ export class ABLDocument {
 
 	private refreshTempTables(sourceCode: SourceCode) {
 		this._temps = getAllTempTables(sourceCode);
+		// reference to db tables
+		this._temps.filter(item => !isNullOrUndefined(item.referenceTable)).forEach(item => {
+			let tb = getTableCollection().items.find(tn => tn.label.toLowerCase() == item.referenceTable.toLowerCase());
+			if ((!isNullOrUndefined(tb))&&(!isNullOrUndefined(tb['fields']))) {
+				item.referenceFields = [...tb['fields']];
+				utils.updateTableCompletionList(item);
+			}
+		});
 	}
 
 	public getMethodInPosition(position?: vscode.Position): ABLMethod {
@@ -283,6 +311,23 @@ export class ABLDocument {
 			return this._methods.find(item =>  {
 				return (item.lineAt <= position.line) && (item.lineEnd >= position.line);
 			});
+		return;
+	}
+
+	public searchBuffer(name: string, position?: vscode.Position): string {
+		// method buffers
+		let m = this.getMethodInPosition(position);
+		if (!isNullOrUndefined(m)) {
+			let lb = m.localVars.filter(v => v.dataType == 'buffer').find(v => v.name.toLowerCase() == name.toLowerCase());
+			if (!isNullOrUndefined(lb))
+				return lb.additional.toLowerCase();	
+			let lp = m.params.filter(v => v.dataType == 'buffer').find(v => v.name.toLowerCase() == name.toLowerCase());
+			if (!isNullOrUndefined(lp))
+				return lp.additional.toLowerCase();
+		}
+		let res = this._vars.filter(v => v.dataType == 'buffer').find(v => v.name.toLowerCase() == name.toLowerCase());
+		if (!isNullOrUndefined(res))
+			return res.additional.toLowerCase();
 		return;
 	}
 
