@@ -76,6 +76,7 @@ export class ABLVariable {
     asLike: ABL_ASLIKE;
     dataType: string;
     line: number;
+    additional?: string;
 }
 
 export class ABLMethod {

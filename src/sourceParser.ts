@@ -2,11 +2,11 @@ import * as vscode from "vscode";
 
 enum CommentType { SingleLine, MultiLine }
 
-export class SourceCode {
+export interface SourceCode {
     document: vscode.TextDocument;
-    fullSource: string;
-    sourceWithoutComments: string;
-    sourceWithoutStrings: string;
+    fullSource?: string;
+    sourceWithoutComments?: string;
+    sourceWithoutStrings?: string;
 }
 
 export class SourceParser {
@@ -14,11 +14,7 @@ export class SourceParser {
     public getSourceCode(document: vscode.TextDocument): SourceCode {
         let source = document.getText();
 
-        let code: SourceCode = new SourceCode();
-        code.document = document;
-        code.fullSource = source;
-        code.sourceWithoutComments = '';
-        code.sourceWithoutStrings = '';
+        let code: SourceCode = { document: document, fullSource: source, sourceWithoutComments: '', sourceWithoutStrings: '' };
 
         let prevChar: string = '';
         let nextChar: string = '';

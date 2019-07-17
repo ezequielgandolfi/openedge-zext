@@ -28,6 +28,9 @@ export class ABLCodeCompletionProvider implements vscode.CompletionItemProvider 
 		let selection = getText(document, p, true);
 		let words = selection.statement.split('.');
 		if (words.length == 2) {
+			// translate buffer var/param
+			words[0] = (doc.searchBuffer(words[0], position) || words[0]);
+			//
 			let result = this.getCompletionFields(words[0]);
 			if ((result)&&(result.length>0))
 				return new vscode.CompletionList(result);
@@ -52,13 +55,13 @@ export class ABLCodeCompletionProvider implements vscode.CompletionItemProvider 
 			// Tables
 			let tb = _tableCollection.items;
 			// Symbols
-			let docSym = doc.getCompletionSymbols();
+			let docSym = doc.getCompletionSymbols(position);
 			// External Symbols
 			let extSym: vscode.CompletionItem[] = [];
 			doc.externalDocument.forEach(external => {
 				let extDoc = this._ablDocumentController.getDocument(external);
 				if ((extDoc)&&(extDoc.processed)) {
-					extSym = [...extSym,...extDoc.getCompletionSymbols()];
+					extSym = [...extSym,...extDoc.getCompletionSymbols(position)];
 				}
 			});
 			//

@@ -15,15 +15,19 @@ OpenEdge ABL Extension for Visual Studio Code
 
 ## What's new
 
+### 0.5.0
+- Snippet fields from database for temp-table "like" db table
+- Mapping for "buffer" type
+    - Autocomplete fields
+    - Hover feature
+    - Go to definition
+
 ### 0.4.0
 - New Symbol provider for breadcrumbs
 - Improved definition and hover providers
 
 ### 0.3.4
 - Adjustment in "Read dictionary structure" for multi-database
-
-### 0.3.1 / 0.3.2 / 0.3.3
-- Internal changes only
 
 ### 0.3.0
 - Shortcut do method start line (Ctrl+Up)
@@ -123,4 +127,4 @@ Inspired by ZaphyrVonGenevese (https://github.com/ZaphyrVonGenevese/vscode-abl) 
 ## License
 Licensed under the [Apache-2.0](LICENSE) License.
 
-> Grammar file from Christophe Camicas (https://github.com/chriscamicas/abl-tmlanguage.git)
+> Grammar file based on Christophe Camicas' (https://github.com/chriscamicas/abl-tmlanguage.git)

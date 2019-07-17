@@ -39,6 +39,8 @@ export class ABLHoverProvider implements HoverProvider {
                 }
             }
             else {
+                // translate buffer var/param
+			    words[0] = (doc.searchBuffer(words[0], position) || words[0]);
                 // check for table.field collection
                 let tb = getTableCollection().items.find(item => item.label == words[0]);
                 if (tb) {
@@ -69,20 +71,28 @@ export class ABLHoverProvider implements HoverProvider {
             }
             if (symbol.type == SYMBOL_TYPE.GLOBAL_VAR) {
                 let gv = <ABLVariable>(symbol.value);
-                return new Hover([selection.word, 'Global variable *'+gv.name+'*'], selection.wordRange);
+                if (gv.dataType == 'buffer')
+                    return new Hover([selection.word, 'Global buffer *'+gv.name+'*','for table *'+gv.additional+'*'], selection.wordRange);
+                else
+                    return new Hover([selection.word, 'Global variable *'+gv.name+'*'], selection.wordRange);
             }
             if (symbol.type == SYMBOL_TYPE.LOCAL_PARAM) {
                 let mt = <ABLMethod>(symbol.origin);
                 let lp = <ABLParameter>(symbol.value);
                 if (lp.dataType == 'temp-table')
                     return new Hover([selection.word, 'Local temp-table parameter *'+lp.name+'*','from method *'+mt.name+'*'], selection.wordRange);
+                else if (lp.dataType == 'buffer')
+                    return new Hover([selection.word, 'Local buffer parameter *'+lp.name+'*','for table *'+lp.additional+'*','from method *'+mt.name+'*'], selection.wordRange);
                 else
                     return new Hover([selection.word, 'Local parameter *'+lp.name+'*','from method *'+mt.name+'*'], selection.wordRange);
             }
             if (symbol.type == SYMBOL_TYPE.LOCAL_VAR) {
                 let mt = <ABLMethod>(symbol.origin);
                 let lv = <ABLVariable>(symbol.value);
-                return new Hover([selection.word, 'Local variable *'+lv.name+'*','from method *'+mt.name+'*'], selection.wordRange);
+                if (lv.dataType == 'buffer')
+                    return new Hover([selection.word, 'Local buffer *'+lv.name+'*','for table *'+lv.additional+'*','from method *'+mt.name+'*'], selection.wordRange);
+                else
+                    return new Hover([selection.word, 'Local variable *'+lv.name+'*','from method *'+mt.name+'*'], selection.wordRange);
             }
         }
 
