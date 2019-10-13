@@ -42,7 +42,8 @@ export function readDataDictionary(ablConfig: vscode.WorkspaceConfiguration) {
 		workspaceRoot: genericPath()
     });
     let cwd = genericPath();
-	cwd = oeConfig.workingDirectory ? oeConfig.workingDirectory.replace('${workspaceRoot}', genericPath()).replace('${workspaceFolder}', genericPath()) : cwd;
+    cwd = oeConfig.workingDirectory ? oeConfig.workingDirectory.replace('${workspaceRoot}', genericPath()).replace('${workspaceFolder}', genericPath()) : cwd;
+    vscode.window.showInformationMessage('Updating data dicionary...');
 	create(cmd, args, { env: env, cwd: cwd }, outputChannel).then((res) => {
         vscode.window.showInformationMessage('Data dicionary ' + (res.success ? 'updated' : 'failed'));
     });

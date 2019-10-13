@@ -1,7 +1,9 @@
 import { ABL_MODE } from './environment';
 import * as vscode from 'vscode';
+import { isNullOrUndefined } from 'util';
 
 export let outputChannel = vscode.window.createOutputChannel('OpenEdge');
+let statusMessages: {fsPath:string,text?:string,color?:any,active?:boolean}[] = [];
 let statusBarEntry: vscode.StatusBarItem;
 
 export let errorDiagnosticCollection: vscode.DiagnosticCollection;
@@ -13,35 +15,48 @@ export enum STATUS_COLOR {
     ERROR = 'violet'
 }
 
-/*export function showHideStatus() {
-	if (!statusBarEntry) {
-		return;
-	}
-	if (!vscode.window.activeTextEditor) {
-		statusBarEntry.hide();
-		return;
-	}
-	if (vscode.languages.match(ABL_MODE, vscode.window.activeTextEditor.document)) {
-		statusBarEntry.show();
-		return;
-	}
-	statusBarEntry.hide();
-}*/
+export function updateStatusBar() {
+    updateDocumentStatusBar(vscode.window.activeTextEditor.document.uri.fsPath);
+}
 
-export function hideStatusBar() {
-	if (statusBarEntry) {
-		statusBarEntry.dispose();
+function updateDocumentStatusBar(fsPath: string) {
+    statusBarEntry.hide();
+
+    let msg = statusMessages.find(item => item.fsPath == fsPath);
+    if (!isNullOrUndefined(msg) && msg.active) {
+        statusBarEntry.text = msg.text;
+        statusBarEntry.color = msg.color;
+        statusBarEntry.show();
+    }
+}
+
+export function hideStatusBar(fsPath: string) {
+    let idx = statusMessages.findIndex(item => item.fsPath == fsPath);
+	if (idx >= 0) {
+        statusMessages.splice(idx, 1);
+        updateStatusBar();
 	}
 }
 
-export function showStatusBar(message: string, status?: STATUS_COLOR, command?: string) {
-    hideStatusBar();
-	statusBarEntry = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, Number.MIN_VALUE);
-	statusBarEntry.text = message;
-    statusBarEntry.command = command;
-    statusBarEntry.color = status;
-	//statusBarEntry.tooltip = tooltip;
-	statusBarEntry.show();
+export function showStatusBar(fsPath: string, message: string, status?: STATUS_COLOR) {
+    // hideStatusBar();
+    // let statusBarEntry: vscode.StatusBarItem;
+	// statusBarEntry = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, Number.MIN_VALUE);
+	// statusBarEntry.text = message;
+    // statusBarEntry.command = command;
+    // statusBarEntry.color = status;
+	// //statusBarEntry.tooltip = tooltip;
+    // statusBarEntry.show();
+    
+    let msg = statusMessages.find(item => item.fsPath == fsPath);
+    if (isNullOrUndefined(msg)) {
+        msg = { fsPath: fsPath };
+        statusMessages.push(msg);
+    }
+    msg.text = message;
+    msg.color = status;
+    msg.active = true;
+    updateStatusBar();
 }
 
 export function initDiagnostic(context: vscode.ExtensionContext) {
@@ -49,4 +64,9 @@ export function initDiagnostic(context: vscode.ExtensionContext) {
 	context.subscriptions.push(errorDiagnosticCollection);
 	warningDiagnosticCollection = vscode.languages.createDiagnosticCollection('abl-warning');
 	context.subscriptions.push(warningDiagnosticCollection);
+}
+
+export function initStatusBar(context: vscode.ExtensionContext) {
+    statusBarEntry = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, Number.MIN_VALUE);
+    context.subscriptions.push(statusBarEntry);
 }

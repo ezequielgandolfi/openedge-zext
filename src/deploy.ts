@@ -35,10 +35,13 @@ export function rcodeDeploy(workspace: vscode.WorkspaceFolder, filename: string)
 
 export function fileDeploy(workspace: vscode.WorkspaceFolder, filename: string, ext:string, taskTypes: string[]) {
 	let oeConfig = getConfig();
-	if (oeConfig.deployment) {
+	if (oeConfig.deployment && workspace) {
 		let fname = filename.substring(0, filename.lastIndexOf('.')) + ext;
-		fname = [workspace.uri.fsPath, path.basename(fname)].join('\\');
-		let dirname = path.dirname(filename);
+        fname = [workspace.uri.fsPath, path.basename(fname)].join('\\');
+        let dirname = path.dirname(filename);
+        //  check if file exists on workspace path, or inside .CLS path (abl classes)
+        if (!fs.existsSync(fname))
+            fname = [dirname,path.basename(fname)].join('\\');
 		let tasks = oeConfig.deployment.filter(item => taskTypes.find(t => t == item.taskType));
 		deploy(workspace, fname, dirname, tasks).then(() => {
 			// if has deployment task, delete original file
@@ -49,6 +52,12 @@ export function fileDeploy(workspace: vscode.WorkspaceFolder, filename: string, 
 }
 
 function deploy(workspace: vscode.WorkspaceFolder, filename: string, dirname: string, tasks: DeploymentTask[]): Promise<any> {
+    // check if file exists
+    if (!fs.existsSync(filename)) {
+        vscode.window.showErrorMessage(`File ${path.basename(filename)} not found`);
+        return Promise.resolve();
+    }
+
 	let oeConfig = getConfig();
 	return new Promise(function(resolve,reject) {
 		tasks.forEach(task => {

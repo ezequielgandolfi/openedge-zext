@@ -2,6 +2,7 @@ import * as vscode from "vscode";
 import { ABLVariable, ABL_ASLIKE, ABLMethod, ABLParameter, ABLInclude, ABLTempTable, ABLFieldDefinition, ABLIndexDefinition, ABLTableDefinition, ABL_PARAM_DIRECTION } from "./definition";
 import { removeInvalidRightChar, updateTableCompletionList } from "./utils";
 import { SourceCode } from "./sourceParser";
+import { isNumber } from "util";
 
 export function getAllIncludes(sourceCode: SourceCode): ABLInclude[] {
 	let result: ABLInclude[] = [];
@@ -18,8 +19,9 @@ export function getAllIncludes(sourceCode: SourceCode): ABLInclude[] {
 		regexEnd.lastIndex = regexStart.lastIndex;
 		resEnd = regexEnd.exec(text);
 		if (resEnd) {
-			let nm = resStart[1].trim().toLowerCase();
-			if (!result.find(item => item.name == nm)) {
+            let nm = resStart[1].trim().toLowerCase();
+            // ignores {1} (include parameter) and {&ANYTHING} (global/scoped definition)
+			if ((Number.isNaN(Number.parseInt(nm))) && (!nm.startsWith('&')) && (!result.find(item => item.name == nm))) {
 				let v = new ABLInclude();	
 				v.name = nm;
 				result.push(v);

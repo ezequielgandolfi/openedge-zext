@@ -236,3 +236,20 @@ export function xcode(workspace: vscode.WorkspaceFolder, filename: string): Prom
 export function currentFolder(): vscode.WorkspaceFolder {
 	return vscode.workspace.getWorkspaceFolder(vscode.window.activeTextEditor.document.uri);
 }
+
+export function replaceSnippetTableName(list: vscode.CompletionItem[], tableName: string, replacement: string): vscode.CompletionItem[] {
+    let result = [...list];
+    return result.map(item => {
+        if (item.kind == vscode.CompletionItemKind.Snippet) {
+            item = Object.assign(new vscode.CompletionItem(item.label),item);
+            let regex = new RegExp('^(?:[\\W]*)('+tableName+')(?![\\w]+)', 'gim');
+            let ss = '';
+            if (item.insertText instanceof vscode.SnippetString)
+                ss = item.insertText.value;
+            else
+                ss = item.insertText;
+            item.insertText = new vscode.SnippetString(ss.replace(regex, replacement));
+        }
+        return item;
+    });
+}

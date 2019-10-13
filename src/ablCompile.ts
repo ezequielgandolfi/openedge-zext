@@ -8,6 +8,7 @@ import { rcodeDeploy, fileDeploy, TASK_TYPE } from './deploy';
 import { ICheckResult } from './definition';
 import { saveAndExec, xcode } from './utils';
 import { OpenEdgeConfig } from './openEdgeConfigFile';
+import { isNullOrUndefined } from 'util';
 
 export enum COMPILE_OPTIONS {
 	COMPILE = 'COMPILE',
@@ -33,7 +34,7 @@ export function execCompile(document: vscode.TextDocument, mergeOeConfig: OpenEd
 	if (document.languageId !== ABL_MODE.language) {
 		return;
 	}
-	hideStatusBar();
+	hideStatusBar(document.uri.fsPath);
 
 	let uri = document.uri;
 	let wf = vscode.workspace.getWorkspaceFolder(uri);
@@ -96,30 +97,36 @@ function compile(workspace: vscode.WorkspaceFolder, filename: string, mergeOeCon
 		return;
 
 	if (silent !== true)
-		showStatusBar('Compiling...', STATUS_COLOR.INFO);
+		showStatusBar(filename, 'Compiling...', STATUS_COLOR.INFO);
 
 	let cwd = path.dirname(filename);
 	let cmd = getProwinBin();
-	let par = [filename];
+    let par = [filename];
+    
+    let wsPath;
+    if (!isNullOrUndefined(workspace))
+        wsPath = workspace.uri.fsPath;
+    else
+        wsPath = path.dirname(filename);
 
 	let oeConfig = getConfig(mergeOeConfig);
 	// output path (.R) only if has post actions
 	if ((oeConfig.deployment)&&(oeConfig.deployment.find(item => (item.taskType == TASK_TYPE.DEPLOY_RCODE)||(item.taskType == TASK_TYPE.DEPLOY_ALL))))
-		par.push(workspace.uri.fsPath);
+		par.push(wsPath);
 	else
 		par.push('');
 	// compile options
 	par.push(Object.keys(options).map(k => {return options[k]}).join('|'));
-	let env = setupEnvironmentVariables(process.env, oeConfig, workspace.uri.fsPath);
+	let env = setupEnvironmentVariables(process.env, oeConfig, wsPath);
 	let args = createProArgs({
 		parameterFiles: oeConfig.parameterFiles,
 		configFile: oeConfig.configFile,
 		batchMode: true,
 		startupProcedure: path.join(__dirname, '../abl-src/compile.p'),
 		param: par.join(','),
-		workspaceRoot: workspace.uri.fsPath
+		workspaceRoot: wsPath
 	});
-	cwd = oeConfig.workingDirectory ? oeConfig.workingDirectory.replace('${workspaceRoot}', workspace.uri.fsPath).replace('${workspaceFolder}', workspace.uri.fsPath) : cwd;
+	cwd = oeConfig.workingDirectory ? oeConfig.workingDirectory.replace('${workspaceRoot}', wsPath).replace('${workspaceFolder}', wsPath) : cwd;
 	return new Promise<ICheckResult[]>((resolve, reject) => {
 		cp.execFile(cmd, args, { env: env, cwd: cwd }, (err, stdout, stderr) => {
 			try {
@@ -171,7 +178,7 @@ function compile(workspace: vscode.WorkspaceFolder, filename: string, mergeOeCon
 			return results;
 		}
 		if (results.length === 0) {
-			showStatusBar('Compiled', STATUS_COLOR.SUCCESS);
+			showStatusBar(filename, 'Compiled', STATUS_COLOR.SUCCESS);
 			options.forEach(opt => {
 				switch(opt) {
 					case COMPILE_OPTIONS.COMPILE:
@@ -205,7 +212,7 @@ function compile(workspace: vscode.WorkspaceFolder, filename: string, mergeOeCon
 			});
 		}
 		else {
-			showStatusBar('Syntax error', STATUS_COLOR.ERROR);
+			showStatusBar(filename, 'Syntax error', STATUS_COLOR.ERROR);
 		}
 		return results;
 	});

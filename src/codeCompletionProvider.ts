@@ -3,7 +3,7 @@ import * as fs from 'fs';
 import * as util from 'util';
 import { ABLTableDefinition } from './definition';
 import { ABLDocumentController, getDocumentController } from './documentController';
-import { updateTableCompletionList, getText } from './utils';
+import { updateTableCompletionList, getText, replaceSnippetTableName } from './utils';
 import { ABL_MODE } from './environment';
 
 let watcher: vscode.FileSystemWatcher = null;
@@ -28,14 +28,17 @@ export class ABLCodeCompletionProvider implements vscode.CompletionItemProvider 
 		let selection = getText(document, p, true);
 		let words = selection.statement.split('.');
 		if (words.length == 2) {
-			// translate buffer var/param
-			words[0] = (doc.searchBuffer(words[0], position) || words[0]);
+            // translate buffer var/param
+            let originalName = words[0];
+            words[0] = (doc.searchBuffer(words[0], position) || words[0]);
+            if (originalName == words[0])
+                originalName = null;
 			//
-			let result = this.getCompletionFields(words[0]);
+			let result = this.getCompletionFields(words[0], originalName);
 			if ((result)&&(result.length>0))
 				return new vscode.CompletionList(result);
 
-			result = doc.getCompletionTempTableFields(words[0]);
+			result = doc.getCompletionTempTableFields(words[0], originalName);
 			if ((result)&&(result.length>0))
 				return new vscode.CompletionList(result);
 
@@ -44,7 +47,7 @@ export class ABLCodeCompletionProvider implements vscode.CompletionItemProvider 
 				if ((!result)||(result.length==0)) {
 					let extDoc = this._ablDocumentController.getDocument(external);
 					if ((extDoc)&&(extDoc.processed)) {
-						result = extDoc.getCompletionTempTableFields(words[0]);
+						result = extDoc.getCompletionTempTableFields(words[0], originalName);
 					}
 				}
 			});
@@ -70,11 +73,14 @@ export class ABLCodeCompletionProvider implements vscode.CompletionItemProvider 
 		return;
 	}
 
-	private getCompletionFields(prefix: string): vscode.CompletionItem[] {
+	private getCompletionFields(prefix: string, replacement?: string): vscode.CompletionItem[] {
 		// Tables
 		let tb = _tableCollection.items.find((item) => item.label.toLowerCase() == prefix);
 		if (tb) {
-			return tb['completion'].items;
+            let result = tb['completion'].items;
+            if (!util.isNullOrUndefined(replacement))
+                result = replaceSnippetTableName(result, prefix, replacement);
+            return result;
 		}
 		return [];
 	}

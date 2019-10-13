@@ -15,6 +15,14 @@ OpenEdge ABL Extension for Visual Studio Code
 
 ## What's new
 
+### 0.5.1
+- Fix: Deployment for .CLS files
+- Fix: Command Read Dictionary Struture activation
+- Fix: Running programs outside workspace
+- Fix: Buffer snippets adjustment
+- Fix: Compilation status bar
+- Fix: Source parser adjustments
+
 ### 0.5.0
 - Snippet fields from database for temp-table "like" db table
 - Mapping for "buffer" type

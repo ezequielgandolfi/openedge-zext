@@ -1,5 +1,15 @@
 # Change Log
 
+## 0.5.1
+
+### Fixes
+- [Issue #14](https://github.com/ezequielgandolfi/openedge-zext/issues/14) Deployment for .CLS files
+- [Issue #15](https://github.com/ezequielgandolfi/openedge-zext/issues/15) Command Read Dictionary Struture activation
+- [Issue #20](https://github.com/ezequielgandolfi/openedge-zext/issues/20) Running programs outside workspace
+- [Issue #21](https://github.com/ezequielgandolfi/openedge-zext/issues/21) Buffer snippets adjustment
+- [Issue #23](https://github.com/ezequielgandolfi/openedge-zext/issues/23) Compilation status bar
+- [Issue #24](https://github.com/ezequielgandolfi/openedge-zext/issues/24) Source parser adjustments
+
 ## 0.5.0
 
 ### Features

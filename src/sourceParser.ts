@@ -76,7 +76,7 @@ export class SourceParser {
                 case '\'':
                     if (!inComment) {
                         charWOStrings = ' ';
-                        if (stringChar == thisChar && inString) {
+                        if (stringChar == thisChar && inString && prevChar != '~') {
                             inString = false;
                             stringChar = null;
                         } else if (stringChar === null && !inString && !inComment) {

@@ -2,7 +2,7 @@
     "name": "openedge-zext",
     "displayName": "OpenEdge ABL (Progress 4GL)",
     "description": "OpenEdge ABL Extension for VSCode",
-    "version": "0.5.0",
+    "version": "0.5.1",
     "publisher": "ezequielgandolfi",
     "author": "Ezequiel Gandolfi",
     "license": "Apache-2.0",
@@ -24,7 +24,7 @@
     ],
     "activationEvents": [
         "onLanguage:abl",
-        "onView:abl.outline"
+        "onCommand:abl.dictionary.dumpDefinition"
     ],
     "main": "./out/extension",
     "contributes": {
@@ -63,22 +63,26 @@
             {
                 "command": "abl.currentFile.run",
                 "title": "ABL: Run",
-                "description": "Run the current file"
+                "description": "Run the current file",
+                "when": "editorTextFocus && editorLangId == 'abl'"
             },
             {
                 "command": "abl.currentFile.checkSyntax",
                 "title": "ABL: CheckSyntax",
-                "description": "Check the syntax for the current file"
+                "description": "Check the syntax for the current file",
+                "when": "editorTextFocus && editorLangId == 'abl'"
             },
             {
                 "command": "abl.currentFile.compile",
                 "title": "ABL: Compile & Deploy",
-                "description": "Compile the current file and deploy the R-Code"
+                "description": "Compile the current file and deploy the R-Code",
+                "when": "editorTextFocus && editorLangId == 'abl'"
             },
             {
                 "command": "abl.currentFile.deploySource",
                 "title": "ABL: Deploy Source",
-                "description": "Deploy the current file to remote host"
+                "description": "Deploy the current file to remote host",
+                "when": "editorTextFocus && editorLangId == 'abl'"
             },
             {
                 "command": "abl.dictionary.dumpDefinition",
@@ -88,12 +92,14 @@
             {
                 "command": "abl.currentFile.compileOptions",
                 "title": "ABL: Compile with Options",
-                "description": "Compile the current file with some options"
+                "description": "Compile the current file with some options",
+                "when": "editorTextFocus && editorLangId == 'abl'"
             },
             {
                 "command": "abl.currentFile.saveMap",
                 "title": "ABL: Save Map File",
-                "description": "Save the OpenEdge-ZExt map from current file"
+                "description": "Save the OpenEdge-ZExt map from current file",
+                "when": "editorTextFocus && editorLangId == 'abl'"
             }
         ],
         "breakpoints": [

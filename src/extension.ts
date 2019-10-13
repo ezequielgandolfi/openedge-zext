@@ -10,7 +10,7 @@ import { documentDeploy } from './deploy';
 import { ABLFormattingProvider as ABLFormattingProvider } from './formattingProvider';
 import { initDocumentController, getDocumentController } from './documentController';
 import { ABL_MODE } from './environment';
-import { hideStatusBar, initDiagnostic } from './notification';
+import { hideStatusBar, initDiagnostic, updateStatusBar, initStatusBar } from './notification';
 import { isArray, isNullOrUndefined } from 'util';
 import { KeyBindings } from './keyBindings';
 import { ABLHoverProvider } from './hoverProvider';
@@ -24,15 +24,17 @@ export function activate(ctx: vscode.ExtensionContext): void {
 	//const symbolOutlineProvider = new OutlineNavigatorProvider(ctx);
 
 
-	initOnSaveWatcher(ctx);
+    initOnSaveWatcher(ctx);
+    initOnCloseWatcher(ctx);
+    initOnChangeActiveTextWatcher(ctx);
+
 	initConfigFileWatcher();
 	startDictWatcher();
-	initOnChangeActiveTextWatcher(ctx);
 	startDocumentWatcher(ctx);
 	initProviders(ctx);
-	initDiagnostic(ctx);
+    initDiagnostic(ctx);
+    initStatusBar(ctx);
 	initExternalCommands(ctx);
-	new KeyBindings(ctx);
 
 	//vscode.workspace.getConfiguration('files').update('encoding', 'iso88591', false);
 	//vscode.workspace.getConfiguration('editor').update('tabSize', 4, false);
@@ -97,7 +99,9 @@ function deactivate() {
 }
 
 function initOnSaveWatcher(context: vscode.ExtensionContext) {
-	let ablConfig = vscode.workspace.getConfiguration(ABL_MODE.language);
+    vscode.workspace.onDidSaveTextDocument(document => hideStatusBar(document.uri.fsPath));
+
+    let ablConfig = vscode.workspace.getConfiguration(ABL_MODE.language);
 	if (ablConfig.get('checkSyntaxOnSave') === 'file') {
 		vscode.workspace.onDidSaveTextDocument(document => {
 			if (document.languageId !== ABL_MODE.language) {
@@ -108,8 +112,12 @@ function initOnSaveWatcher(context: vscode.ExtensionContext) {
 	}
 }
 
+function initOnCloseWatcher(context: vscode.ExtensionContext) {
+    vscode.workspace.onDidCloseTextDocument(document => hideStatusBar(document.uri.fsPath));
+}
+
 function initOnChangeActiveTextWatcher(context: vscode.ExtensionContext) {
-	vscode.window.onDidChangeActiveTextEditor(editor => hideStatusBar());
+	vscode.window.onDidChangeActiveTextEditor(editor => updateStatusBar());
 }
 
 function initConfigFileWatcher() {
@@ -129,7 +137,9 @@ function initProviders(context: vscode.ExtensionContext) {
 	new ABLHoverProvider(context);
 	new ABLDefinitionProvider(context);
 	new ABLSymbolProvider(context);
-	new ABLFormattingProvider(context);
+    new ABLFormattingProvider(context);
+    
+    new KeyBindings(context);
 }
 
 function initExternalCommands(context: vscode.ExtensionContext) {

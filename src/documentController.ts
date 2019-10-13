@@ -81,11 +81,14 @@ export class ABLDocument {
 		return;
 	}
 
-	public getCompletionTempTableFields(prefix: string): vscode.CompletionItem[] {
+	public getCompletionTempTableFields(prefix: string, replacement?: string): vscode.CompletionItem[] {
 		// Temp-tables
 		let tt = this.tempTables.find(item => item.label.toLowerCase() == prefix);
 		if (tt) {
-			return tt.completion.items;
+            let result = tt.completion.items;
+            if (!isNullOrUndefined(replacement))
+                result = utils.replaceSnippetTableName(result, prefix, replacement);
+            return result;
 		}
 		return [];
 	}
