@@ -8,8 +8,11 @@ import { create } from './outputProcess';
 import { outputChannel } from './notification';
 
 function genericPath(): string {
-    if (vscode.window.activeTextEditor)
-        return vscode.workspace.getWorkspaceFolder(vscode.window.activeTextEditor.document.uri).uri.fsPath;
+    if (vscode.window.activeTextEditor) {
+        let folder = vscode.workspace.getWorkspaceFolder(vscode.window.activeTextEditor.document.uri);
+        if (folder)
+            return folder.uri.fsPath;
+    }
     if (genericWorkspaceFolder) 
         return genericWorkspaceFolder.uri.fsPath;
     return vscode.workspace.rootPath;

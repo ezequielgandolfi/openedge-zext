@@ -15,6 +15,11 @@ OpenEdge ABL Extension for Visual Studio Code
 
 ## What's new
 
+### 0.5.2
+- Fix: Command Palette Visibility
+- Fix: Status Bar Visibility
+- Fix: Read Dictionaty Structure
+
 ### 0.5.1
 - Fix: Deployment for .CLS files
 - Fix: Command Read Dictionary Struture activation

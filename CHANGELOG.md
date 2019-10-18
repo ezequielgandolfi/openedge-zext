@@ -1,5 +1,12 @@
 # Change Log
 
+## 0.5.2
+
+### Fixes
+- [Issue #25](https://github.com/ezequielgandolfi/openedge-zext/issues/25) Command Palette Visibility
+- [Issue #26](https://github.com/ezequielgandolfi/openedge-zext/issues/26) Status Bar Visibility
+- [Issue #27](https://github.com/ezequielgandolfi/openedge-zext/issues/27) Read Dictionaty Structure
+
 ## 0.5.1
 
 ### Fixes
