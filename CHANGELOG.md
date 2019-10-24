@@ -1,5 +1,10 @@
 # Change Log
 
+## 0.5.3
+
+### Fixes
+- Fix: Status Bar Errors
+
 ## 0.5.2
 
 ### Fixes

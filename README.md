@@ -15,6 +15,9 @@ OpenEdge ABL Extension for Visual Studio Code
 
 ## What's new
 
+### 0.5.3
+- Fix: Status Bar Errors
+
 ### 0.5.2
 - Fix: Command Palette Visibility
 - Fix: Status Bar Visibility

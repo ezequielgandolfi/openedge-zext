@@ -16,9 +16,9 @@ export enum STATUS_COLOR {
 }
 
 export function updateStatusBar() {
-    let doc = vscode.window.activeTextEditor.document;
-    if (doc)
-        updateDocumentStatusBar(doc.uri.fsPath);
+    let activeEditor = vscode.window.activeTextEditor;
+    if (activeEditor)
+        updateDocumentStatusBar(activeEditor.document.uri.fsPath);
     else
         updateDocumentStatusBar();
 }
