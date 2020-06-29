@@ -4,6 +4,38 @@ import { removeInvalidRightChar, updateTableCompletionList } from "./utils";
 import { SourceCode } from "./sourceParser";
 import { isNumber } from "util";
 
+export function getAllClasses(sourceCode: SourceCode): ABLInclude[] {
+	/*let result: ABLInclude[] = [];
+	//let regexInclude: RegExp = new RegExp(/\{{1}([\w\d\-\\\/\.]+)(?:.|\n)*?\}{1}/gim);
+	// 1 = include name
+	let regexStart: RegExp = new RegExp(/\{{1}([\w\d\-\\\/\.]+)/gim);
+	// 1 = include name
+	let regexEnd: RegExp = new RegExp(/\}{1}/gim);
+	//
+	let text = sourceCode.sourceWithoutStrings;
+	let resStart = regexStart.exec(text);
+	let resEnd;
+	while(resStart) {
+		regexEnd.lastIndex = regexStart.lastIndex;
+		resEnd = regexEnd.exec(text);
+		if (resEnd) {
+            let nm = resStart[1].trim().toLowerCase();
+            // ignores {1} (include parameter) and {&ANYTHING} (global/scoped definition)
+			if ((Number.isNaN(Number.parseInt(nm))) && (!nm.startsWith('&')) && (!result.find(item => item.name == nm))) {
+				let v = new ABLInclude();	
+				v.name = nm;
+				result.push(v);
+			}
+			resStart = regexStart.exec(text);
+		}
+		else {
+			break;
+		}
+	}
+	return result;*/
+	return [];
+}
+
 export function getAllIncludes(sourceCode: SourceCode): ABLInclude[] {
 	let result: ABLInclude[] = [];
 	//let regexInclude: RegExp = new RegExp(/\{{1}([\w\d\-\\\/\.]+)(?:.|\n)*?\}{1}/gim);

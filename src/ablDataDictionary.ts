@@ -2,10 +2,10 @@ import * as vscode from 'vscode';
 import cp = require('child_process');
 import path = require('path');
 
-import { getProwinBin, createProArgs, getProBin, setupEnvironmentVariables } from './environment';
-import { getConfig, genericWorkspaceFolder } from './ablConfig';
+import { createProArgs, getProBin, setupEnvironmentVariables } from './environment';
 import { create } from './outputProcess';
 import { outputChannel } from './notification';
+import { ExtensionConfig } from './extensionConfig';
 
 function genericPath(): string {
     if (vscode.window.activeTextEditor) {
@@ -13,27 +13,16 @@ function genericPath(): string {
         if (folder)
             return folder.uri.fsPath;
     }
-    if (genericWorkspaceFolder) 
-        return genericWorkspaceFolder.uri.fsPath;
+    let _genericWorkspaceFolder = ExtensionConfig.getInstance().getGenericWorkspaceFolder();
+    if (_genericWorkspaceFolder) 
+        return _genericWorkspaceFolder.uri.fsPath;
     return vscode.workspace.rootPath;
-}
-
-export function openDataDictionary() {
-    let cwd = genericPath();
-    let env = process.env;
-    let cmd = getProwinBin();
-
-    // TODO : reuse the openedgeconfig file and pf files defined
-    let args = createProArgs({
-        startupProcedure: '_dict.p'
-    });
-    cp.spawn(cmd, args, { env: env, cwd: cwd, detached: true });
 }
 
 export function readDataDictionary(ablConfig: vscode.WorkspaceConfiguration) {
 	let cmd = getProBin();
 
-	let oeConfig = getConfig();
+	let oeConfig = ExtensionConfig.getInstance().getConfig();
     let env = setupEnvironmentVariables(process.env, oeConfig, genericPath());
     let dbs = (oeConfig.dbDictionary ? oeConfig.dbDictionary.join(',') : '');
 	let args = createProArgs({

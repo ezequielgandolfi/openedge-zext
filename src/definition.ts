@@ -91,8 +91,16 @@ export class ABLMethod {
     }
 }
 
+export class ABLClassMethod extends ABLMethod { }
+
 export class ABLParameter extends ABLVariable {
     direction: ABL_PARAM_DIRECTION;
+}
+
+export interface ABLClass {
+    className: string;
+    filePath?: string;
+    methods?: ABLClassMethod[];
 }
 
 export class ABLInclude {

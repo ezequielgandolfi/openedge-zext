@@ -1,10 +1,10 @@
 import * as vscode from 'vscode';
 import { HoverProvider, ProviderResult, Hover, TextDocument, Position, CancellationToken } from "vscode";
-import * as utils from './utils';
-import { ABLDocumentController, getDocumentController } from "./documentController";
+import * as utils from '../utils';
+import { ABLDocumentController, getDocumentController } from "../documentController";
 import { getTableCollection } from "./codeCompletionProvider";
-import { ABLFieldDefinition, ABLTableDefinition, ABL_ASLIKE, SYMBOL_TYPE, ABLTempTable, ABLVariable, ABLMethod, ABLParameter } from './definition';
-import { ABL_MODE } from './environment';
+import { ABLFieldDefinition, ABLTableDefinition, SYMBOL_TYPE, ABLTempTable, ABLVariable, ABLMethod, ABLParameter } from '../definition';
+import { ABL_MODE } from '../environment';
 import { isNullOrUndefined } from 'util';
 
 export class ABLHoverProvider implements HoverProvider {

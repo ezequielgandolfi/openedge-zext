@@ -1,11 +1,11 @@
 import * as vscode from 'vscode';
 import path = require('path');
 import { outputChannel, hideStatusBar } from './notification';
-import { getConfig } from './ablConfig';
 import { createProArgs, setupEnvironmentVariables, getProwinBin } from './environment';
 import { create } from './outputProcess';
 import { saveAndExec } from './utils';
 import { isNullOrUndefined } from 'util';
+import { ExtensionConfig } from './extensionConfig';
 
 export function execRun(document: vscode.TextDocument, ablConfig: vscode.WorkspaceConfiguration) {
     outputChannel.clear();
@@ -27,7 +27,7 @@ export function execRun(document: vscode.TextDocument, ablConfig: vscode.Workspa
         outputChannel.appendLine('> Program name = ' + filename);
         outputChannel.appendLine('> Workspace root = ' + wsPath);
 
-		let oeConfig = getConfig();
+		let oeConfig = ExtensionConfig.getInstance().getConfig();
 		let env = setupEnvironmentVariables(process.env, oeConfig, wsPath);
 		let args = createProArgs({
 			parameterFiles: oeConfig.parameterFiles,

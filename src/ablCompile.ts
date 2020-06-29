@@ -2,13 +2,12 @@ import * as vscode from 'vscode';
 import cp = require('child_process');
 import path = require('path');
 import { outputChannel, showStatusBar, STATUS_COLOR, errorDiagnosticCollection, warningDiagnosticCollection, hideStatusBar } from './notification';
-import { getConfig } from './ablConfig';
 import { createProArgs, setupEnvironmentVariables, getProwinBin, ABL_MODE } from './environment';
 import { rcodeDeploy, fileDeploy, TASK_TYPE } from './deploy';
 import { ICheckResult } from './definition';
 import { saveAndExec, xcode } from './utils';
-import { OpenEdgeConfig } from './openEdgeConfigFile';
 import { isNullOrUndefined } from 'util';
+import { ExtensionConfig, OpenEdgeConfig } from './extensionConfig';
 
 export enum COMPILE_OPTIONS {
 	COMPILE = 'COMPILE',
@@ -109,7 +108,7 @@ function compile(workspace: vscode.WorkspaceFolder, filename: string, mergeOeCon
     else
         wsPath = path.dirname(filename);
 
-	let oeConfig = getConfig(mergeOeConfig);
+	let oeConfig = ExtensionConfig.getInstance().getConfig(mergeOeConfig);
 	// output path (.R) only if has post actions
 	if ((oeConfig.deployment)&&(oeConfig.deployment.find(item => (item.taskType == TASK_TYPE.DEPLOY_RCODE)||(item.taskType == TASK_TYPE.DEPLOY_ALL))))
 		par.push(wsPath);

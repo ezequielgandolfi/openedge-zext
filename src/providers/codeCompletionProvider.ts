@@ -1,10 +1,10 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as util from 'util';
-import { ABLTableDefinition } from './definition';
-import { ABLDocumentController, getDocumentController } from './documentController';
-import { updateTableCompletionList, getText, replaceSnippetTableName } from './utils';
-import { ABL_MODE } from './environment';
+import { ABLTableDefinition } from '../definition';
+import { ABLDocumentController, getDocumentController } from '../documentController';
+import { updateTableCompletionList, getText, replaceSnippetTableName } from '../utils';
+import { ABL_MODE } from '../environment';
 
 let watcher: vscode.FileSystemWatcher = null;
 let _tableCollection: vscode.CompletionList = new vscode.CompletionList();

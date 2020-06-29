@@ -1,9 +1,9 @@
 import * as vscode from "vscode";
-import * as utils from './utils';
-import { ABLDocumentController, getDocumentController } from "./documentController";
-import { ABL_MODE } from "./environment";
+import * as utils from '../utils';
+import { ABLDocumentController, getDocumentController } from "../documentController";
+import { ABL_MODE } from "../environment";
 import { isNullOrUndefined } from "util";
-import { SYMBOL_TYPE, ABLParameter } from "./definition";
+import { SYMBOL_TYPE, ABLParameter } from "../definition";
 
 export class ABLDefinitionProvider implements vscode.DefinitionProvider {
 	private _ablDocumentController: ABLDocumentController;

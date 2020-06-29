@@ -3,7 +3,6 @@ import * as fs from 'fs';
 import * as path from 'path';
 import cp = require('child_process');
 import { TextSelection, ABLTableDefinition, ABLIndexDefinition } from "./definition";
-import { getConfig } from "./ablConfig";
 import { getXcodeBin } from "./environment";
 import { isArray } from "util";
 

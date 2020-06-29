@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
-import { getDocumentController } from './documentController';
+import { getDocumentController } from '../documentController';
 
-export class KeyBindings {
+export class KeyBindingProvider {
 	constructor(context: vscode.ExtensionContext) {
 		this.initialize(context);
 	}

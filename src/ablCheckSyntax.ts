@@ -2,11 +2,11 @@ import * as vscode from 'vscode';
 import cp = require('child_process');
 import path = require('path');
 import { outputChannel, showStatusBar, STATUS_COLOR, errorDiagnosticCollection, warningDiagnosticCollection, hideStatusBar } from './notification';
-import { getConfig } from './ablConfig';
 import { getProBin, createProArgs, setupEnvironmentVariables, ABL_MODE } from './environment';
 import { ICheckResult } from './definition';
 import { saveAndExec } from './utils';
 import { isNullOrUndefined } from 'util';
+import { ExtensionConfig } from './extensionConfig';
 
 export function execCheckSyntax(document: vscode.TextDocument, ablConfig: vscode.WorkspaceConfiguration) {
 
@@ -88,7 +88,7 @@ function checkSyntax(workspace: vscode.WorkspaceFolder, filename: string, ablCon
     else
         wsPath = path.dirname(filename);
 
-	let oeConfig = getConfig();
+	let oeConfig = ExtensionConfig.getInstance().getConfig();
 	let env = setupEnvironmentVariables(process.env, oeConfig, wsPath);
 	let args = createProArgs({
 		parameterFiles: oeConfig.parameterFiles,

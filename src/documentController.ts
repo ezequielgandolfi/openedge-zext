@@ -2,11 +2,11 @@ import * as vscode from "vscode";
 import * as utils from './utils';
 import * as fs from 'fs';
 import { ABL_MODE } from "./environment";
-import { SYMBOL_TYPE, ABLVariable, ABLMethod, ABLParameter, ABLInclude, ABLTempTable, ABL_PARAM_DIRECTION, TextSelection, ABLSymbol } from "./definition";
+import { SYMBOL_TYPE, ABLVariable, ABLMethod, ABLInclude, ABLTempTable, ABL_PARAM_DIRECTION, ABLSymbol } from "./definition";
 import { getAllIncludes, getAllMethods, getAllVariables, getAllParameters, getAllTempTables, getAllBuffers } from "./processDocument";
 import { SourceCode, SourceParser } from "./sourceParser";
 import { isNullOrUndefined } from "util";
-import { getTableCollection } from "./codeCompletionProvider";
+import { getTableCollection } from "./providers/codeCompletionProvider";
 
 let thisInstance: ABLDocumentController;
 export function getDocumentController(): ABLDocumentController {
@@ -228,6 +228,21 @@ export class ABLDocument {
 		if (items)
 			return items;
 		return;
+	}
+
+	private refreshClasses(sourceCode: SourceCode) {
+		this._includes = getAllIncludes(sourceCode);
+		this._includes.forEach(item => {
+			vscode.workspace.workspaceFolders.forEach(folder => {
+				let uri = folder.uri.with({path: [folder.uri.path,item.name].join('/')});
+				if (fs.existsSync(uri.fsPath)) {
+					item.fsPath = uri.fsPath;
+					if(!this.externalDocument.find(item => item.uri.fsPath == uri.fsPath)) {
+						vscode.workspace.openTextDocument(uri).then(doc => this.insertExternalDocument(doc));
+					}
+				}
+			})
+		});
 	}
 
 	private refreshIncludes(sourceCode: SourceCode) {

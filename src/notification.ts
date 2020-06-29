@@ -1,4 +1,3 @@
-import { ABL_MODE } from './environment';
 import * as vscode from 'vscode';
 import { isNullOrUndefined } from 'util';
 

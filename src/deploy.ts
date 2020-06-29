@@ -1,10 +1,9 @@
 import * as vscode from 'vscode';
 import path = require('path');
-import { getConfig } from './ablConfig';
 import * as fs from 'fs';
 import * as http from 'http';
-import { DeploymentTask } from './openEdgeConfigFile';
 import { mkdir } from './utils';
+import { ExtensionConfig, DeploymentTask } from './extensionConfig';
 
 export enum TASK_TYPE {
 	DEPLOY_SOURCE = 'current.source',
@@ -22,7 +21,7 @@ export enum TASK_TYPE {
 export function documentDeploy(document: vscode.TextDocument) {
 	let filename = document.uri.fsPath;
 	let workspace = vscode.workspace.getWorkspaceFolder(document.uri);
-	let oeConfig = getConfig();
+	let oeConfig = ExtensionConfig.getInstance().getConfig();
 	if (oeConfig.deployment) {
 		let tasks = oeConfig.deployment.filter(item => item.taskType == TASK_TYPE.DEPLOY_SOURCE);
 		deploy(workspace, filename, path.dirname(filename), tasks);
@@ -34,7 +33,7 @@ export function rcodeDeploy(workspace: vscode.WorkspaceFolder, filename: string)
 }
 
 export function fileDeploy(workspace: vscode.WorkspaceFolder, filename: string, ext:string, taskTypes: string[]) {
-	let oeConfig = getConfig();
+	let oeConfig = ExtensionConfig.getInstance().getConfig();
 	if (oeConfig.deployment && workspace) {
 		let fname = filename.substring(0, filename.lastIndexOf('.')) + ext;
         fname = [workspace.uri.fsPath, path.basename(fname)].join('\\');
@@ -58,7 +57,7 @@ function deploy(workspace: vscode.WorkspaceFolder, filename: string, dirname: st
         return Promise.resolve();
     }
 
-	let oeConfig = getConfig();
+	let oeConfig = ExtensionConfig.getInstance().getConfig();
 	return new Promise(function(resolve,reject) {
 		tasks.forEach(task => {
 			// copy file
