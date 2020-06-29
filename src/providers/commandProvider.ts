@@ -2,13 +2,11 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
 import { ABL_MODE } from '../environment';
-import { COMPILE_OPTIONS, execCompile } from '../ablCompile';
 import { isArray } from 'util';
-import { execCheckSyntax } from '../ablCheckSyntax';
-import { execRun } from '../ablRun';
 import { documentDeploy } from '../deploy';
 import { readDataDictionary } from '../ablDataDictionary';
 import { getDocumentController } from '../documentController';
+import { ABLCheckSyntax, ABLCompile, ABLRun } from '../ablCommand';
 
 export class CommandProvider {
 	constructor(context: vscode.ExtensionContext) {
@@ -17,16 +15,13 @@ export class CommandProvider {
 
 	private initialize(context: vscode.ExtensionContext) {
 		context.subscriptions.push(vscode.commands.registerCommand('abl.currentFile.checkSyntax', () => {
-			let ablConfig = vscode.workspace.getConfiguration(ABL_MODE.language);
-			execCheckSyntax(vscode.window.activeTextEditor.document, ablConfig);
+			new ABLCheckSyntax().execute(vscode.window.activeTextEditor.document);
 		}));
 		context.subscriptions.push(vscode.commands.registerCommand('abl.currentFile.compile', () => {
-			let ablConfig = vscode.workspace.getConfiguration(ABL_MODE.language);
-			execCompile(vscode.window.activeTextEditor.document, null, ablConfig, [COMPILE_OPTIONS.COMPILE]);
+			new ABLCompile().compile(vscode.window.activeTextEditor.document);
 		}));
 		context.subscriptions.push(vscode.commands.registerCommand('abl.currentFile.run', () => {
-			let ablConfig = vscode.workspace.getConfiguration(ABL_MODE.language);
-			execRun(vscode.window.activeTextEditor.document, ablConfig);
+			new ABLRun().execute(vscode.window.activeTextEditor.document);
 		}));
 		context.subscriptions.push(vscode.commands.registerCommand('abl.currentFile.deploySource', () => {
 			documentDeploy(vscode.window.activeTextEditor.document);
@@ -36,7 +31,7 @@ export class CommandProvider {
 			readDataDictionary(ablConfig);
 		}));
 		context.subscriptions.push(vscode.commands.registerCommand('abl.currentFile.compileOptions', () => {
-			this.chooseCompileOption();
+			new ABLCompile().compileWithOptions(vscode.window.activeTextEditor.document);
 		}));
 		context.subscriptions.push(vscode.commands.registerCommand('abl.currentFile.saveMap', (args) => {
 			let doc = vscode.window.activeTextEditor.document;
@@ -50,14 +45,6 @@ export class CommandProvider {
 			this.saveMapFile(doc, filename);
 			return filename;
 		}));
-	}
-
-	private chooseCompileOption() {
-		let options = Object.keys(COMPILE_OPTIONS).map(k => {return COMPILE_OPTIONS[k]});
-		vscode.window.showQuickPick(options, {placeHolder: 'Compile option', canPickMany: true}).then(v => {
-			let ablConfig = vscode.workspace.getConfiguration(ABL_MODE.language);
-			execCompile(vscode.window.activeTextEditor.document, null, ablConfig, v);
-		});
 	}
 
 	private saveMapFile(document: vscode.TextDocument, filename?: string) {
