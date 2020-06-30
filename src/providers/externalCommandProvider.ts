@@ -3,7 +3,6 @@ import { getDocumentController } from '../documentController';
 import { SourceParser } from '../sourceParser';
 import { getTableCollection } from './codeCompletionProvider';
 import { ABL_MODE } from '../environment';
-import { COMPILE_OPTIONS, execCompile } from '../ablCompile';
 import { OpenEdgeConfig } from '../extensionConfig';
 
 /**
@@ -42,7 +41,8 @@ export class ExternalCommandProvider {
 			let ablConfig = vscode.workspace.getConfiguration(ABL_MODE.language);
 			return new Promise(function(resolve,reject) {
 				vscode.workspace.openTextDocument(fileName).then(doc => {
-					execCompile(doc, mergeOeConfig, ablConfig, [COMPILE_OPTIONS.COMPILE], true).then(v => resolve(v));
+					// TODO
+					// execCompile(doc, mergeOeConfig, ablConfig, [COMPILE_OPTIONS.COMPILE], true).then(v => resolve(v));
 				});
 			})
 		}));

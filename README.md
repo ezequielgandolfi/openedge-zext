@@ -15,6 +15,12 @@ OpenEdge ABL Extension for Visual Studio Code
 
 ## What's new
 
+### 0.6.0
+- New commands for source formatting
+    - ABL: Format - Keywords - Upper Case
+    - ABL: Format - Keywords - Lower Case
+    - ABL: Format - Trim Right
+
 ### 0.5.3
 - Fix: Status Bar Errors
 

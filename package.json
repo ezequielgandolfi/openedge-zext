@@ -94,6 +94,21 @@
                 "command": "abl.currentFile.saveMap",
                 "title": "ABL: Save Map File",
                 "description": "Save the OpenEdge-ZExt map from current file"
+            },
+            {
+                "command": "abl.format.lowerCase",
+                "title": "ABL: Format - Keywords - Lower Case",
+                "description": "Change keywords to lower case"
+            },
+            {
+                "command": "abl.format.upperCase",
+                "title": "ABL: Format - Keywords - Upper Case",
+                "description": "Change keywords to upper case"
+            },
+            {
+                "command": "abl.format.trimRight",
+                "title": "ABL: Format - Trim Right",
+                "description": "Trim right spaces from each line"
             }
         ],
         "menus": {
@@ -123,6 +138,18 @@
                 },
                 {
                     "command": "abl.currentFile.saveMap",
+                    "when": "editorLangId == 'abl'"
+                },
+                {
+                    "command": "abl.format.lowerCase",
+                    "when": "editorLangId == 'abl'"
+                },
+                {
+                    "command": "abl.format.upperCase",
+                    "when": "editorLangId == 'abl'"
+                },
+                {
+                    "command": "abl.format.trimRight",
                     "when": "editorLangId == 'abl'"
                 }
             ]

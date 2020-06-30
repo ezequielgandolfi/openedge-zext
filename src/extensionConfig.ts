@@ -1,4 +1,4 @@
-import { FileSystemWatcher, workspace, WorkspaceFolder } from 'vscode';
+import * as vscode from 'vscode';
 import { isNullOrUndefined, promisify } from 'util';
 import { readFile } from 'fs';
 
@@ -33,10 +33,11 @@ export interface OpenEdgeConfig {
 export class ExtensionConfig {
 
     readonly OPENEDGE_CONFIG_FILENAME = '.openedge-zext.json';
+    readonly THIS_EXTENSION = 'ezequielgandolfi.openedge-zext';
 
     private _openEdgeConfig: OpenEdgeConfig = null;
-    private _watcher: FileSystemWatcher = null;
-    private _genericWorkspaceFolder: WorkspaceFolder = null;
+    private _watcher: vscode.FileSystemWatcher = null;
+    private _genericWorkspaceFolder: vscode.WorkspaceFolder = null;
 
     constructor() {
         _extensionConfig = this;
@@ -49,9 +50,9 @@ export class ExtensionConfig {
     }
 
     private findConfigFile(): Thenable<string> {
-        return workspace.findFiles(this.OPENEDGE_CONFIG_FILENAME).then(uris => {
+        return vscode.workspace.findFiles(this.OPENEDGE_CONFIG_FILENAME).then(uris => {
             if (uris.length > 0) {
-                this._genericWorkspaceFolder = workspace.getWorkspaceFolder(uris[0]);
+                this._genericWorkspaceFolder = vscode.workspace.getWorkspaceFolder(uris[0]);
                 return uris[0].fsPath;
             }
             return null;
@@ -66,7 +67,7 @@ export class ExtensionConfig {
     }
 
     private initWatcher() {
-        this._watcher = workspace.createFileSystemWatcher('**/' + this.OPENEDGE_CONFIG_FILENAME);
+        this._watcher = vscode.workspace.createFileSystemWatcher('**/' + this.OPENEDGE_CONFIG_FILENAME);
         this._watcher.onDidChange(uri => this.loadAndSetConfigFile(uri.fsPath));
         this._watcher.onDidCreate(uri => this.loadAndSetConfigFile(uri.fsPath));
         this._watcher.onDidDelete(uri => this.loadAndSetConfigFile(uri.fsPath));
@@ -92,8 +93,12 @@ export class ExtensionConfig {
             return Object.assign(result, mergeConfig);
     }
 
-    getGenericWorkspaceFolder(): WorkspaceFolder {
+    getGenericWorkspaceFolder(): vscode.WorkspaceFolder {
         return this._genericWorkspaceFolder;
+    }
+
+    getExtensionPath() {
+        return vscode.extensions.getExtension(this.THIS_EXTENSION).extensionPath;
     }
     
 }

@@ -1,8 +1,5 @@
 import * as vscode from 'vscode';
-import { execCheckSyntax } from './ablCheckSyntax';
-import { ABLFormattingProvider as ABLFormattingProvider } from './providers/formattingProvider';
 import { initDocumentController } from './documentController';
-import { ABL_MODE } from './environment';
 import { hideStatusBar, initDiagnostic, updateStatusBar, initStatusBar } from './notification';
 import { KeyBindingProvider } from './providers/keyBindingProvider';
 import { ABLHoverProvider } from './providers/hoverProvider';
@@ -12,6 +9,7 @@ import { ABLCodeCompletionProvider, loadDictDumpFiles } from './providers/codeCo
 import { CommandProvider } from './providers/commandProvider';
 import { ExternalCommandProvider } from './providers/externalCommandProvider';
 import { ExtensionConfig } from './extensionConfig';
+import { FormatProvider } from './providers/formatProvider';
 
 export function activate(ctx: vscode.ExtensionContext): void {
 	new ExtensionConfig();
@@ -33,15 +31,15 @@ function deactivate() {
 function initOnSaveWatcher(context: vscode.ExtensionContext) {
     vscode.workspace.onDidSaveTextDocument(document => hideStatusBar(document.uri.fsPath));
 
-    let ablConfig = vscode.workspace.getConfiguration(ABL_MODE.language);
-	if (ablConfig.get('checkSyntaxOnSave') === 'file') {
-		vscode.workspace.onDidSaveTextDocument(document => {
-			if (document.languageId !== ABL_MODE.language) {
-				return;
-			}
-			execCheckSyntax(document, ablConfig);
-		}, null, context.subscriptions);
-	}
+    // let ablConfig = vscode.workspace.getConfiguration(ABL_MODE.language);
+	// if (ablConfig.get('checkSyntaxOnSave') === 'file') {
+	// 	vscode.workspace.onDidSaveTextDocument(document => {
+	// 		if (document.languageId !== ABL_MODE.language) {
+	// 			return;
+	// 		}
+	// 		execCheckSyntax(document, ablConfig);
+	// 	}, null, context.subscriptions);
+	// }
 }
 
 function initOnCloseWatcher(context: vscode.ExtensionContext) {
@@ -65,9 +63,9 @@ function initProviders(context: vscode.ExtensionContext) {
 	new ABLHoverProvider(context);
 	new ABLDefinitionProvider(context);
 	new ABLSymbolProvider(context);
-    new ABLFormattingProvider(context);
     
 	new KeyBindingProvider(context);
 	new CommandProvider(context);
 	new ExternalCommandProvider(context);
+	new FormatProvider(context);
 }
