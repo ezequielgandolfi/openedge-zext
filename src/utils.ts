@@ -177,7 +177,7 @@ export function mkdir(path: string) {
 	}
 }
 
-export function saveAndExec(document: vscode.TextDocument, action: () => Promise<any>) {
+export function saveAndExec(document: vscode.TextDocument, action: () => Promise<boolean>): Promise<boolean> {
 	if (document.isDirty) {
 		return new Promise(function(resolve,reject) {
 			vscode.window.showInformationMessage('Current file has unsaved changes!', ...['Save', 'Cancel']).then(result => {
@@ -189,7 +189,7 @@ export function saveAndExec(document: vscode.TextDocument, action: () => Promise
 		});
 	}
 	else
-		return action();
+		return action().then(value => { return value });
 }
 
 export function xcode(workspace: vscode.WorkspaceFolder, filename: string): Promise<boolean> {

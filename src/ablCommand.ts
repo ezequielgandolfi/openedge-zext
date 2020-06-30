@@ -90,6 +90,8 @@ export class ABLCommandExecutor {
 
 		let uri = document.uri;
 		let wf = vscode.workspace.getWorkspaceFolder(uri);
+		if (!wf)
+			wf = ExtensionConfig.getInstance().getGenericWorkspaceFolder();
 		let doCommand = (): Promise<boolean> => {
 			if (!silent)
 				this.setDiagnostic(document, []);
@@ -110,9 +112,13 @@ export class ABLCommandExecutor {
 	}
 
 	protected executeStandaloneCommand(procedure: string, params:string[], mergeOeConfig?: OpenEdgeConfig, silent?: boolean): Promise<boolean> {
-		let wf = ExtensionConfig.getInstance().getGenericWorkspaceFolder();
+		let tempPath = process.env['TEMP'];
+		let config = ExtensionConfig.getInstance().getConfig(mergeOeConfig);
+		if (config.workingDirectory) {
+			tempPath = config.workingDirectory;
+		}
 		let doCommand = (): Promise<boolean> => {
-			let result = this.runProcess(procedure, params.join(','), mergeOeConfig, wf?.uri?.fsPath);
+			let result = this.runProcess(procedure, params.join(','), mergeOeConfig, tempPath);
 			return result.then(errors => {
 				return true;
 			}).catch(e => {

@@ -13,6 +13,22 @@ OpenEdge ABL Extension for Visual Studio Code
 - Syntax highlighting
 - Code snippets
 
+### Auto-complete
+> *Supports database table/fields, temp-tables, buffers, methods*
+![autocomplete](resources/readme/autocomplete.gif)
+
+### Source navigation
+> *Navigate throught includes, declarations*
+![navigation](resources/readme/navigation.gif)
+
+### Check syntax, Compile, Deploy, Run
+- Check syntax `Shift+F2`
+- Compile (and deploy) `Alt+F1`
+- Compile (and deploy) with options `Alt+F3`
+- Deploy without compile `Alt+F2`
+- Compile and run `F2`
+> *Deployment options are located in configuration file*
+
 ## What's new
 
 ### 0.6.0
@@ -124,10 +140,7 @@ Create a file named ".openedge-zext.json" in root path of the workspace.
                 }
             ]
         }
-    ],
-    "format": {
-        "trim": "right" // none
-    }
+    ]
 }
 ```
 

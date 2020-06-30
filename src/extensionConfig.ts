@@ -49,32 +49,36 @@ export class ExtensionConfig {
         return _extensionConfig;
     }
 
-    private findConfigFile(): Thenable<string> {
+    private findConfigFile(): Thenable<vscode.Uri> {
         return vscode.workspace.findFiles(this.OPENEDGE_CONFIG_FILENAME).then(uris => {
             if (uris.length > 0) {
-                this._genericWorkspaceFolder = vscode.workspace.getWorkspaceFolder(uris[0]);
-                return uris[0].fsPath;
+                // this._genericWorkspaceFolder = vscode.workspace.getWorkspaceFolder(uris[0]);
+                return uris[0];
             }
             return null;
         });
     }
 
-    private loadAndSetConfigFile(filename?: string) {
-        if (isNullOrUndefined(filename)) {
+    private loadAndSetConfigFile(uri?: vscode.Uri) {
+        if (isNullOrUndefined(uri)) {
             return;
         }
-        this.loadFile(filename).then(config => this._openEdgeConfig = config);
+        this.loadFile(uri.fsPath).then(config => {
+            this._openEdgeConfig = config;
+            if (!this._genericWorkspaceFolder)
+                this._genericWorkspaceFolder = vscode.workspace.getWorkspaceFolder(uri);
+        });
     }
 
     private initWatcher() {
         this._watcher = vscode.workspace.createFileSystemWatcher('**/' + this.OPENEDGE_CONFIG_FILENAME);
-        this._watcher.onDidChange(uri => this.loadAndSetConfigFile(uri.fsPath));
-        this._watcher.onDidCreate(uri => this.loadAndSetConfigFile(uri.fsPath));
-        this._watcher.onDidDelete(uri => this.loadAndSetConfigFile(uri.fsPath));
+        this._watcher.onDidChange(uri => this.loadAndSetConfigFile(uri));
+        this._watcher.onDidCreate(uri => this.loadAndSetConfigFile(uri));
+        this._watcher.onDidDelete(uri => this.loadAndSetConfigFile(uri));
     }
 
     private initConfig() {
-        this.findConfigFile().then(filename => this.loadAndSetConfigFile(filename));
+        this.findConfigFile().then(uri => this.loadAndSetConfigFile(uri));
     }
 
     private loadFile(filename: string): Thenable<OpenEdgeConfig> {
@@ -90,7 +94,8 @@ export class ExtensionConfig {
         if (isNullOrUndefined(mergeConfig))
             return result;
         else
-            return Object.assign(result, mergeConfig);
+            // deep copy from config
+            return Object.assign({}, JSON.parse(JSON.stringify(result)), mergeConfig);
     }
 
     getGenericWorkspaceFolder(): vscode.WorkspaceFolder {
