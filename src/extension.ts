@@ -10,6 +10,8 @@ import { CommandProvider } from './providers/commandProvider';
 import { ExternalCommandProvider } from './providers/externalCommandProvider';
 import { ExtensionConfig } from './extensionConfig';
 import { FormatProvider } from './providers/formatProvider';
+import { ABL_MODE } from './environment';
+import { ABLCheckSyntax } from './ablCommand';
 
 export function activate(ctx: vscode.ExtensionContext): void {
 	new ExtensionConfig();
@@ -31,15 +33,15 @@ function deactivate() {
 function initOnSaveWatcher(context: vscode.ExtensionContext) {
     vscode.workspace.onDidSaveTextDocument(document => hideStatusBar(document.uri.fsPath));
 
-    // let ablConfig = vscode.workspace.getConfiguration(ABL_MODE.language);
-	// if (ablConfig.get('checkSyntaxOnSave') === 'file') {
-	// 	vscode.workspace.onDidSaveTextDocument(document => {
-	// 		if (document.languageId !== ABL_MODE.language) {
-	// 			return;
-	// 		}
-	// 		execCheckSyntax(document, ablConfig);
-	// 	}, null, context.subscriptions);
-	// }
+    let ablConfig = vscode.workspace.getConfiguration(ABL_MODE.language);
+	if (ablConfig.get('checkSyntaxOnSave') === 'file') {
+		vscode.workspace.onDidSaveTextDocument(document => {
+			if (document.languageId !== ABL_MODE.language) {
+				return;
+			}
+			new ABLCheckSyntax().execute(document);
+		}, null, context.subscriptions);
+	}
 }
 
 function initOnCloseWatcher(context: vscode.ExtensionContext) {

@@ -1,12 +1,10 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
-import { ABL_MODE } from '../environment';
 import { isArray } from 'util';
 import { documentDeploy } from '../deploy';
-import { readDataDictionary } from '../ablDataDictionary';
 import { getDocumentController } from '../documentController';
-import { ABLCheckSyntax, ABLCompile, ABLRun } from '../ablCommand';
+import { ABLCheckSyntax, ABLCompile, ABLRun, ABLDictDump } from '../ablCommand';
 
 export class CommandProvider {
 	constructor(context: vscode.ExtensionContext) {
@@ -27,8 +25,7 @@ export class CommandProvider {
 			documentDeploy(vscode.window.activeTextEditor.document);
 		}));
 		context.subscriptions.push(vscode.commands.registerCommand('abl.dictionary.dumpDefinition', () => {
-			let ablConfig = vscode.workspace.getConfiguration(ABL_MODE.language);
-			readDataDictionary(ablConfig);
+			new ABLDictDump().execute();
 		}));
 		context.subscriptions.push(vscode.commands.registerCommand('abl.currentFile.compileOptions', () => {
 			new ABLCompile().compileWithOptions(vscode.window.activeTextEditor.document);

@@ -184,7 +184,7 @@ export function saveAndExec(document: vscode.TextDocument, action: () => Promise
 				if (result == 'Save') 
 					document.save().then(saved => { if (saved) { action().then(v => resolve(v)); }});
 				else
-					resolve(null);
+					resolve(false);
 			});
 		});
 	}

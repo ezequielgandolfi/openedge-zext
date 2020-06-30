@@ -4,6 +4,7 @@ import { SourceParser } from '../sourceParser';
 import { getTableCollection } from './codeCompletionProvider';
 import { ABL_MODE } from '../environment';
 import { OpenEdgeConfig } from '../extensionConfig';
+import { ABLCompile, COMPILE_OPTIONS } from '../ablCommand';
 
 /**
  * Provider for invisible commands.
@@ -41,8 +42,7 @@ export class ExternalCommandProvider {
 			let ablConfig = vscode.workspace.getConfiguration(ABL_MODE.language);
 			return new Promise(function(resolve,reject) {
 				vscode.workspace.openTextDocument(fileName).then(doc => {
-					// TODO
-					// execCompile(doc, mergeOeConfig, ablConfig, [COMPILE_OPTIONS.COMPILE], true).then(v => resolve(v));
+					new ABLCompile().execute(doc, mergeOeConfig, true, [COMPILE_OPTIONS.COMPILE]).then(v => resolve(v));
 				});
 			})
 		}));

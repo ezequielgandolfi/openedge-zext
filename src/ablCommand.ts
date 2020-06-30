@@ -109,6 +109,20 @@ export class ABLCommandExecutor {
 		return saveAndExec(document, doCommand);	
 	}
 
+	protected executeStandaloneCommand(procedure: string, params:string[], mergeOeConfig?: OpenEdgeConfig, silent?: boolean): Promise<boolean> {
+		let wf = ExtensionConfig.getInstance().getGenericWorkspaceFolder();
+		let doCommand = (): Promise<boolean> => {
+			let result = this.runProcess(procedure, params.join(','), mergeOeConfig, wf?.uri?.fsPath);
+			return result.then(errors => {
+				return true;
+			}).catch(e => {
+				vscode.window.showInformationMessage(e);
+				return false;
+			});
+		}
+		return doCommand();
+	}
+
 	protected setDiagnostic(document: vscode.TextDocument, errors: ICheckResult[]) {
 		if (this.errorDiagnostic)
 			this.errorDiagnostic.clear();
@@ -160,7 +174,7 @@ export class ABLCommandExecutor {
 			parameterFiles: oeConfig.parameterFiles,
 			configFile: oeConfig.configFile,
 			batchMode: this.isBatch(),
-			startupProcedure: path.join(__dirname, `../abl-src/${procedure}`),
+			startupProcedure: path.join(ExtensionConfig.getInstance().getExtensionPath(), `abl-src/${procedure}`),
 			param: param,
 			workspaceRoot: workspaceRoot
 		});
@@ -331,6 +345,19 @@ export class ABLRun extends ABLCommandExecutor {
 				else
 					showStatusBar(document.uri.fsPath, 'Syntax error', STATUS_COLOR.ERROR);
 			}
+			return result;
+		});
+	}
+
+}
+
+export class ABLDictDump extends ABLCommandExecutor {
+
+	execute(): Promise<boolean> {
+		vscode.window.showInformationMessage('Updating dictionary...');
+		let dbs = ExtensionConfig.getInstance().getConfig().dbDictionary;
+		return this.executeStandaloneCommand('dict-dump.p', dbs).then(result => {
+			vscode.window.showInformationMessage('Data dictionary ' + (result ? 'updated' : 'failed'));
 			return result;
 		});
 	}

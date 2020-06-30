@@ -37,7 +37,7 @@ export async function create(spawnCommand: string, spawnArgs: string[] | undefin
     }
     spawnOptions.stdio = 'pipe';
     const spawnedProcess = spawn(spawnCommand, spawnArgs, spawnOptions);
-    outputChannel.show();
+    // outputChannel.show();
     const result = await process(spawnedProcess, outputChannel, { displayClose: false, displayExit: false });
     if (result.success && result.code === 0) {
         // outputChannel.hide();
