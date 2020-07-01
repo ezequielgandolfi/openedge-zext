@@ -1,11 +1,11 @@
 import * as vscode from 'vscode';
 
 export interface ICheckResult {
-	file: string;
-	line: number;
-	column: number;
-	msg: string;
-	severity: string;
+    file: string;
+    line: number;
+    column: number;
+    msg: string;
+    severity: string;
 }
 
 export class TextSelection {

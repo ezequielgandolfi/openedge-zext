@@ -52,7 +52,6 @@ export class ExtensionConfig {
     private findConfigFile(): Thenable<vscode.Uri> {
         return vscode.workspace.findFiles(this.OPENEDGE_CONFIG_FILENAME).then(uris => {
             if (uris.length > 0) {
-                // this._genericWorkspaceFolder = vscode.workspace.getWorkspaceFolder(uris[0]);
                 return uris[0];
             }
             return null;

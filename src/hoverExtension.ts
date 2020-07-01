@@ -1,22 +1,23 @@
 import * as vscode from 'vscode';
-import * as utils from '../utils';
-import { ABLDocumentController, getDocumentController } from "../documentController";
-import { getTableCollection } from "./codeCompletionProvider";
-import { ABLFieldDefinition, ABLTableDefinition, SYMBOL_TYPE, ABLTempTable, ABLVariable, ABLMethod, ABLParameter } from '../definition';
-import { ABL_MODE } from '../environment';
+import * as utils from './utils';
+import { ABLDocumentController, getDocumentController } from "./documentController";
+import { getTableCollection } from "./codeCompletionExtension";
+import { ABLFieldDefinition, ABLTableDefinition, SYMBOL_TYPE, ABLTempTable, ABLVariable, ABLMethod, ABLParameter } from './definition';
+import { ABL_MODE } from './environment';
 import { isNullOrUndefined } from 'util';
 
-export class HoverProvider implements vscode.HoverProvider {
+export class HoverExtension implements vscode.HoverProvider {
     private _ablDocumentController: ABLDocumentController;
 
-	constructor(context: vscode.ExtensionContext) {
-		this.initialize(context);
+    static attach(context: vscode.ExtensionContext) {
+        let instance = new HoverExtension();
+        instance._ablDocumentController = getDocumentController();
+        instance.registerCommands(context);
 	}
 
-	private initialize(context: vscode.ExtensionContext) {
-        this._ablDocumentController = getDocumentController();
-		context.subscriptions.push(vscode.languages.registerHoverProvider(ABL_MODE.language, this));
-	}
+	private registerCommands(context: vscode.ExtensionContext) {
+        context.subscriptions.push(vscode.languages.registerHoverProvider(ABL_MODE.language, this));
+    }
     
     provideHover(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): vscode.ProviderResult<vscode.Hover> {
         let doc = this._ablDocumentController.getDocument(document);
@@ -39,7 +40,7 @@ export class HoverProvider implements vscode.HoverProvider {
             }
             else {
                 // translate buffer var/param
-			    words[0] = (doc.searchBuffer(words[0], position) || words[0]);
+                words[0] = (doc.searchBuffer(words[0], position) || words[0]);
                 // check for table.field collection
                 let tb = getTableCollection().items.find(item => item.label == words[0]);
                 if (tb) {

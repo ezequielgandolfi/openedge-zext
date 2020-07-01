@@ -1,32 +1,41 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
-import { ExtensionConfig } from '../extensionConfig';
-import { SourceParser } from '../sourceParser';
+import { ExtensionConfig } from './extensionConfig';
+import { SourceParser } from './sourceParser';
 
-export class FormatProvider {
+export class FormatExtension {
 
     ablKeywordsPattern: string;
 
-    constructor(context: vscode.ExtensionContext) {
-        this.initialize(context);
-    }
-
-    private initialize(context: vscode.ExtensionContext) {
+    constructor() {
         this.loadKeywordPattern();
-
-        context.subscriptions.push(vscode.commands.registerCommand('abl.format.upperCase', () => {
-            this.formatUpperCase(vscode.window.activeTextEditor);
-        }));
-        context.subscriptions.push(vscode.commands.registerCommand('abl.format.lowerCase', () => {
-            this.formatLowerCase(vscode.window.activeTextEditor);
-        }));
-        context.subscriptions.push(vscode.commands.registerCommand('abl.format.trimRight', () => {
-            this.formatTrimRight(vscode.window.activeTextEditor);
-        }));
     }
-    
-    private formatKeywords(editor: vscode.TextEditor, func: (text:string) => string) {
+
+    static attach(context: vscode.ExtensionContext) {
+        let instance = new FormatExtension();
+        instance.registerCommands(context);
+	}
+
+	private registerCommands(context: vscode.ExtensionContext) {
+        context.subscriptions.push(vscode.commands.registerCommand('abl.format.upperCase', this.formatUpperCase.bind(this)));
+        context.subscriptions.push(vscode.commands.registerCommand('abl.format.lowerCase', this.formatLowerCase.bind(this)));
+        context.subscriptions.push(vscode.commands.registerCommand('abl.format.trimRight', this.formatTrimRight.bind(this)));
+    }
+
+    private formatUpperCase() {
+        this.applyUpperCaseKeywords(vscode.window.activeTextEditor);
+    }
+
+    private formatLowerCase() {
+        this.applyLowerCaseKeywords(vscode.window.activeTextEditor);
+    }
+
+    private formatTrimRight() {
+        this.applyTrimRight(vscode.window.activeTextEditor);
+    }
+
+    private applyKeywordsFunction(editor: vscode.TextEditor, func: (text:string) => string) {
         let source = new SourceParser().getSourceCode(editor.document);
         let reg = RegExp(this.ablKeywordsPattern, 'gim');
 
@@ -40,15 +49,15 @@ export class FormatProvider {
         });
     }
 
-    private formatUpperCase(editor: vscode.TextEditor) {
-        this.formatKeywords(editor, (text) => text.toUpperCase());
+    private applyUpperCaseKeywords(editor: vscode.TextEditor) {
+        this.applyKeywordsFunction(editor, (text) => text.toUpperCase());
     }
 
-    private formatLowerCase(editor: vscode.TextEditor) {
-        this.formatKeywords(editor, (text) => text.toLowerCase());
+    private applyLowerCaseKeywords(editor: vscode.TextEditor) {
+        this.applyKeywordsFunction(editor, (text) => text.toLowerCase());
     }
 
-    private formatTrimRight(editor: vscode.TextEditor) {
+    private applyTrimRight(editor: vscode.TextEditor) {
         let txt = editor.document.getText();
         editor.edit(builder => {
             let range = new vscode.Range(new vscode.Position(0,0), editor.document.positionAt(txt.length));
