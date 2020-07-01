@@ -10,10 +10,40 @@ OpenEdge ABL Extension for Visual Studio Code
 - Compile
 - Run
 - Deploy
+- Source formatting
 - Syntax highlighting
 - Code snippets
 
+### Auto-complete
+> *Supports database table/fields, temp-tables, buffers, methods*
+![autocomplete](resources/readme/autocomplete.gif)
+
+### Source navigation
+> *Navigate throught includes, declarations*
+![navigation](resources/readme/navigation.gif)
+
+### Check syntax, Compile, Deploy, Run
+- Check syntax `Shift+F2`
+- Compile (and deploy) `Alt+F1`
+- Compile (and deploy) with options `Alt+F3`
+- Deploy without compile `Alt+F2`
+- Compile and run `F2`
+> *Deployment options are located in configuration file*
+
+### Source formatting
+- Available commands:
+    - `ABL: Format - Keywords - Upper Case`
+    - `ABL: Format - Keywords - Lower Case`
+    - `ABL: Format - Trim Right`
+
+
 ## What's new
+
+### 0.6.0
+- New commands for source formatting
+    - ABL: Format - Keywords - Upper Case
+    - ABL: Format - Keywords - Lower Case
+    - ABL: Format - Trim Right
 
 ### 0.5.3
 - Fix: Status Bar Errors
@@ -118,10 +148,7 @@ Create a file named ".openedge-zext.json" in root path of the workspace.
                 }
             ]
         }
-    ],
-    "format": {
-        "trim": "right" // none
-    }
+    ]
 }
 ```
 

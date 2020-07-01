@@ -2,12 +2,12 @@
     "name": "openedge-zext",
     "displayName": "OpenEdge ABL (Progress 4GL)",
     "description": "OpenEdge ABL Extension for VSCode",
-    "version": "0.5.3",
+    "version": "0.6.0",
     "publisher": "ezequielgandolfi",
     "author": "Ezequiel Gandolfi",
     "license": "Apache-2.0",
     "engines": {
-        "vscode": "^1.29.0"
+        "vscode": "^1.46.0"
     },
     "icon": "resources/icons/openedge.jpg",
     "repository": {
@@ -94,6 +94,21 @@
                 "command": "abl.currentFile.saveMap",
                 "title": "ABL: Save Map File",
                 "description": "Save the OpenEdge-ZExt map from current file"
+            },
+            {
+                "command": "abl.format.lowerCase",
+                "title": "ABL: Format - Keywords - Lower Case",
+                "description": "Change keywords to lower case"
+            },
+            {
+                "command": "abl.format.upperCase",
+                "title": "ABL: Format - Keywords - Upper Case",
+                "description": "Change keywords to upper case"
+            },
+            {
+                "command": "abl.format.trimRight",
+                "title": "ABL: Format - Trim Right",
+                "description": "Trim right spaces from each line"
             }
         ],
         "menus": {
@@ -124,6 +139,18 @@
                 {
                     "command": "abl.currentFile.saveMap",
                     "when": "editorLangId == 'abl'"
+                },
+                {
+                    "command": "abl.format.lowerCase",
+                    "when": "editorLangId == 'abl'"
+                },
+                {
+                    "command": "abl.format.upperCase",
+                    "when": "editorLangId == 'abl'"
+                },
+                {
+                    "command": "abl.format.trimRight",
+                    "when": "editorLangId == 'abl'"
                 }
             ]
         },
@@ -137,45 +164,6 @@
                 "type": "object",
                 "title": "ABL configuration",
                 "properties": {
-                    "abl.outline.doSort": {
-                        "type": "boolean",
-                        "default": true,
-                        "description": "Sort the outline view"
-                    },
-                    "abl.outline.expandNodes": {
-                        "type": "array",
-                        "default": [
-                            "Module",
-                            "Class",
-                            "Interface",
-                            "Namespace",
-                            "Object",
-                            "Package",
-                            "Struct"
-                        ],
-                        "description": "Kinds of nodes to be expanded automatically."
-                    },
-                    "abl.outline.sortOrder": {
-                        "type": "array",
-                        "default": [
-                            "Class",
-                            "Module",
-                            "Constant",
-                            "Interface",
-                            "*",
-                            "Constructor",
-                            "Function",
-                            "Method"
-                        ],
-                        "description": "Order to the sort symbols in, if sorted.  * is placeholder for all symbols not explicitly listed."
-                    },
-                    "abl.outline.topLevel": {
-                        "type": "array",
-                        "default": [
-                            "*"
-                        ],
-                        "description": "Which symbols to include at the topmost scope.  * includes everything."
-                    },
                     "abl.files.encoding": {
                         "type": "string",
                         "default": "iso88591"
@@ -189,196 +177,6 @@
                         ],
                         "default": "off",
                         "description": "On save, check the syntax fot eh current file, the workspace, or nothing at all."
-                    },
-                    "abl.editorContextMenuCommands": {
-                        "type": "object",
-                        "properties": {
-                            "checkSyntax": {
-                                "type": "boolean",
-                                "default": true,
-                                "description": "If true, adds command to check syntax to the editor context menu"
-                            }
-                        }
-                    }
-                }
-            },
-            {
-                "type": "object",
-                "title": "ABL formatter",
-                "properties": {
-                    "ablFormat.newLine": {
-                        "type": "object",
-                        "default": {
-                            "brace": false
-                        },
-                        "description": "Whether or not to put items on a new line or the same line."
-                    },
-                    "ablFormat.onType": {
-                        "type": "boolean",
-                        "default": true,
-                        "description": "Enables or disables formatting while typing."
-                    },
-                    "ablFormat.space": {
-                        "type": "object",
-                        "description": "The number of spaces to place before/after particular character.",
-                        "default": {
-                            "language": {
-                                "php": {
-                                    ".": {
-                                        "before": 1,
-                                        "after": 1
-                                    }
-                                },
-                                "javascript": {
-                                    "+": {
-                                        "before": 1,
-                                        "after": 1
-                                    }
-                                },
-                                "java": {
-                                    "+": {
-                                        "before": 1,
-                                        "after": 1
-                                    }
-                                },
-                                "css": {
-                                    ":": {
-                                        "before": 0,
-                                        "after": 1
-                                    },
-                                    "=": {
-                                        "before": 0,
-                                        "after": 0
-                                    }
-                                }
-                            },
-                            "and": {
-                                "before": 1,
-                                "after": 1
-                            },
-                            "or": {
-                                "before": 1,
-                                "after": 1
-                            },
-                            "equal": {
-                                "before": 1,
-                                "after": 1
-                            },
-                            "not": {
-                                "before": 1,
-                                "after": 1
-                            },
-                            "greaterThan": {
-                                "before": 1,
-                                "after": 1
-                            },
-                            "lessThan": {
-                                "before": 1,
-                                "after": 1
-                            },
-                            "comma": {
-                                "before": 0,
-                                "after": 1
-                            },
-                            "question": {
-                                "before": 1,
-                                "after": 1
-                            },
-                            "colon": {
-                                "before": 1,
-                                "after": 1
-                            },
-                            "semicolon": {
-                                "before": 0,
-                                "after": 1
-                            },
-                            "increment": {
-                                "before": 0,
-                                "after": 0
-                            },
-                            "decrement": {
-                                "before": 0,
-                                "after": 0
-                            },
-                            "add": {
-                                "before": 1,
-                                "after": 1
-                            },
-                            "subtract": {
-                                "before": 1,
-                                "after": 1
-                            },
-                            "multiply": {
-                                "before": 1,
-                                "after": 1
-                            },
-                            "divide": {
-                                "before": 1,
-                                "after": 1
-                            },
-                            "modulo": {
-                                "before": 1,
-                                "after": 1
-                            },
-                            "parenthesis": {
-                                "open": {
-                                    "before": {
-                                        "other": 1,
-                                        "foreach": 1,
-                                        "for": 1,
-                                        "while": 1,
-                                        "if": 1,
-                                        "elseif": 1,
-                                        "elif": 1,
-                                        "switch": 1,
-                                        "do": 1,
-                                        "function": 1
-                                    },
-                                    "after": {
-                                        "other": 1,
-                                        "foreach": 0,
-                                        "for": 0,
-                                        "while": 0,
-                                        "if": 0,
-                                        "elseif": 0,
-                                        "elif": 0,
-                                        "switch": 0,
-                                        "do": 0,
-                                        "function": 0
-                                    }
-                                },
-                                "close": {
-                                    "before": {
-                                        "other": 1,
-                                        "foreach": 0,
-                                        "for": 0,
-                                        "while": 0,
-                                        "if": 0,
-                                        "elseif": 0,
-                                        "elif": 0,
-                                        "switch": 0,
-                                        "do": 0,
-                                        "function": 0
-                                    }
-                                }
-                            },
-                            "brace": {
-                                "open": {
-                                    "before": {
-                                        "other": 1,
-                                        "foreach": 1,
-                                        "for": 1,
-                                        "while": 1,
-                                        "if": 1,
-                                        "elseif": 1,
-                                        "elif": 1,
-                                        "switch": 1,
-                                        "do": 1,
-                                        "function": 1
-                                    }
-                                }
-                            }
-                        }
                     }
                 }
             }
@@ -426,19 +224,14 @@
         "vscode:prepublish": "npm run compile",
         "compile": "tsc -p ./",
         "watch": "tsc -watch -p ./",
-        "postinstall": "node ./node_modules/vscode/bin/install",
-        "test": "npm run compile && node ./node_modules/vscode/bin/test",
         "build": "vsce package"
     },
-    "dependencies": {
-        "jsonminify": "^0.4.1"
-    },
+    "dependencies": {},
     "devDependencies": {
-        "@types/mocha": "^2.2.42",
-        "@types/node": "^8.10.25",
-        "tslint": "^5.17.0",
-        "typescript": "^3.1.4",
-        "vsce": "^1.65.0",
-        "vscode": "^1.1.34"
+        "@types/node": "14.0.14",
+        "@types/vscode": "1.46.0",
+        "eslint": "7.3.1",
+        "typescript": "3.9.5",
+        "vsce": "1.77.0"
     }
 }

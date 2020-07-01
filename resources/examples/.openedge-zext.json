@@ -39,8 +39,5 @@
             "taskType": "current.all-compile",
             "path": "c:\\out\\everythingGoesHere"
         }
-    ],
-    "format": {
-        "trim": "right"
-    }
+    ]
 }

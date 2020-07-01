@@ -1,13 +1,12 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
-import { OpenEdgeConfig } from './openEdgeConfigFile';
 import * as fs from 'fs';
-import { getConfig } from './ablConfig';
+import { ExtensionConfig, OpenEdgeConfig } from './extensionConfig';
 
 export const ABL_MODE: vscode.DocumentFilter = { language: 'abl', scheme: 'file' };
 
 function getConfigDLCPath() {
-    let config = getConfig();
+    let config = ExtensionConfig.getInstance().getConfig();
     if (config === null) 
         return;
     return config.dlcPath;
@@ -81,7 +80,7 @@ export function setupEnvironmentVariables(env: any, openEdgeConfig: OpenEdgeConf
         if (!openEdgeConfig.proPath || !(openEdgeConfig.proPath instanceof Array) || openEdgeConfig.proPath.length === 0) {
             openEdgeConfig.proPath = ['${workspaceRoot}'];
         }
-        openEdgeConfig.proPath.push(path.join(__dirname, '../../../abl-src'));
+        openEdgeConfig.proPath.push(path.join(ExtensionConfig.getInstance().getExtensionPath(), 'abl-src'));
         let paths = openEdgeConfig.proPath.map(p => {
             p = p.replace('${workspaceRoot}', workspaceRoot);
             p = p.replace('${workspaceFolder}', workspaceRoot);
@@ -97,7 +96,7 @@ export function setupEnvironmentVariables(env: any, openEdgeConfig: OpenEdgeConf
             env.VSABL_PROPATH_MODE = 'append';
         }
     }
-    env.VSABL_SRC = path.join(__dirname, '../../abl-src');
+    env.VSABL_SRC = path.join(ExtensionConfig.getInstance().getExtensionPath(), 'abl-src');
     env.VSABL_WORKSPACE = workspaceRoot;
     return env;
 }

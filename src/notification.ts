@@ -1,4 +1,3 @@
-import { ABL_MODE } from './environment';
 import * as vscode from 'vscode';
 import { isNullOrUndefined } from 'util';
 
@@ -38,7 +37,7 @@ function updateDocumentStatusBar(fsPath?: string) {
 
 export function hideStatusBar(fsPath: string) {
     let idx = statusMessages.findIndex(item => item.fsPath == fsPath);
-	if (idx >= 0) {
+    if (idx >= 0) {
         statusMessages.splice(idx, 1);
     }
     updateStatusBar();
@@ -57,10 +56,10 @@ export function showStatusBar(fsPath: string, message: string, status?: STATUS_C
 }
 
 export function initDiagnostic(context: vscode.ExtensionContext) {
-	errorDiagnosticCollection = vscode.languages.createDiagnosticCollection('abl-error');
-	context.subscriptions.push(errorDiagnosticCollection);
-	warningDiagnosticCollection = vscode.languages.createDiagnosticCollection('abl-warning');
-	context.subscriptions.push(warningDiagnosticCollection);
+    errorDiagnosticCollection = vscode.languages.createDiagnosticCollection('abl-error');
+    context.subscriptions.push(errorDiagnosticCollection);
+    warningDiagnosticCollection = vscode.languages.createDiagnosticCollection('abl-warning');
+    context.subscriptions.push(warningDiagnosticCollection);
 }
 
 export function initStatusBar(context: vscode.ExtensionContext) {

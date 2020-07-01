@@ -1,5 +1,17 @@
 # Change Log
 
+## 0.6.0
+
+### Breaking Changes
+- Removed Formatting provider support. Replaced by individual commands
+- Removed output channel. Will be used only on verbose mode (in progress)
+
+### Features
+- New commands for source formatting
+    - abl.format.lowerCase: `ABL: Format - Keywords - Lower Case` change keywords to lower case
+    - abl.format.lowerCase: `ABL: Format - Keywords - Upper Case` change keywords to upper case ([Issue #28](https://github.com/ezequielgandolfi/openedge-zext/issues/28))
+    - abl.format.trimRight: `ABL: Format - Trim Right` trim right each line of code
+
 ## 0.5.3
 
 ### Fixes

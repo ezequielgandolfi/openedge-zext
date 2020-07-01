@@ -26,16 +26,16 @@ export class SourceParser {
         let stringChar: string = null;
         let charWOComments;
         let charWOStrings;
-		
+        
         for (let i = 0; i < source.length; i++) {
-			
+            
             thisChar = source[i];
             nextChar = source[i + 1];
-			prevChar = source[i - 1];
+            prevChar = source[i - 1];
             charWOComments = thisChar;
             charWOStrings = thisChar;
-			
-			switch (thisChar) {
+            
+            switch (thisChar) {
                 case '/':
                     if (!inString) {
                         // If we are not in a comment
@@ -65,13 +65,13 @@ export class SourceParser {
                     else {
                         charWOStrings = ' ';
                     }
-					break;
+                    break;
                 case '\n':
                     if (inComment && commentType == CommentType.SingleLine) {
                         inComment = false;
                         commentType = null;
                     }
-					break;
+                    break;
                 case '"':
                 case '\'':
                     if (!inComment) {
@@ -88,7 +88,7 @@ export class SourceParser {
                         charWOComments = ' ';
                         charWOStrings = ' ';
                     }
-					break;
+                    break;
                 default:
                     if (inComment) {
                         charWOComments = ' ';
@@ -101,9 +101,9 @@ export class SourceParser {
             }
             code.sourceWithoutComments += charWOComments;
             code.sourceWithoutStrings += charWOStrings;
-		}
-		
-		return code;
+        }
+        
+        return code;
     }
 
 }
