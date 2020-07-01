@@ -2,10 +2,10 @@ import * as vscode from 'vscode';
 import { initDocumentController } from './documentController';
 import { hideStatusBar, initDiagnostic, updateStatusBar, initStatusBar } from './notification';
 import { KeyBindingProvider } from './providers/keyBindingProvider';
-import { ABLHoverProvider } from './providers/hoverProvider';
-import { ABLDefinitionProvider } from './providers/definitionProvider';
-import { ABLSymbolProvider } from './providers/symbolProvider';
-import { ABLCodeCompletionProvider, loadDictDumpFiles } from './providers/codeCompletionProvider';
+import { HoverProvider } from './providers/hoverProvider';
+import { DefinitionProvider } from './providers/definitionProvider';
+import { SymbolProvider } from './providers/symbolProvider';
+import { CodeCompletionProvider, loadDictDumpFiles } from './providers/codeCompletionProvider';
 import { CommandProvider } from './providers/commandProvider';
 import { ExternalCommandProvider } from './providers/externalCommandProvider';
 import { ExtensionConfig } from './extensionConfig';
@@ -61,10 +61,10 @@ function startDocumentWatcher(context: vscode.ExtensionContext) {
 }
 
 function initProviders(context: vscode.ExtensionContext) {
-	new ABLCodeCompletionProvider(context);
-	new ABLHoverProvider(context);
-	new ABLDefinitionProvider(context);
-	new ABLSymbolProvider(context);
+	new CodeCompletionProvider(context);
+	new HoverProvider(context);
+	new DefinitionProvider(context);
+	new SymbolProvider(context);
     
 	new KeyBindingProvider(context);
 	new CommandProvider(context);

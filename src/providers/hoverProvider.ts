@@ -1,5 +1,4 @@
 import * as vscode from 'vscode';
-import { HoverProvider, ProviderResult, Hover, TextDocument, Position, CancellationToken } from "vscode";
 import * as utils from '../utils';
 import { ABLDocumentController, getDocumentController } from "../documentController";
 import { getTableCollection } from "./codeCompletionProvider";
@@ -7,7 +6,7 @@ import { ABLFieldDefinition, ABLTableDefinition, SYMBOL_TYPE, ABLTempTable, ABLV
 import { ABL_MODE } from '../environment';
 import { isNullOrUndefined } from 'util';
 
-export class ABLHoverProvider implements HoverProvider {
+export class HoverProvider implements vscode.HoverProvider {
     private _ablDocumentController: ABLDocumentController;
 
 	constructor(context: vscode.ExtensionContext) {
@@ -19,7 +18,7 @@ export class ABLHoverProvider implements HoverProvider {
 		context.subscriptions.push(vscode.languages.registerHoverProvider(ABL_MODE.language, this));
 	}
     
-    provideHover(document: TextDocument, position: Position, token: CancellationToken): ProviderResult<Hover> {
+    provideHover(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): vscode.ProviderResult<vscode.Hover> {
         let doc = this._ablDocumentController.getDocument(document);
         let selection = utils.getText(document, position);
         if (!selection)
@@ -35,7 +34,7 @@ export class ABLHoverProvider implements HoverProvider {
                 let tb = getTableCollection().items.find(item => item.label == selection.word);
                 if (tb) {
                     let tbd = <ABLTableDefinition>tb;
-                    return new Hover([selection.word, '*'+tb.detail+'*', 'PK: ' + tbd.pkList], selection.wordRange);
+                    return new vscode.Hover([selection.word, '*'+tb.detail+'*', 'PK: ' + tbd.pkList], selection.wordRange);
                 }
             }
             else {
@@ -47,7 +46,7 @@ export class ABLHoverProvider implements HoverProvider {
                     let fdLst = <ABLFieldDefinition[]>tb['fields'];
                     let fd = fdLst.find(item => item.label == words[1]);
                     if (fd)
-                        return new Hover([selection.statement, '*'+fd.detail+'*', 'Type: ' + fd.dataType, 'Format: ' + fd.format], selection.statementRange);
+                        return new vscode.Hover([selection.statement, '*'+fd.detail+'*', 'Type: ' + fd.dataType, 'Format: ' + fd.format], selection.statementRange);
                     else
                         return;
                 }
@@ -58,41 +57,41 @@ export class ABLHoverProvider implements HoverProvider {
         if (!isNullOrUndefined(symbol)) {
             if (symbol.type == SYMBOL_TYPE.TEMPTABLE) {
                 let tt = <ABLTempTable>(symbol.value);
-                return new Hover([selection.word, 'Temp-table *'+tt.label+'*'], selection.wordRange);
+                return new vscode.Hover([selection.word, 'Temp-table *'+tt.label+'*'], selection.wordRange);
             }
             if (symbol.type == SYMBOL_TYPE.TEMPTABLE_FIELD) {
                 let tt = <ABLTempTable>(symbol.origin);
                 let tf = <ABLVariable>(symbol.value);
-                return new Hover([selection.word, 'Field *'+tf.name+'*','from temp-table *'+tt.label+'*'], selection.wordRange);
+                return new vscode.Hover([selection.word, 'Field *'+tf.name+'*','from temp-table *'+tt.label+'*'], selection.wordRange);
             }
             if (symbol.type == SYMBOL_TYPE.METHOD) {
                 let mt = <ABLMethod>(symbol.value);
-                return new Hover([selection.word, 'Method *'+mt.name+'*'], selection.wordRange);
+                return new vscode.Hover([selection.word, 'Method *'+mt.name+'*'], selection.wordRange);
             }
             if (symbol.type == SYMBOL_TYPE.GLOBAL_VAR) {
                 let gv = <ABLVariable>(symbol.value);
                 if (gv.dataType == 'buffer')
-                    return new Hover([selection.word, 'Global buffer *'+gv.name+'*','for table *'+gv.additional+'*'], selection.wordRange);
+                    return new vscode.Hover([selection.word, 'Global buffer *'+gv.name+'*','for table *'+gv.additional+'*'], selection.wordRange);
                 else
-                    return new Hover([selection.word, 'Global variable *'+gv.name+'*'], selection.wordRange);
+                    return new vscode.Hover([selection.word, 'Global variable *'+gv.name+'*'], selection.wordRange);
             }
             if (symbol.type == SYMBOL_TYPE.LOCAL_PARAM) {
                 let mt = <ABLMethod>(symbol.origin);
                 let lp = <ABLParameter>(symbol.value);
                 if (lp.dataType == 'temp-table')
-                    return new Hover([selection.word, 'Local temp-table parameter *'+lp.name+'*','from method *'+mt.name+'*'], selection.wordRange);
+                    return new vscode.Hover([selection.word, 'Local temp-table parameter *'+lp.name+'*','from method *'+mt.name+'*'], selection.wordRange);
                 else if (lp.dataType == 'buffer')
-                    return new Hover([selection.word, 'Local buffer parameter *'+lp.name+'*','for table *'+lp.additional+'*','from method *'+mt.name+'*'], selection.wordRange);
+                    return new vscode.Hover([selection.word, 'Local buffer parameter *'+lp.name+'*','for table *'+lp.additional+'*','from method *'+mt.name+'*'], selection.wordRange);
                 else
-                    return new Hover([selection.word, 'Local parameter *'+lp.name+'*','from method *'+mt.name+'*'], selection.wordRange);
+                    return new vscode.Hover([selection.word, 'Local parameter *'+lp.name+'*','from method *'+mt.name+'*'], selection.wordRange);
             }
             if (symbol.type == SYMBOL_TYPE.LOCAL_VAR) {
                 let mt = <ABLMethod>(symbol.origin);
                 let lv = <ABLVariable>(symbol.value);
                 if (lv.dataType == 'buffer')
-                    return new Hover([selection.word, 'Local buffer *'+lv.name+'*','for table *'+lv.additional+'*','from method *'+mt.name+'*'], selection.wordRange);
+                    return new vscode.Hover([selection.word, 'Local buffer *'+lv.name+'*','for table *'+lv.additional+'*','from method *'+mt.name+'*'], selection.wordRange);
                 else
-                    return new Hover([selection.word, 'Local variable *'+lv.name+'*','from method *'+mt.name+'*'], selection.wordRange);
+                    return new vscode.Hover([selection.word, 'Local variable *'+lv.name+'*','from method *'+mt.name+'*'], selection.wordRange);
             }
         }
 

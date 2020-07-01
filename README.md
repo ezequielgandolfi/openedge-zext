@@ -10,6 +10,7 @@ OpenEdge ABL Extension for Visual Studio Code
 - Compile
 - Run
 - Deploy
+- Source formatting
 - Syntax highlighting
 - Code snippets
 
@@ -28,6 +29,13 @@ OpenEdge ABL Extension for Visual Studio Code
 - Deploy without compile `Alt+F2`
 - Compile and run `F2`
 > *Deployment options are located in configuration file*
+
+### Source formatting
+- Available commands:
+    - `ABL: Format - Keywords - Upper Case`
+    - `ABL: Format - Keywords - Lower Case`
+    - `ABL: Format - Trim Right`
+
 
 ## What's new
 

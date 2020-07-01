@@ -1,8 +1,8 @@
 import * as vscode from 'vscode';
+import * as fs from 'fs';
 import { isNullOrUndefined, promisify } from 'util';
-import { readFile } from 'fs';
 
-const readFileAsync = promisify(readFile);
+const readFileAsync = promisify(fs.readFile);
 
 let _extensionConfig: ExtensionConfig;
 

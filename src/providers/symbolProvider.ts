@@ -2,7 +2,7 @@ import * as vscode from "vscode";
 import { ABLDocumentController, getDocumentController } from "../documentController";
 import { ABL_MODE } from "../environment";
 
-export class ABLSymbolProvider implements vscode.DocumentSymbolProvider {
+export class SymbolProvider implements vscode.DocumentSymbolProvider {
 	private _ablDocumentController: ABLDocumentController;
 
 	constructor(context: vscode.ExtensionContext) {

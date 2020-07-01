@@ -10,7 +10,7 @@ let watcher: vscode.FileSystemWatcher = null;
 let _tableCollection: vscode.CompletionList = new vscode.CompletionList();
 const readFileAsync = util.promisify(fs.readFile);
 
-export class ABLCodeCompletionProvider implements vscode.CompletionItemProvider {
+export class CodeCompletionProvider implements vscode.CompletionItemProvider {
 	private _ablDocumentController: ABLDocumentController;
 
 	constructor(context: vscode.ExtensionContext) {

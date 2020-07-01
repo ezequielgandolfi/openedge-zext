@@ -5,7 +5,7 @@ import { ABL_MODE } from "../environment";
 import { isNullOrUndefined } from "util";
 import { SYMBOL_TYPE, ABLParameter } from "../definition";
 
-export class ABLDefinitionProvider implements vscode.DefinitionProvider {
+export class DefinitionProvider implements vscode.DefinitionProvider {
 	private _ablDocumentController: ABLDocumentController;
 
 	constructor(context: vscode.ExtensionContext) {
