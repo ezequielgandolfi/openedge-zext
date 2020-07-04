@@ -26,6 +26,15 @@ export enum SYMBOL_TYPE {
     TEMPTABLE_FIELD = 'Temp-table field'
 }
 
+export enum ABL_TYPE {
+    BUFFER = 'buffer'
+}
+
+export enum ABL_BUFFER_TYPE {
+    TABLE = 'table',
+    TEMP_TABLE = 'temp-table'
+}
+
 export enum ABL_ASLIKE {
     AS = 'as',
     LIKE = 'like'

@@ -3,7 +3,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { isArray } from 'util';
 import { documentDeploy } from './deploy';
-import { getDocumentController } from './documentController';
+import { getDocumentController } from './legacyDocumentController';
 import { ABLCheckSyntax, ABLCompile, ABLRun, ABLDictDump } from './ablCommand';
 
 export class ABLCommandExtension {

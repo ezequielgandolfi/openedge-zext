@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
-import { getDocumentController } from './documentController';
+import { getDocumentController } from './legacyDocumentController';
 import { SourceParser } from './sourceParser';
-import { getTableCollection } from './codeCompletionExtension';
+import { getTableCollection } from './legacyCodeCompletionExtension';
 import { OpenEdgeConfig } from './extensionConfig';
 import { ABLCompile, COMPILE_OPTIONS } from './ablCommand';
 

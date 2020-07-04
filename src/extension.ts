@@ -1,33 +1,44 @@
 import * as vscode from 'vscode';
-import { initDocumentController } from './documentController';
+import { initDocumentController } from './legacyDocumentController';
 import { hideStatusBar, initDiagnostic, updateStatusBar, initStatusBar } from './notification';
 import { KeyBindingExtension } from './keyBindingExtension';
 import { HoverExtension } from './hoverExtension';
 import { DefinitionExtension } from './definitionExtension';
 import { SymbolExtension } from './symbolExtension';
-import { CodeCompletionExtension, loadDictDumpFiles } from './codeCompletionExtension';
+import { LegacyCodeCompletionExtension, loadDictDumpFiles } from './legacyCodeCompletionExtension';
 import { ABLCommandExtension } from './ablCommandExtension';
 import { ExternalCommandExtension } from './externalCommandExtension';
 import { ExtensionConfig } from './extensionConfig';
 import { FormatExtension } from './formatExtension';
 import { ABL_MODE } from './environment';
 import { ABLCheckSyntax } from './ablCommand';
+import { TerminalExtension } from './terminalExtension';
+import { DbfController } from './dbfController';
+import { CodeCompletionExtension } from './codeCompletionExtension';
+import { DocumentController } from './documentController';
 
-export function activate(ctx: vscode.ExtensionContext): void {
-    new ExtensionConfig();
+export function activate(context: vscode.ExtensionContext): void {
+    new ExtensionConfig(context);
+
+    initControllers(context);
     
-    initOnSaveWatcher(ctx);
-    initOnCloseWatcher(ctx);
-    initOnChangeActiveTextWatcher(ctx);
+    initOnSaveWatcher(context);
+    initOnCloseWatcher(context);
+    initOnChangeActiveTextWatcher(context);
 
     startDictWatcher();
-    startDocumentWatcher(ctx);
-    attachExtensions(ctx);
-    initDiagnostic(ctx);
-    initStatusBar(ctx);
+    startDocumentWatcher(context);
+    attachExtensions(context);
+    initDiagnostic(context);
+    initStatusBar(context);
 }
 
 function deactivate() {
+}
+
+function initControllers(context: vscode.ExtensionContext) {
+    context.subscriptions.push(DbfController.getInstance());
+    context.subscriptions.push(DocumentController.getInstance());
 }
 
 function initOnSaveWatcher(context: vscode.ExtensionContext) {
@@ -61,6 +72,7 @@ function startDocumentWatcher(context: vscode.ExtensionContext) {
 }
 
 function attachExtensions(context: vscode.ExtensionContext) {
+    LegacyCodeCompletionExtension.attach(context);
     CodeCompletionExtension.attach(context);
     HoverExtension.attach(context);
     DefinitionExtension.attach(context);
@@ -70,4 +82,5 @@ function attachExtensions(context: vscode.ExtensionContext) {
     FormatExtension.attach(context);
     ABLCommandExtension.attach(context);
     ExternalCommandExtension.attach(context);
+    TerminalExtension.attach(context);
 }

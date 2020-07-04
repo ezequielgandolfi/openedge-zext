@@ -107,22 +107,6 @@
           }
         }
       }
-    },
-    "format": {
-      "id": "/properties/forpat",
-      "description": "Formatter properties",
-      "type": "object",
-      "properties": {
-        "trim": {
-          "id": "/properties/format/trim",
-          "description": "Trim options",
-          "type": "string",
-          "enum": [
-            "none",
-            "right"
-          ]
-        }
-      }
     }
   },
   "type": "object"

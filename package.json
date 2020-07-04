@@ -109,6 +109,11 @@
                 "command": "abl.format.trimRight",
                 "title": "ABL: Format - Trim Right",
                 "description": "Trim right spaces from each line"
+            },
+            {
+                "command": "abl.terminal.open",
+                "title": "ABL: Command Terminal",
+                "description": "Open an OpenEdge-ZExt command terminal"
             }
         ],
         "menus": {
@@ -151,6 +156,9 @@
                 {
                     "command": "abl.format.trimRight",
                     "when": "editorLangId == 'abl'"
+                },
+                {
+                    "command": "abl.terminal.open"
                 }
             ]
         },

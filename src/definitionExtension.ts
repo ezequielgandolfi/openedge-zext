@@ -1,12 +1,12 @@
 import * as vscode from "vscode";
 import * as utils from './utils';
-import { ABLDocumentController, getDocumentController } from "./documentController";
+import { LegacyABLDocumentController, getDocumentController } from "./legacyDocumentController";
 import { ABL_MODE } from "./environment";
 import { isNullOrUndefined } from "util";
 import { SYMBOL_TYPE, ABLParameter } from "./definition";
 
 export class DefinitionExtension implements vscode.DefinitionProvider {
-    private _ablDocumentController: ABLDocumentController;
+    private _ablDocumentController: LegacyABLDocumentController;
 
     static attach(context: vscode.ExtensionContext) {
         let instance = new DefinitionExtension();

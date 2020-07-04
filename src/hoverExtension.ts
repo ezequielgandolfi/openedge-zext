@@ -1,13 +1,13 @@
 import * as vscode from 'vscode';
 import * as utils from './utils';
-import { ABLDocumentController, getDocumentController } from "./documentController";
-import { getTableCollection } from "./codeCompletionExtension";
+import { LegacyABLDocumentController, getDocumentController } from "./legacyDocumentController";
+import { getTableCollection } from "./legacyCodeCompletionExtension";
 import { ABLFieldDefinition, ABLTableDefinition, SYMBOL_TYPE, ABLTempTable, ABLVariable, ABLMethod, ABLParameter } from './definition';
 import { ABL_MODE } from './environment';
 import { isNullOrUndefined } from 'util';
 
 export class HoverExtension implements vscode.HoverProvider {
-    private _ablDocumentController: ABLDocumentController;
+    private _ablDocumentController: LegacyABLDocumentController;
 
     static attach(context: vscode.ExtensionContext) {
         let instance = new HoverExtension();

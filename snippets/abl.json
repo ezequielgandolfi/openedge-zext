@@ -82,5 +82,13 @@
         "body": [
             "temp-table ${1:ttName}:write-json(\"file\", \"$0/$1.json\", true)."
         ]
+    },
+    "REGION": {
+        "prefix": "#region",
+        "description": "Region folder",
+        "body": [
+            "//#region $0",
+            "//#endregion"
+        ]
     }
 }

@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { getDocumentController } from './documentController';
+import { getDocumentController } from './legacyDocumentController';
 
 export class KeyBindingExtension {
 

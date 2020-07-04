@@ -1,9 +1,9 @@
 import * as vscode from "vscode";
-import { ABLDocumentController, getDocumentController } from "./documentController";
+import { LegacyABLDocumentController, getDocumentController } from "./legacyDocumentController";
 import { ABL_MODE } from "./environment";
 
 export class SymbolExtension implements vscode.DocumentSymbolProvider {
-    private _ablDocumentController: ABLDocumentController;
+    private _ablDocumentController: LegacyABLDocumentController;
 
     static attach(context: vscode.ExtensionContext) {
         let instance = new SymbolExtension();
