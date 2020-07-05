@@ -85,8 +85,15 @@ export class DocumentController {
         this.onChangeEmitter.fire(document);
     }
 
-    getDocument(document: vscode.TextDocument): Document {
-        return this.documents[this.getDocumentIndex(document)];
+    getDocument(uri: vscode.Uri): Document;
+    getDocument(document: vscode.TextDocument): Document;
+    getDocument(param: vscode.Uri | vscode.TextDocument): Document {
+        if (param instanceof vscode.Uri) {
+            return this.documents[param.fsPath];
+        }
+        else {
+            return this.documents[this.getDocumentIndex(param)];
+        }
     }
 
     openDocument(uri: vscode.Uri): Promise<vscode.TextDocument> {

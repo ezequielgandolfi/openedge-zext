@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as util from 'util';
-import { DbFile, DbIndex, DbField } from './dbModel';
+import { DbFile, DbIndex, DbField, DbTable } from './dbModel';
 
 
 let _instance: DbfController;
@@ -42,6 +42,11 @@ export class DbfController {
         if (database)
             return this.dbfCollection.filter(item => item.database == database);
         return this.dbfCollection;
+    }
+
+    getTable(name: string): DbTable {
+        name = name.toLowerCase();
+        return this.dbfCollection.find(item => item.name.toLowerCase() == name);
     }
 
     private startWatcher() {

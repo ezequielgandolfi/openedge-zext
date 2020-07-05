@@ -37,13 +37,16 @@ export enum ABL_METHOD_TYPE {
     PROCEDURE = 'procedure'
 }
 
-export interface AblVariable {
+export interface AblField {
     name: string;
     dataType?: string;
     likeType?: string;
+    additional?: string;
+}
+
+export interface AblVariable extends AblField {
     bufferType?: string;
     position?: vscode.Position;
-    additional?: string;
     scope?: ABL_BLOCK_SCOPE;
 }
 
@@ -64,5 +67,14 @@ export interface AblInclude {
     name: string;
     uri?: vscode.Uri;
     document?: vscode.TextDocument;
+}
+
+export interface AblTempTable {
+    name: string;
+    fields?: AblField[];
+    indexes?: any[];
+    range?: vscode.Range;
+    referenceTable?: string;
+    referenceFields?: AblField[];
 }
 

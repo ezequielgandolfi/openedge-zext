@@ -2,8 +2,10 @@ import * as vscode from "vscode";
 import * as utils from './utils';
 import * as fs from 'fs';
 import { DocumentController } from "./documentController";
-import { AblMethod, ABL_SCOPE, AblVariable, AblParameter, ABL_ASLIKE, ABL_TYPE, ABL_BUFFER_TYPE, ABL_PARAM_DIRECTION, ABL_METHOD_TYPE, ABL_BLOCK_SCOPE, AblInclude } from "./documentDefinition";
+import { AblMethod, ABL_SCOPE, AblVariable, AblParameter, ABL_ASLIKE, ABL_TYPE, ABL_BUFFER_TYPE, ABL_PARAM_DIRECTION, ABL_METHOD_TYPE, ABL_BLOCK_SCOPE, AblInclude, AblTempTable, AblField } from "./documentDefinition";
 import { SourceParser, SourceCode } from "./sourceParser";
+import { DbfController } from "./dbfController";
+import { O_TRUNC } from "constants";
 
 export class Document {
 
@@ -17,6 +19,7 @@ export class Document {
     private documentIncludes: AblInclude[] = [];
     private documentMethods: AblMethod[] = [];
     private documentVariables: AblVariable[] = [];
+    private documentTempTables: AblTempTable[] = [];
     //#endregion
 
     constructor(document: vscode.TextDocument) {
@@ -57,6 +60,10 @@ export class Document {
         return this.documentVariables;
     }
 
+    get tempTables() {
+        return this.documentTempTables;
+    }
+
     update() {
         if (!this.inProgress) {
             this.refreshDocument();
@@ -85,18 +92,22 @@ export class Document {
         this.inProgress = true;
         try {
             let source = new SourceParser().getSourceCode(this.textDocument);
-            this.refreshIncludes(source);
-            this.refreshMethods(source);
-            this.refreshVariables(source);
-            this.refreshParameters(source);
-            this.refreshTempTables(source);
-            this.updateExternalReferences();
+            this.refreshIncludes(source).then(() => {
 
-            // TODO - only when model updated
-
-            process.nextTick(() => DocumentController.getInstance().pushDocumentChange(this));
+                this.refreshMethods(source);
+                this.refreshVariables(source);
+                this.refreshParameters(source);
+                this.refreshTempTables(source);
+                this.updateExternalReferences();
+    
+                // TODO - only when model updated
+    
+                process.nextTick(() => DocumentController.getInstance().pushDocumentChange(this));
+            })
+            .finally(() => this.inProgress = false);
+            
         }
-        finally {
+        catch {
             this.inProgress = false;
         }
     }
@@ -110,6 +121,7 @@ export class Document {
     private updateExternalReferences() {
         
         // TODO
+        this.updateTempTableReferences();
 
     }
 
@@ -143,15 +155,23 @@ export class Document {
         }
         this.documentIncludes = result;
 
-        // request to open the includes
-        this.documentIncludes.forEach(item => {
-            controller.getUri(item.name).then(uri => {
-                item.uri = uri;
-                if (item.uri) {
-                    process.nextTick(() => { controller.openDocument(item.uri).then(document => item.document = document) });
-                }
+        return new Promise(resolve => {
+            let pending: Promise<any>[] = [];
+            result.forEach(item => {
+                pending.push(controller.getUri(item.name).then(uri => {
+                    item.uri = uri;
+                    if (item.uri) {
+                        item.document = controller.getDocument(item.uri)?.document;
+                        if (!item.document) {
+                            process.nextTick(() => { controller.openDocument(item.uri).then(document => item.document = document) });
+                        }
+                    }
+                }));
             });
+            Promise.all(pending).then(() => resolve());
         });
+        // request to open the includes
+        
     }
 
     private refreshMethods(source: SourceCode) {
@@ -182,7 +202,7 @@ export class Document {
                     }
                     result.push(item);
                 }
-                catch {} // suppress errors
+                catch {}
                 matchStart = reStart.exec(text);
             }
             else {
@@ -326,7 +346,6 @@ export class Document {
     }
 
     private refreshTempTables(source: SourceCode) {
-        /*
         let result: AblTempTable[] = [];
         let text = source.sourceWithoutStrings;
 
@@ -336,7 +355,6 @@ export class Document {
         //
         let reLike: RegExp = new RegExp(/\b(?:like){1}[\s\t\n]+([\w\d\-\+]+)[\s\t\n]*(?:\.[^\w\d\-\+]+|field|index|[\s\t\n\r])(?!field|index)/gim);
         // 1 = temp-table like
-        let innerText;
         let matchStart = reStart.exec(text);
         let matchEnd;
         let matchLike;
@@ -344,25 +362,26 @@ export class Document {
             reEnd.lastIndex = reStart.lastIndex;
             matchEnd = reEnd.exec(text);
             if (matchEnd) {
-                innerText = text.substring(reStart.lastIndex, matchEnd.index);
-                // let v = new ABLTempTable();
-                // try {
-                //     reLike.lastIndex = reStart.lastIndex;
-                //     matchLike = reLike.exec(text);
-                //     if ((matchLike)&&(matchLike.index <= reEnd.lastIndex)&&(matchLike.index >= reStart.lastIndex)) {
-                //         v.referenceTable = matchLike[1];
-                //     }
-    
-                //     v.label = matchStart[1];
-                //     v.kind = vscode.CompletionItemKind.Struct;
-                //     v.detail = '';
-                //     v.fields = getTempTableFields(innerText, sourceCode);
-                //     v.indexes = getTempTableIndexes(innerText);
-                //     v.line = sourceCode.document.positionAt(matchStart.index).line;
-                //     updateTableCompletionList(v);
-                //     result.push(v);
-                // }
-                // catch {}
+                try {
+                    let posStart = source.document.positionAt(matchStart.index);
+                    let posEnd = source.document.positionAt(reEnd.lastIndex);
+                    let innerText = text.substring(reStart.lastIndex, matchEnd.index);
+                    let item: AblTempTable = {
+                        name: matchStart[1],
+                        range: new vscode.Range(posStart, posEnd)
+                    };
+                    // check for reference table
+                    reLike.lastIndex = reStart.lastIndex;
+                    matchLike = reLike.exec(text);
+                    if ((matchLike)&&(matchLike.index <= reEnd.lastIndex)&&(matchLike.index >= reStart.lastIndex)) {
+                        item.referenceTable = matchLike[1];
+                    }
+                    // fields
+                    item.fields = this.extractTempTableFields(innerText, source);
+                    item.indexes = this.extractTempTableIndexes(innerText, source);
+                    result.push(item);
+                }
+                catch {}
                 matchStart = reStart.exec(text);
             }
             else {
@@ -370,16 +389,74 @@ export class Document {
             }
         }
 
-        // this._temps = getAllTempTables(sourceCode);
-        // // reference to db tables
-        // this._temps.filter(item => !isNullOrUndefined(item.referenceTable)).forEach(item => {
-        //     let tb = getTableCollection().items.find(tn => tn.label.toLowerCase() == item.referenceTable.toLowerCase());
-        //     if ((!isNullOrUndefined(tb))&&(!isNullOrUndefined(tb['fields']))) {
-        //         item.referenceFields = [...tb['fields']];
-        //         utils.updateTableCompletionList(item);
-        //     }
-        // });
-        */
+        this.documentTempTables = result;
+        // this.updateTempTableReferences();
+    }
+
+    private extractTempTableFields(text: string, source: SourceCode): AblField[] {
+        let result: AblField[] = [];
+        let regexDefineField: RegExp = new RegExp(/(?:field){1}(?:[\s\t\n]+)([\w\d\-]+)[\s\t\n]+(as|like){1}[\s\t\n]+([\w\d\-\.]+)/gim);
+        // 1 = var name
+        // 2 = as | like
+        // 3 = type | field like
+        let res = regexDefineField.exec(text);
+        while(res) {
+            try {
+                let item: AblField = { name: res[1] };
+                if (res[2].toLowerCase() == ABL_ASLIKE.AS)
+                    item.dataType = this.normalizeDataType(res[3]);
+                else if (res[2].toLowerCase() == ABL_ASLIKE.AS)
+                    item.likeType = this.normalizeDataType(res[3]);
+                result.push(item);
+            }
+            catch {}
+            res = regexDefineField.exec(text);
+        }
+        return result;
+    }
+
+    private extractTempTableIndexes(text: string, source: SourceCode) {
+        // TODO - is needed?
+        return [];
+    }
+
+    private updateTempTableReferences() {
+        let dbf = DbfController.getInstance();
+        // insert reference fields
+        this.documentTempTables.filter(item => !!item.referenceTable).forEach(item => {
+            // avoid looping
+            if (item.name.toLowerCase() == item.referenceTable.toLowerCase())
+                return;
+            // like database table
+            let table = dbf.getTable(item.referenceTable);
+            if (table) {
+                item.referenceFields = table.fields.map(f => { return <AblField>{ name: f.name, dataType: f.type } });
+            }
+            // like temp-table
+            else {
+                let tt = this.documentTempTables.find(rt => rt.name.toLowerCase() == item.referenceTable.toLowerCase());
+                // local
+                if (tt) {
+                    item.referenceFields = [...tt.fields];
+                }
+                // external
+                else {
+                    let controller = DocumentController.getInstance();
+                    this.documentIncludes.filter(i => !!i.document).find(i => {
+                        let doc = controller.getDocument(i.document);
+                        if (doc) {
+                            tt = doc.tempTables.find(et => et.name.toLowerCase() == item.referenceTable.toLowerCase());
+                            if (tt)
+                                return true;
+                        }
+                        return false;
+                    });
+                    if (tt) {
+                        item.referenceFields = [...tt.fields];
+                    }
+                }
+            }
+        });
     }
 
     private getScope(details?:string): ABL_SCOPE {
@@ -407,10 +484,10 @@ export class Document {
             additional: (pAdditional || ``).trim()
         }
         if (pAsLike.toLowerCase() == ABL_ASLIKE.AS) {
-            item.dataType = this.removeInvalidRightChar(pType.trim().toLowerCase());
+            item.dataType = this.normalizeDataType(pType);
         }
         else if (pAsLike.toLowerCase() == ABL_ASLIKE.LIKE) {
-            item.likeType = this.removeInvalidRightChar(pType.trim().toLowerCase());
+            item.likeType = this.normalizeDataType(pType);
         }
         return item;
     }
@@ -438,11 +515,12 @@ export class Document {
         return item;
     }
 
-    private removeInvalidRightChar(text: string): string {
+    private normalizeDataType(value:string): string {
+        value = value.trim().toLowerCase();
         let regexValidWordEnd: RegExp = new RegExp(/[\w\d]$/);
-        while(!regexValidWordEnd.test(text)) 
-            text = text.substring(0, text.length-1);
-        return text;
+        while(!regexValidWordEnd.test(value)) 
+            value = value.substring(0, value.length-1);
+        return value;
     }
 
     methodInPosition(position: vscode.Position): AblMethod {

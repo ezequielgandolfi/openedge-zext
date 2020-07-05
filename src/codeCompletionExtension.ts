@@ -3,7 +3,7 @@ import { ABL_MODE } from './environment';
 import { DbfController } from './dbfController';
 import { DocumentController } from './documentController';
 import { StatementUtil } from './statementUtil';
-import { ABL_TYPE, AblMethod, AblVariable, AblParameter } from './documentDefinition';
+import { ABL_TYPE, AblMethod, AblVariable as AblField, AblParameter, AblTempTable } from './documentDefinition';
 import { Document } from './documentModel';
 
 export class CodeCompletionExtension {
@@ -185,94 +185,6 @@ class MethodCompletion extends CodeCompletionBase {
 
 }
 
-// class MethodCompletionOK implements vscode.CompletionItemProvider {
-
-//     public provideCompletionItems(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken, context: vscode.CompletionContext) {
-//         let words = StatementUtil.dotSplitStatement(document, position);
-//         if (words.length == 2) {
-
-//             // TODO
-
-//         }
-//         else if (words.length == 1) {
-//             return new vscode.CompletionList([...this.getStatementCompletion(document,position)]);
-//         }
-//         return;
-//     }
-
-//     private getStatementCompletion(document: vscode.TextDocument, position?: vscode.Position) {
-//         let result = [
-//             ...this.getMethodCompletion(document),
-//         ];
-//         // get external item completion for 1st level includes only...
-//         if (position) {
-//             DocumentController.getInstance().getDocument(document)?.includes.forEach(item => {
-//                 if (item.document) {
-//                     let itemResult = this.getStatementCompletion(item.document);
-//                     if (itemResult?.length > 0)
-//                         result.push(...itemResult);
-//                 }
-//             });
-//         }
-//         return result;
-//     }
-
-//     private getMethodCompletion(document: vscode.TextDocument) {
-//         let methodCompletion = DocumentController.getInstance().getDocument(document)?.methods.map(method => {
-//             let result = new vscode.CompletionItem(method.name, vscode.CompletionItemKind.Method);
-//             result.detail = `${method.scope} ${method.type} ${method.name}`;
-//             result.documentation = this.getMethodDocumentation(method);
-//             result.insertText = this.getMethodSnippet(method);
-//             return result;
-//         });
-//         return methodCompletion;
-//     }
-
-//     private getMethodDocumentation(method: AblMethod): vscode.MarkdownString {
-//         if (method.params.length > 0) {
-//             let result = new vscode.MarkdownString();
-//             method.params.forEach(param => {
-//                 if (param.dataType == ABL_TYPE.BUFFER) {
-//                     result.appendMarkdown(`- buffer *${param.name}* for ${param.bufferType} *${param.likeType}*\n`);
-//                 }
-//                 else if (param.dataType == ABL_TYPE.TEMP_TABLE) {
-//                     result.appendMarkdown(`- ${param.direction} for temp-table *${param.name}*\n`);
-//                 }
-//                 else {
-//                     result.appendMarkdown(`- ${param.direction} *${param.name}*\n`);
-//                 }
-//             });
-//             return result;
-//         }
-//         return null;
-//     }
-
-//     private getMethodSnippet(method: AblMethod): vscode.SnippetString {
-//         if (method.params.length > 0) {
-//             let isFirst = true;
-//             let result: vscode.SnippetString = new vscode.SnippetString();
-//             result.appendText(`${method.name} (\n`);
-//             method.params.forEach(param => {
-//                 if (!isFirst)
-//                     result.appendText(',\n')
-//                 isFirst = false;
-//                 if (param.dataType == ABL_TYPE.BUFFER) {
-//                     result.appendText(`\tbuffer ${param.likeType}`);
-//                 }
-//                 else if (param.dataType == ABL_TYPE.TEMP_TABLE) {
-//                     result.appendText(`\t${param.direction} table ${param.name}`);
-//                 }
-//                 else {
-//                     result.appendText(`\t${param.direction} ${param.name}`);
-//                 }
-//             });
-//             return result.appendText(').');
-//         }
-//         return null;
-//     }
-
-// }
-
 class VariableCompletion extends CodeCompletionBase {
 
     protected getCompletionItems(document: Document, words: string[], textDocument: vscode.TextDocument, position?: vscode.Position): vscode.CompletionItem[] {
@@ -301,136 +213,32 @@ class VariableCompletion extends CodeCompletionBase {
         return [];
     }
 
-    static variableDetail(v: AblVariable): string {
+    static variableDetail(v: AblField): string {
         return `${v.scope} variable ${v.name}`;
     }
 
-    static variableDocumentation(variable: AblVariable): vscode.MarkdownString {
+    static variableDocumentation(variable: AblField): vscode.MarkdownString {
         let result = new vscode.MarkdownString();
         if (variable.dataType) {
-            result.appendMarkdown(`- **${variable.dataType}** type`);
+            result.appendMarkdown(`- **${variable.dataType}** type\n`);
         }
         else if (variable.likeType) {
-            result.appendMarkdown(`- like **${variable.likeType}**`);
+            result.appendMarkdown(`- like **${variable.likeType}**\n`);
         }
         return result;
     }
 
 }
 
-// class VariableCompletionOK implements vscode.CompletionItemProvider {
+class BufferCompletion extends CodeCompletionBase {
 
-//     public provideCompletionItems(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken, context: vscode.CompletionContext) {
-//         let words = StatementUtil.dotSplitStatement(document, position);
-//         if (words.length == 2) {
-
-//             // TODO
-
-//         }
-//         else if (words.length == 1) {
-//             return new vscode.CompletionList([...this.getStatementCompletion(document,position)]);
-//         }
-//         return;
-//     }
-
-//     private getStatementCompletion(document: vscode.TextDocument, position?: vscode.Position) {
-//         let result = [
-//             ...this.getVariableCompletion(document, position),
-//         ];
-//         // get external item completion for 1st level includes only...
-//         if (position) {
-//             DocumentController.getInstance().getDocument(document)?.includes.forEach(item => {
-//                 if (item.document) {
-//                     let itemResult = this.getStatementCompletion(item.document);
-//                     if (itemResult?.length > 0)
-//                         result.push(...itemResult);
-//                 }
-//             });
-//         }
-//         return result;
-//     }
-
-//     private getVariableCompletion(document: vscode.TextDocument, position?: vscode.Position) {
-//         let doc = DocumentController.getInstance().getDocument(document);
-//         if (doc) {
-//             // global variables
-//             let variables = [...doc.variables];
-//             // local variables
-//             if (position) {
-//                 let method = doc.methodInPosition(position);
-//                 if (method) {
-//                     variables.push(...method.localVariables);
-//                 }
-//             }
-//             //
-//             let variableCompletion = variables.filter(v => !((v.dataType == ABL_TYPE.BUFFER)||(v.dataType == ABL_TYPE.TEMP_TABLE))).map(v => {
-//                 let result = new vscode.CompletionItem(v.name, vscode.CompletionItemKind.Variable);
-//                 result.detail = VariableCompletion.variableDetail(v);
-//                 result.documentation = VariableCompletion.variableDocumentation(v);
-//                 return result;
-//             });
-//             return variableCompletion;
-//         }
-//         return [];
-//     }
-
-//     static variableDetail(v: AblVariable): string {
-//         return `${v.scope} variable ${v.name}`;
-//     }
-
-//     static variableDocumentation(variable: AblVariable): vscode.MarkdownString {
-//         let result = new vscode.MarkdownString();
-//         if (variable.dataType) {
-//             result.appendMarkdown(`- **${variable.dataType}** type`);
-//         }
-//         else if (variable.likeType) {
-//             result.appendMarkdown(`- like **${variable.likeType}**`);
-//         }
-//         return result;
-//     }
-
-// }
-
-class BufferCompletion implements vscode.CompletionItemProvider {
-
-    public provideCompletionItems(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken, context: vscode.CompletionContext) {
-        let words = StatementUtil.dotSplitStatement(document, position);
-        if (words.length == 2) {
-
-            // TODO
-
-        }
-        else if (words.length == 1) {
-            return new vscode.CompletionList([...this.getStatementCompletion(document,position)]);
-        }
-        return;
-    }
-
-    private getStatementCompletion(document: vscode.TextDocument, position?: vscode.Position) {
-        let result = [
-            ...this.getBufferCompletion(document, position),
-        ];
-        // get external item completion for 1st level includes only...
-        if (position) {
-            DocumentController.getInstance().getDocument(document)?.includes.forEach(item => {
-                if (item.document) {
-                    let itemResult = this.getStatementCompletion(item.document);
-                    if (itemResult?.length > 0)
-                        result.push(...itemResult);
-                }
-            });
-        }
-        return result;
-    }
-
-    private getBufferCompletion(document: vscode.TextDocument, position?: vscode.Position) {
-        let doc = DocumentController.getInstance().getDocument(document);
-        if (doc) {
+    protected getCompletionItems(document: Document, words: string[], textDocument: vscode.TextDocument, position?: vscode.Position): vscode.CompletionItem[] {
+        if (words.length == 1) {
             // global variables
-            let variables = [...doc.variables];
+            let variables = [...document.variables];
             // local variables
             if (position) {
-                let method = doc.methodInPosition(position);
+                let method = document.methodInPosition(position);
                 if (method) {
                     variables.push(...method.localVariables);
                 }
@@ -447,59 +255,30 @@ class BufferCompletion implements vscode.CompletionItemProvider {
         return [];
     }
 
-    static bufferDetail(v: AblVariable): string {
+    static bufferDetail(v: AblField): string {
         return `${v.scope} buffer ${v.name}`;
     }
 
-    static bufferDocumentation(variable: AblVariable): vscode.MarkdownString {
+    static bufferDocumentation(variable: AblField): vscode.MarkdownString {
         let result = new vscode.MarkdownString();
         result.appendMarkdown(`- **buffer**\n`)
-        result.appendMarkdown(`- for ${variable.bufferType} *${variable.likeType}*`);
+        result.appendMarkdown(`- for ${variable.bufferType} *${variable.likeType}*\n`);
         return result;
     }
 
 }
 
-class ParameterCompletion implements vscode.CompletionItemProvider {
+class ParameterCompletion extends CodeCompletionBase {
 
-    public provideCompletionItems(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken, context: vscode.CompletionContext) {
-        let words = StatementUtil.dotSplitStatement(document, position);
-        if (words.length == 2) {
-
-            // TODO
-
-        }
-        else if (words.length == 1) {
-            return new vscode.CompletionList([...this.getStatementCompletion(document,position)]);
-        }
-        return;
+    protected get maxDeepLevel(): number {
+        return 1;
     }
 
-    private getStatementCompletion(document: vscode.TextDocument, position?: vscode.Position) {
-        let result = [
-            ...this.getParameterCompletion(document, position)
-        ];
-        // get external item completion for 1st level includes only...
-        // if (position) {
-        //     DocumentController.getInstance().getDocument(document)?.includes.forEach(item => {
-        //         if (item.document) {
-        //             let itemResult = this.getStatementCompletion(item.document);
-        //             if (itemResult?.length > 0)
-        //                 result.push(...itemResult);
-        //         }
-        //     });
-        // }
-        return result;
-    }
-
-    private getParameterCompletion(document: vscode.TextDocument, position?: vscode.Position) {
-        if (!position)
-            return [];
-        let doc = DocumentController.getInstance().getDocument(document);
-        if (doc) {
+    protected getCompletionItems(document: Document, words: string[], textDocument: vscode.TextDocument, position?: vscode.Position): vscode.CompletionItem[] {
+        if (words.length == 1) {
             let params: AblParameter[] = [];
             // local parameters
-            let method = doc.methodInPosition(position);
+            let method = document.methodInPosition(position);
             if (method) {
                 params.push(...method.params);
             }
@@ -508,20 +287,15 @@ class ParameterCompletion implements vscode.CompletionItemProvider {
             //
             let paramsCompletion = params.map(p => {
                 let kind = vscode.CompletionItemKind.Variable;
-                let detail = `parameter ${p.name}`;
                 if (p.dataType == ABL_TYPE.BUFFER) {
                     kind = vscode.CompletionItemKind.File;
-                    detail = `buffer ${detail}`;
                 }
                 else if (p.dataType == ABL_TYPE.TEMP_TABLE) {
                     kind = vscode.CompletionItemKind.File;
-                    detail = `temp-table ${detail}`;
                 }
                 let result = new vscode.CompletionItem(p.name, kind);
-                if (p.direction)
-                    detail = `${p.direction} ${detail}`;
-                result.detail = detail;
-                result.documentation = this.getParameterDocumentation(p);
+                result.detail = ParameterCompletion.parameterDetail(p);
+                result.documentation = ParameterCompletion.parameterDocumentation(p);
                 return result;
             });
             return paramsCompletion;
@@ -529,11 +303,24 @@ class ParameterCompletion implements vscode.CompletionItemProvider {
         return [];
     }
 
-    private getParameterDocumentation(parameter: AblParameter): vscode.MarkdownString {
+    static parameterDetail(parameter: AblParameter) {
+        let detail = `parameter ${parameter.name}`;
+        if (parameter.dataType == ABL_TYPE.BUFFER) {
+            detail = `buffer ${detail}`;
+        }
+        else if (parameter.dataType == ABL_TYPE.TEMP_TABLE) {
+            detail = `temp-table ${detail}`;
+        }
+        if (parameter.direction)
+            detail = `${parameter.direction} ${detail}`;
+        return detail;
+    }
+
+    static parameterDocumentation(parameter: AblParameter): vscode.MarkdownString {
         let result = new vscode.MarkdownString();
         if (parameter.dataType == ABL_TYPE.BUFFER) {
             result.appendMarkdown(`- **buffer**\n`)
-            result.appendMarkdown(`- for ${parameter.bufferType} *${parameter.likeType}*`);
+            result.appendMarkdown(`- for ${parameter.bufferType} *${parameter.likeType}*\n`);
         }
         else if (parameter.dataType == ABL_TYPE.TEMP_TABLE) {
             result.appendMarkdown(`- direction: *${parameter.direction}*\n`);
@@ -541,58 +328,132 @@ class ParameterCompletion implements vscode.CompletionItemProvider {
         }
         else if (parameter.dataType) {
             result.appendMarkdown(`- direction: *${parameter.direction}*\n`);
-            result.appendMarkdown(`- **${parameter.dataType}** type`);
+            result.appendMarkdown(`- **${parameter.dataType}** type\n`);
         }
         else if (parameter.likeType) {
             result.appendMarkdown(`- direction: *${parameter.direction}*\n`);
-            result.appendMarkdown(`- like **${parameter.likeType}**`);
+            result.appendMarkdown(`- like **${parameter.likeType}**\n`);
         }
         return result;
     }
 
 }
 
-class TempTableCompletion implements vscode.CompletionItemProvider {
+class TempTableCompletion extends CodeCompletionBase {
 
-    public provideCompletionItems(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken, context: vscode.CompletionContext) {
-        let words = StatementUtil.dotSplitStatement(document, position);
+    protected getCompletionItems(document: Document, words: string[], textDocument: vscode.TextDocument, position?: vscode.Position): vscode.CompletionItem[] {
         if (words.length == 2) {
 
             // TODO
 
+            let temps: AblTempTable[] = [...document.tempTables];
+            // local parameters for temp-table
+            let method = document.methodInPosition(position);
+            if (method) {
+                // TODO - remove global temp-tables when there is a local with the same name
+                // temps.push(...method.params.filter(item => item.dataType == ABL_TYPE.TEMP_TABLE));
+            }
+            //
+            let tempTable = temps.find(item => item.name.toLowerCase() == words[0].toLowerCase());
+            if (tempTable) {
+                return [
+                    ...TempTableCompletion.fieldsCompletion(tempTable),
+                    ...TempTableCompletion.tempTableSnippets(tempTable)
+                ];
+            }
+            return [];
         }
         else if (words.length == 1) {
-            return new vscode.CompletionList([...this.getStatementCompletion(document,position)]);
+            let temps: AblTempTable[] = [...document.tempTables];
+            // local parameters for temp-table
+            let method = document.methodInPosition(position);
+            if (method) {
+                // TODO - remove global temp-tables when there is a local with the same name
+                // temps.push(...method.params.filter(item => item.dataType == ABL_TYPE.TEMP_TABLE));
+            }
+            //
+            let tempsCompletion = temps.map(tt => {
+                let result = new vscode.CompletionItem(tt.name, vscode.CompletionItemKind.Struct);
+                result.detail = TempTableCompletion.tempTableDetail(tt);
+                result.documentation = TempTableCompletion.tempTableDocumentation(tt);
+                return result;
+            });
+            return tempsCompletion;
+
         }
-        return;
+        return [];
     }
 
-    private getStatementCompletion(document: vscode.TextDocument, position?: vscode.Position) {
-        let result = [
-            ...this.getTempTableCompletion(document),
-        ];
-        // get external item completion for 1st level includes only...
-        if (position) {
-            DocumentController.getInstance().getDocument(document)?.includes.forEach(item => {
-                if (item.document) {
-                    let itemResult = this.getStatementCompletion(item.document);
-                    if (itemResult?.length > 0)
-                        result.push(...itemResult);
-                }
-            });
+    static tempTableDetail(v: AblTempTable): string {
+        return `temp-table ${v.name}`;
+    }
+
+    static tempTableDocumentation(tempTable: AblTempTable): vscode.MarkdownString {
+        let result = new vscode.MarkdownString();
+        result.appendMarkdown(`- **temp-table** type\n`);
+        if (tempTable.referenceTable) {
+            result.appendMarkdown(`- like *${tempTable.referenceTable}*\n`);
         }
         return result;
     }
 
-    private getTempTableCompletion(document: vscode.TextDocument) {
-        // let methodCompletion = DocumentController.getInstance().getDocument(document)?.methods.map(method => {
-        //     let result = new vscode.CompletionItem(method.name, vscode.CompletionItemKind.Method);
-        //     result.detail = `${method.scope} ${method.type} ${method.name}`;
-        //     result.documentation = this.getMethodDocumentation(method);
-        //     result.insertText = this.getMethodSnippet(method);
-        //     return result;
+    static fieldsCompletion(tempTable:AblTempTable, nameReplacement?:string): vscode.CompletionItem[] {
+        // table.completionIndexes = mapIndexCompletionList(table, table.indexes);
+        // table.completionAdditional = mapAdditionalCompletionList(table);
+        // table.completion = new vscode.CompletionList([...table.completionFields.items,...table.completionAdditional.items,...table.completionIndexes.items]);
+        let fields = [
+            ...(tempTable.referenceFields || []),
+            ...tempTable.fields
+        ];
+    
+        return fields.map(field => {
+            let item = new vscode.CompletionItem(field.name, vscode.CompletionItemKind.Field);
+            item.detail = TempTableCompletion.fieldDetail(field);
+            item.documentation = TempTableCompletion.fieldDocumentation(field);
+            return item;
+        });
+    }
+
+    static fieldDetail(field: AblField): string {
+        return `field ${field.name}`;
+    }
+
+    static fieldDocumentation(field: AblField): vscode.MarkdownString {
+        let result = new vscode.MarkdownString();
+        if (field.dataType) {
+            result.appendMarkdown(`- **${field.dataType}** type\n`);
+        }
+        else if (field.likeType) {
+            result.appendMarkdown(`- like **${field.likeType}**\n`);
+        }
+        return result;
+    }
+
+    static tempTableSnippets(tempTable:AblTempTable, nameReplacement?:string): vscode.CompletionItem[] {
+        // let result = new vscode.CompletionList();
+
+        // if(!list) return result;
+        
+        // list.forEach(objItem => {
+        //     if (!objItem.fields) return;
+        //     let item = new vscode.CompletionItem(objItem.label, vscode.CompletionItemKind.Snippet);
+        //     item.insertText = getIndexSnippet(table, objItem);
+        //     item.detail = objItem.fields.map(item => {return item.label}).join(', ');
+        //     if (objItem.primary) {
+        //         item.label = '>INDEX (PK) ' + item.label;
+        //         item.detail = 'Primary Key, Fields: ' + item.detail;
+        //     }
+        //     else if (objItem.unique) {
+        //         item.label = '>INDEX (U) ' + item.label; 
+        //         item.detail = 'Unique Index, Fields: ' + item.detail;
+        //     }
+        //     else {
+        //         item.label = '>INDEX ' + item.label;
+        //         item.detail = 'Index, Fields: ' + item.detail;
+        //     }
+        //     result.items.push(item);
         // });
-        // return methodCompletion;
+        // return result;
         return [];
     }
 

@@ -83,6 +83,29 @@
             "temp-table ${1:ttName}:write-json(\"file\", \"$0/$1.json\", true)."
         ]
     },
+    "IF-DO": {
+        "prefix": "ifdo",
+        "description": "IF with DO block",
+        "body": [
+            "if $1",
+            "then do:",
+            "\t$2",
+            "end."
+        ]
+    },
+    "IF-ELSE-DO": {
+        "prefix": "ife",
+        "description": "IF/ELSE with DO block",
+        "body": [
+            "if $1",
+            "then do:",
+            "\t$2",
+            "end.",
+            "else do:",
+            "\t$3",
+            "end."
+        ]
+    },
     "REGION": {
         "prefix": "#region",
         "description": "Region folder",
