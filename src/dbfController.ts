@@ -112,7 +112,7 @@ export class DbfController {
                     description: field.detail,
                     type: field.dataType,
                     mandatory: field.mandatory,
-                    format: field.mandatory,
+                    format: field.format,
                     isPK: !!dbfile.indexes.filter(i => i.isPK).find(i => i.fields.includes(field.label)),
                     // isUnique: !!dbfile.indexes.filter(i => i.isUnique).find(i => i.fields.includes(field.label)),
                     isKey: !!dbfile.indexes.find(i => i.fields.includes(field.label))

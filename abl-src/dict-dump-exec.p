@@ -19,11 +19,12 @@ def buffer dbField for dictdb._field.
 def buffer dbIndex for dictdb._index.
 def buffer dbIndexField for dictdb._index-field.
 
-for each dbFile:
+for each dbFile
+    where not dbFile._hidden:
 
     oTable = new JsonObject().
     oTable:add("label", dbFile._file-name).
-    oTable:add("kind", 5). /*Variable*/
+    // oTable:add("kind", 5). /*Variable*/
     oTable:add("detail", dbFile._Desc).
     aJsonTable:add(oTable).
 
@@ -34,7 +35,7 @@ for each dbFile:
        where dbField._file-recid = recid(dbFile):
         oField = new JsonObject().
         oField:add("label", dbField._field-name).
-        oField:add("kind", 4). /*Field*/
+        // oField:add("kind", 4). /*Field*/
         oField:add("detail", dbField._Desc).
         oField:add("dataType", dbField._data-type).
         oField:add("mandatory", dbField._mandatory).
@@ -52,7 +53,7 @@ for each dbFile:
 
             oIndex = new JsonObject().
             oIndex:add("label", dbIndex._index-name).
-            oIndex:add("kind", 14). /*Snippet*/
+            // oIndex:add("kind", 14). /*Snippet*/
             oIndex:add("detail", dbIndex._Desc).
             oIndex:add("unique", dbIndex._unique).
             oIndex:add("primary", isPK).

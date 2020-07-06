@@ -5,6 +5,7 @@ import { DocumentController } from './documentController';
 import { StatementUtil } from './statementUtil';
 import { ABL_TYPE, AblMethod, AblVariable as AblField, AblParameter, AblTempTable } from './documentDefinition';
 import { Document } from './documentModel';
+import { DbTable, DbField } from './dbModel';
 
 export class CodeCompletionExtension {
 
@@ -34,7 +35,9 @@ class CodeCompletionBase implements vscode.CompletionItemProvider {
             let words = this.splitStatement(textDocument, position);
             if ((!words) || (words.length == 0))
                 words = [''];
-            return new vscode.CompletionList([...this.getCompletion(document, 1,words, textDocument, position)]);
+            let completionItems = this.getCompletion(document, 1,words, textDocument, position);
+            completionItems = this.filterCompletionItems(completionItems, document, words, textDocument, position);
+            return new vscode.CompletionList([...completionItems]);
         }
         return;
     }
@@ -71,6 +74,11 @@ class CodeCompletionBase implements vscode.CompletionItemProvider {
         return [];
     }
 
+    protected filterCompletionItems(items: vscode.CompletionItem[], document: Document, words: string[], textDocument: vscode.TextDocument, position?: vscode.Position): vscode.CompletionItem[] {
+        return items;
+    }
+
+
 }
 
 class TableCompletion implements vscode.CompletionItemProvider {
@@ -84,9 +92,13 @@ class TableCompletion implements vscode.CompletionItemProvider {
     public provideCompletionItems(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken, context: vscode.CompletionContext) {
         let words = StatementUtil.dotSplitStatement(document, position);
         if (words.length == 2) {
-
-            // TODO
-
+            let table = DbfController.getInstance().getTable(words[0]);
+            if (table) {
+                return [
+                    ...TableCompletion.fieldsCompletion(table),
+                    ...TableCompletion.tableSnippets(table)
+                ];
+            }
         }
         else if (words.length == 1) {
             return new vscode.CompletionList([...this.getStatementCompletion()]);
@@ -116,6 +128,96 @@ class TableCompletion implements vscode.CompletionItemProvider {
 
     private resetTableCompletion() {
         this.tableCompletion = null;
+    }
+
+    static fieldsCompletion(table:DbTable, nameReplacement?:string): vscode.CompletionItem[] {
+        return table.fields.map(field => {
+            let item = new vscode.CompletionItem(field.name, vscode.CompletionItemKind.Field);
+            item.detail = TableCompletion.fieldDetail(field);
+            item.documentation = TableCompletion.fieldDocumentation(field);
+            return item;
+        });
+    }
+
+    static fieldDetail(field: DbField): string {
+        return `field ${field.name}`;
+    }
+
+    static fieldDocumentation(field: DbField): vscode.MarkdownString {
+        let result = new vscode.MarkdownString();
+        if (field.isPK)
+            result.appendMarkdown(`- **Primary Key**\n`);
+        else if (field.isKey)
+            result.appendMarkdown(`- **Used in index**\n`);
+        if (field.mandatory)
+            result.appendMarkdown(`- **Mandatory**\n`);
+        result.appendMarkdown(`- Label: *'${field.description}'*\n`);
+        result.appendMarkdown(`- Type: *${field.type}*\n`);
+        result.appendMarkdown(`- Format *${field.format}*\n`);
+        return result;
+    }
+
+    static tableSnippets(table:DbTable, nameReplacement?:string): vscode.CompletionItem[] {
+        let result: vscode.CompletionItem[] = [];
+
+        // All fields completion snippet
+        let snippet = new vscode.SnippetString();
+        let isFirst: boolean = true;
+        let maxSize = 0;
+        table.fields.forEach(field => { if(field.name.length > maxSize) maxSize = field.name.length });
+        table.fields.forEach(field => {
+            if(isFirst) {
+                isFirst = false;
+            }
+            else {
+                snippet.appendText('\n');
+                snippet.appendText((nameReplacement || table.name) + '.');
+            }
+            snippet.appendText(field.name.padEnd(maxSize, ' ') + ' = ');
+            snippet.appendTabstop();
+        });
+        let allFieldsItem = new vscode.CompletionItem('>ALL FIELDS', vscode.CompletionItemKind.Snippet);
+        allFieldsItem.detail = 'insert all table fields';
+        allFieldsItem.insertText = snippet;
+        result.push(allFieldsItem);
+        // indexes
+        table.indexes.forEach(index => {
+            if (!index.fields) return;
+            let item = new vscode.CompletionItem(index.name, vscode.CompletionItemKind.Snippet);
+            let snippet = new vscode.SnippetString();
+            let isFirst = true;
+            maxSize = 0;
+            index.fields.forEach(fieldName => { if(fieldName.length > maxSize) maxSize = fieldName.length });
+            index.fields.forEach(fieldName => {
+                if(isFirst) {
+                    isFirst = false;
+                }
+                else {
+                    snippet.appendText('\n');
+                    snippet.appendText((nameReplacement || table.name) + '.');
+                }
+                snippet.appendText(fieldName.padEnd(maxSize, ' ') + ' = ');
+                snippet.appendTabstop();
+            });
+            item.insertText = snippet;
+            item.detail = index.fields.join(', ');
+            if (index.isPK) {
+                item.label = '>INDEX (PK) ' + item.label;
+                item.detail = 'Primary Key, Fields: ' + item.detail;
+            }
+            else if (index.isUnique) {
+                item.label = '>INDEX (U) ' + item.label; 
+                item.detail = 'Unique Index, Fields: ' + item.detail;
+            }
+            else {
+                item.label = '>INDEX ' + item.label;
+                item.detail = 'Index, Fields: ' + item.detail;
+            }
+            result.push(item);
+        });
+        //
+
+        return result;
     }
 
 }
@@ -189,28 +291,39 @@ class VariableCompletion extends CodeCompletionBase {
 
     protected getCompletionItems(document: Document, words: string[], textDocument: vscode.TextDocument, position?: vscode.Position): vscode.CompletionItem[] {
         if (words.length == 1) {
-            // global variables
-            let variables = [...document.variables];
-            // local variables
+            // global vars
+            let variables = [...document.variables.filter(v => !((v.dataType == ABL_TYPE.BUFFER)||(v.dataType == ABL_TYPE.TEMP_TABLE)))];
+            // local vars
             if (position) {
                 let method = document.methodInPosition(position);
                 if (method) {
-                    
-                    // TODO - remove global variables with same name
-
-                    variables.push(...method.localVariables);
+                    let localVariables = method.localVariables.filter(v => !((v.dataType == ABL_TYPE.BUFFER)||(v.dataType == ABL_TYPE.TEMP_TABLE)));
+                    variables = variables.filter(item => !localVariables.find(lp => lp.name.toLowerCase() == item.name.toLowerCase()));
+                    variables.push(...localVariables);
                 }
             }
-            //
-            let variableCompletion = variables.filter(v => !((v.dataType == ABL_TYPE.BUFFER)||(v.dataType == ABL_TYPE.TEMP_TABLE))).map(v => {
+            let variableCompletion = variables.map(v => {
                 let result = new vscode.CompletionItem(v.name, vscode.CompletionItemKind.Variable);
                 result.detail = VariableCompletion.variableDetail(v);
                 result.documentation = VariableCompletion.variableDocumentation(v);
                 return result;
             });
+            
             return variableCompletion;
         }
         return [];
+    }
+
+    protected filterCompletionItems(items: vscode.CompletionItem[], document: Document, words: string[], textDocument: vscode.TextDocument, position?: vscode.Position): vscode.CompletionItem[] {
+        if (words.length == 1) {
+            // remove parameter variables
+            let method = document.methodInPosition(position);
+            if (method) {
+                let localParams = method.params.filter(v => !((v.dataType == ABL_TYPE.BUFFER)||(v.dataType == ABL_TYPE.TEMP_TABLE)));
+                items = items.filter(item => !localParams.find(lp => lp.name.toLowerCase() == item.label.toLowerCase()));
+            }
+        }
+        return items;
     }
 
     static variableDetail(v: AblField): string {
@@ -234,17 +347,19 @@ class BufferCompletion extends CodeCompletionBase {
 
     protected getCompletionItems(document: Document, words: string[], textDocument: vscode.TextDocument, position?: vscode.Position): vscode.CompletionItem[] {
         if (words.length == 1) {
-            // global variables
-            let variables = [...document.variables];
-            // local variables
-            if (position) {
+            // global buffers
+            let buffers = [...document.variables.filter(v => v.dataType == ABL_TYPE.BUFFER)];
+            // local buffers
+            if (words.length == 1) {
                 let method = document.methodInPosition(position);
                 if (method) {
-                    variables.push(...method.localVariables);
+                    let localParams = method.params.filter(v => v.dataType == ABL_TYPE.BUFFER);
+                    // remove global buffers with same name as local buffers
+                    buffers = buffers.filter(item => !localParams.find(lp => lp.name.toLowerCase() == item.name.toLowerCase()));
+                    buffers.push(...localParams);
                 }
             }
-            //
-            let bufferCompletion = variables.filter(v => v.dataType == ABL_TYPE.BUFFER).map(v => {
+            let bufferCompletion = buffers.map(v => {
                 let result = new vscode.CompletionItem(v.name, vscode.CompletionItemKind.File);
                 result.detail = BufferCompletion.bufferDetail(v);
                 result.documentation = BufferCompletion.bufferDocumentation(v);
@@ -253,6 +368,18 @@ class BufferCompletion extends CodeCompletionBase {
             return bufferCompletion;
         }
         return [];
+    }
+
+    protected filterCompletionItems(items: vscode.CompletionItem[], document: Document, words: string[], textDocument: vscode.TextDocument, position?: vscode.Position): vscode.CompletionItem[] {
+        if (words.length == 1) {
+            // remove parameter buffers
+            let method = document.methodInPosition(position);
+            if (method) {
+                let localParams = method.params.filter(v => v.dataType == ABL_TYPE.BUFFER);
+                items = items.filter(item => !localParams.find(lp => lp.name.toLowerCase() == item.label.toLowerCase()));
+            }
+        }
+        return items;
     }
 
     static bufferDetail(v: AblField): string {
@@ -282,8 +409,6 @@ class ParameterCompletion extends CodeCompletionBase {
             if (method) {
                 params.push(...method.params);
             }
-            //
-            // TODO - ignore buffer and temp-table ??
             //
             let paramsCompletion = params.map(p => {
                 let kind = vscode.CompletionItemKind.Variable;
@@ -343,18 +468,7 @@ class TempTableCompletion extends CodeCompletionBase {
 
     protected getCompletionItems(document: Document, words: string[], textDocument: vscode.TextDocument, position?: vscode.Position): vscode.CompletionItem[] {
         if (words.length == 2) {
-
-            // TODO
-
-            let temps: AblTempTable[] = [...document.tempTables];
-            // local parameters for temp-table
-            let method = document.methodInPosition(position);
-            if (method) {
-                // TODO - remove global temp-tables when there is a local with the same name
-                // temps.push(...method.params.filter(item => item.dataType == ABL_TYPE.TEMP_TABLE));
-            }
-            //
-            let tempTable = temps.find(item => item.name.toLowerCase() == words[0].toLowerCase());
+            let tempTable = document.tempTables.find(item => item.name.toLowerCase() == words[0].toLowerCase());
             if (tempTable) {
                 return [
                     ...TempTableCompletion.fieldsCompletion(tempTable),
@@ -364,15 +478,7 @@ class TempTableCompletion extends CodeCompletionBase {
             return [];
         }
         else if (words.length == 1) {
-            let temps: AblTempTable[] = [...document.tempTables];
-            // local parameters for temp-table
-            let method = document.methodInPosition(position);
-            if (method) {
-                // TODO - remove global temp-tables when there is a local with the same name
-                // temps.push(...method.params.filter(item => item.dataType == ABL_TYPE.TEMP_TABLE));
-            }
-            //
-            let tempsCompletion = temps.map(tt => {
+            let tempsCompletion = document.tempTables.map(tt => {
                 let result = new vscode.CompletionItem(tt.name, vscode.CompletionItemKind.Struct);
                 result.detail = TempTableCompletion.tempTableDetail(tt);
                 result.documentation = TempTableCompletion.tempTableDocumentation(tt);
@@ -382,6 +488,18 @@ class TempTableCompletion extends CodeCompletionBase {
 
         }
         return [];
+    }
+
+    protected filterCompletionItems(items: vscode.CompletionItem[], document: Document, words: string[], textDocument: vscode.TextDocument, position?: vscode.Position): vscode.CompletionItem[] {
+        if (words.length == 1) {
+            // remove parameter temp-tables
+            let method = document.methodInPosition(position);
+            if (method) {
+                let paramTempTable = method.params.filter(v => v.dataType == ABL_TYPE.TEMP_TABLE);
+                items = items.filter(item => !paramTempTable.find(tt => tt.name.toLowerCase() == item.label.toLowerCase()));
+            }
+        }
+        return items;
     }
 
     static tempTableDetail(v: AblTempTable): string {
@@ -398,14 +516,10 @@ class TempTableCompletion extends CodeCompletionBase {
     }
 
     static fieldsCompletion(tempTable:AblTempTable, nameReplacement?:string): vscode.CompletionItem[] {
-        // table.completionIndexes = mapIndexCompletionList(table, table.indexes);
-        // table.completionAdditional = mapAdditionalCompletionList(table);
-        // table.completion = new vscode.CompletionList([...table.completionFields.items,...table.completionAdditional.items,...table.completionIndexes.items]);
         let fields = [
             ...(tempTable.referenceFields || []),
             ...tempTable.fields
         ];
-    
         return fields.map(field => {
             let item = new vscode.CompletionItem(field.name, vscode.CompletionItemKind.Field);
             item.detail = TempTableCompletion.fieldDetail(field);
@@ -430,50 +544,33 @@ class TempTableCompletion extends CodeCompletionBase {
     }
 
     static tempTableSnippets(tempTable:AblTempTable, nameReplacement?:string): vscode.CompletionItem[] {
-        // let result = new vscode.CompletionList();
+        let result: vscode.CompletionItem[] = [];
+        // All fields completion snippet
+        let snippet = new vscode.SnippetString();
+        let isFirst: boolean = true;
+        let maxSize = 0;
+        let allFields: AblField[] = [
+            ...(tempTable.referenceFields || []),
+            ...tempTable.fields
+        ];
+        allFields.forEach(field => { if(field.name.length > maxSize) maxSize = field.name.length });
+        allFields.forEach(field => {
+            if(isFirst) {
+                isFirst = false;
+            }
+            else {
+                snippet.appendText('\n');
+                snippet.appendText((nameReplacement || tempTable.name) + '.');
+            }
+            snippet.appendText(field.name.padEnd(maxSize, ' ') + ' = ');
+            snippet.appendTabstop();
+        });
+        let allFieldsItem = new vscode.CompletionItem('> ALL FIELDS', vscode.CompletionItemKind.Snippet);
+        allFieldsItem.detail = 'insert all temp-table fields';
+        allFieldsItem.insertText = snippet;
+        result.push(allFieldsItem);
+        //
 
-        // if(!list) return result;
-        
-        // list.forEach(objItem => {
-        //     if (!objItem.fields) return;
-        //     let item = new vscode.CompletionItem(objItem.label, vscode.CompletionItemKind.Snippet);
-        //     item.insertText = getIndexSnippet(table, objItem);
-        //     item.detail = objItem.fields.map(item => {return item.label}).join(', ');
-        //     if (objItem.primary) {
-        //         item.label = '>INDEX (PK) ' + item.label;
-        //         item.detail = 'Primary Key, Fields: ' + item.detail;
-        //     }
-        //     else if (objItem.unique) {
-        //         item.label = '>INDEX (U) ' + item.label; 
-        //         item.detail = 'Unique Index, Fields: ' + item.detail;
-        //     }
-        //     else {
-        //         item.label = '>INDEX ' + item.label;
-        //         item.detail = 'Index, Fields: ' + item.detail;
-        //     }
-        //     result.items.push(item);
-        // });
-        // return result;
-        return [];
+        return result;
     }
-
-    // private getCompletionFields(prefix: string, replacement?: string): vscode.CompletionItem[] {
-    //     // Tables
-    //     let tb = _tableCollection.items.find((item) => item.label.toLowerCase() == prefix);
-    //     if (tb) {
-    //         let result = tb['completion'].items;
-    //         if (!util.isNullOrUndefined(replacement))
-    //             result = replaceSnippetTableName(result, prefix, replacement);
-    //         return result;
-    //     }
-    //     return [];
-    // }
 }
-
-/*
-buffer / temp-table 
-variables?
-- ignore global completion item, when there is a local completion item
-
-ignore buffer and temp-table completion on parameters
-*/

@@ -125,7 +125,7 @@ export class Document {
 
     }
 
-    private refreshIncludes(source: SourceCode) {
+    private refreshIncludes(source: SourceCode): Promise<any> {
         let controller = DocumentController.getInstance();
         let result: AblInclude[] = [];
         let text = source.sourceWithoutStrings;
@@ -163,6 +163,7 @@ export class Document {
                     if (item.uri) {
                         item.document = controller.getDocument(item.uri)?.document;
                         if (!item.document) {
+                            // request to open the includes
                             process.nextTick(() => { controller.openDocument(item.uri).then(document => item.document = document) });
                         }
                     }
@@ -170,8 +171,6 @@ export class Document {
             });
             Promise.all(pending).then(() => resolve());
         });
-        // request to open the includes
-        
     }
 
     private refreshMethods(source: SourceCode) {

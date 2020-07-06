@@ -1,5 +1,4 @@
 import * as vscode from "vscode";
-import * as utils from './utils';
 import * as fs from 'fs';
 import { ABL_MODE } from "./environment";
 import { Document } from "./documentModel";

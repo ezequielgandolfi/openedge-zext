@@ -1,13 +1,12 @@
 import * as vscode from "vscode";
-import { LegacyABLDocumentController, getDocumentController } from "./legacyDocumentController";
 import { ABL_MODE } from "./environment";
+import { DocumentController } from "./documentController";
+import { Document } from "./documentModel";
 
 export class SymbolExtension implements vscode.DocumentSymbolProvider {
-    private _ablDocumentController: LegacyABLDocumentController;
 
     static attach(context: vscode.ExtensionContext) {
         let instance = new SymbolExtension();
-        instance._ablDocumentController = getDocumentController();
         instance.registerCommands(context);
 	}
 
@@ -16,7 +15,26 @@ export class SymbolExtension implements vscode.DocumentSymbolProvider {
     }
 
     public provideDocumentSymbols(document: vscode.TextDocument, token: vscode.CancellationToken): Thenable<vscode.SymbolInformation[]> {
-        return Promise.resolve(this._ablDocumentController.getDocument(document).symbols);
+        let doc = DocumentController.getInstance().getDocument(document);
+        if (doc)
+            return Promise.resolve(this.documentSymbols(doc));
+        return null;
+    }
+
+    private documentSymbols(document: Document): vscode.SymbolInformation[] {
+        let methods:vscode.SymbolInformation[] = [];
+        let params:vscode.SymbolInformation[] = [];
+        document.methods.forEach(method => {
+            methods.push(new vscode.SymbolInformation(method.name, vscode.SymbolKind.Method, 'Methods', new vscode.Location(document.document.uri, method.range)));
+            // parameters
+            // method.params?.forEach(param => {
+            //     params.push(new vscode.SymbolInformation(param.name, vscode.SymbolKind.Property, 'Method Parameters', new vscode.Location(document.document.uri, param.position)));
+            // });
+        });
+        return [
+            ...methods,
+            ...params
+        ];
     }
 }
 
