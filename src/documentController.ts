@@ -1,8 +1,8 @@
-import * as vscode from "vscode";
+import * as vscode from 'vscode';
 import * as fs from 'fs';
-import { ABL_MODE } from "./environment";
-import { Document } from "./documentModel";
-import { ExtensionConfig } from "./extensionConfig";
+import { ABL_MODE } from './environment';
+import { Document } from './documentModel';
+import { ExtensionConfig } from './extensionConfig';
 
 let _instance: DocumentController;
 
@@ -80,6 +80,10 @@ export class DocumentController {
     pushDocumentChange(document: Document) {
         // TODO - check for propagation loop
 
+        // refresh current document symbols
+        if ((document?.document?.uri) && (vscode.window.activeTextEditor.document?.uri == document.document.uri)) {
+            process.nextTick(() => vscode.commands.executeCommand('vscode.executeDocumentSymbolProvider', document.document.uri));
+        }
         //
         this.onChangeEmitter.fire(document);
     }

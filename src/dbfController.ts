@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as util from 'util';
-import { DbFile, DbIndex, DbField, DbTable } from './dbModel';
+import { DbType } from './types';
 
 
 let _instance: DbfController;
@@ -17,7 +17,7 @@ export class DbfController {
 
     private onChangeEmitter: vscode.EventEmitter<string> = new vscode.EventEmitter();
     private watcher: vscode.FileSystemWatcher = null;
-    private dbfCollection: DbFile[] = [];
+    private dbfCollection: DbType.DbFile[] = [];
 
     static getInstance(): DbfController {
         if (!_instance)
@@ -44,7 +44,7 @@ export class DbfController {
         return this.dbfCollection;
     }
 
-    getTable(name: string): DbTable {
+    getTable(name: string): DbType.Table {
         name = name.toLowerCase();
         return this.dbfCollection.find(item => item.name.toLowerCase() == name);
     }
@@ -89,9 +89,9 @@ export class DbfController {
         }
     }
 
-    private mapDbFile(dbName:string,list:any[]): DbFile[] {
+    private mapDbFile(dbName:string,list:any[]): DbType.DbFile[] {
         return list.map(item => {
-            let dbfile: DbFile = {
+            let dbfile: DbType.DbFile = {
                 database: dbName,
                 name: item.label,
                 description: item.detail,
@@ -99,7 +99,7 @@ export class DbfController {
                 indexes: []
             };
             dbfile.indexes = [...item.indexes.map(index => {
-                return <DbIndex>{
+                return <DbType.Index>{
                     name: index.label,
                     isPK: index.primary,
                     isUnique: index.unique,
@@ -107,14 +107,13 @@ export class DbfController {
                 }
             })];
             dbfile.fields = [...item.fields.map(field => {
-                return <DbField>{
+                return <DbType.Field>{
                     name: field.label,
                     description: field.detail,
                     type: field.dataType,
                     mandatory: field.mandatory,
                     format: field.format,
                     isPK: !!dbfile.indexes.filter(i => i.isPK).find(i => i.fields.includes(field.label)),
-                    // isUnique: !!dbfile.indexes.filter(i => i.isUnique).find(i => i.fields.includes(field.label)),
                     isKey: !!dbfile.indexes.find(i => i.fields.includes(field.label))
                 }
             })];

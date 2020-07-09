@@ -1,11 +1,8 @@
-import * as vscode from "vscode";
-import * as utils from './utils';
-import * as fs from 'fs';
-import { DocumentController } from "./documentController";
-import { AblMethod, ABL_SCOPE, AblVariable, AblParameter, ABL_ASLIKE, ABL_TYPE, ABL_BUFFER_TYPE, ABL_PARAM_DIRECTION, ABL_METHOD_TYPE, ABL_BLOCK_SCOPE, AblInclude, AblTempTable, AblField } from "./documentDefinition";
-import { SourceParser, SourceCode } from "./sourceParser";
-import { DbfController } from "./dbfController";
-import { O_TRUNC } from "constants";
+import * as vscode from 'vscode';
+import { DocumentController } from './documentController';
+import { AblType } from './types';
+import { SourceParser, SourceCode } from './sourceParser';
+import { DbfController } from './dbfController';
 
 export class Document {
 
@@ -16,10 +13,10 @@ export class Document {
     private textDocument: vscode.TextDocument;
 
     //#region 
-    private documentIncludes: AblInclude[] = [];
-    private documentMethods: AblMethod[] = [];
-    private documentVariables: AblVariable[] = [];
-    private documentTempTables: AblTempTable[] = [];
+    private documentIncludes: AblType.Include[] = [];
+    private documentMethods: AblType.Method[] = [];
+    private documentVariables: AblType.Variable[] = [];
+    private documentTempTables: AblType.TempTable[] = [];
     //#endregion
 
     constructor(document: vscode.TextDocument) {
@@ -127,7 +124,7 @@ export class Document {
 
     private refreshIncludes(source: SourceCode): Promise<any> {
         let controller = DocumentController.getInstance();
-        let result: AblInclude[] = [];
+        let result: AblType.Include[] = [];
         let text = source.sourceWithoutStrings;
         let reStart: RegExp = new RegExp(/\{{1}([\w\d\-\\\/\.]+)/gim);
         // 1 = include name
@@ -142,7 +139,7 @@ export class Document {
                 let name = matchStart[1].trim().toLowerCase();
                 // ignores {1} (include parameter) and {&ANYTHING} (global/scoped definition)
                 if ((Number.isNaN(Number.parseInt(name))) && (!name.startsWith('&')) && (!result.find(item => item.name == name))) {
-                    let item: AblInclude = {
+                    let item: AblType.Include = {
                         name: name
                     }
                     result.push(item);
@@ -174,7 +171,7 @@ export class Document {
     }
 
     private refreshMethods(source: SourceCode) {
-        let result: AblMethod[] = [];
+        let result: AblType.Method[] = [];
         let text = source.sourceWithoutStrings;
 
         let reStart = new RegExp(/\b(proc|procedure|func|function){1}[\s\t\n]+([\w\d\-]+)(.*?)(?:[\.\:][^\w\d\-\+])/gim);
@@ -191,11 +188,11 @@ export class Document {
                 try {
                     let posStart = source.document.positionAt(matchStart.index);
                     let posEnd = source.document.positionAt(reEnd.lastIndex);
-                    let item: AblMethod = {
+                    let item: AblType.Method = {
                         name: matchStart[2],
-                        type: ABL_METHOD_TYPE.PROCEDURE,
+                        type: AblType.METHOD_TYPE.PROCEDURE,
                         range: new vscode.Range(posStart, posEnd),
-                        scope: this.getScope(matchStart[3]),
+                        visibility: this.getVisibility(matchStart[3]),
                         params: [],
                         localVariables: []
                     }
@@ -212,9 +209,9 @@ export class Document {
         this.documentMethods = result;
     }
 
-    private resolveMethodConflicts(source: SourceCode, methods: AblMethod[]) {
+    private resolveMethodConflicts(source: SourceCode, methods: AblType.Method[]) {
         // adjust method start/end lines (missing "procedure" on "end [procedure]")
-        let prevMethod: AblMethod;
+        let prevMethod: AblType.Method;
         methods.forEach(method => {
             if (prevMethod) {
                 if (method.range.start.isBefore(prevMethod.range.end)) {
@@ -227,7 +224,7 @@ export class Document {
     }
 
     private refreshVariables(source: SourceCode) {
-        let result: AblVariable[] = [];
+        let result: AblType.Variable[] = [];
         let text = source.sourceWithoutStrings;
 
         // VARIABLES
@@ -268,18 +265,18 @@ export class Document {
         result.forEach(item => {
             let method = this.methodInPosition(item.position);
             if (method) {
-                item.scope = ABL_BLOCK_SCOPE.LOCAL;
+                item.scope = AblType.SCOPE.LOCAL;
                 method.localVariables.push(item);
             }
             else {
-                item.scope = ABL_BLOCK_SCOPE.GLOBAL;
+                item.scope = AblType.SCOPE.GLOBAL;
                 this.documentVariables.push(item);
             }
         });
     }
 
     private refreshParameters(source: SourceCode) {
-        let result: AblParameter[] = [];
+        let result: AblType.Parameter[] = [];
         let text = source.sourceWithoutStrings;
 
         // PRIMITIVE
@@ -292,10 +289,10 @@ export class Document {
         let matchPrimitive = rePrimitive.exec(text);
         while(matchPrimitive) {
             try {
-                let item: AblParameter = this.variableAsVariable(matchPrimitive[2],matchPrimitive[3],matchPrimitive[4],matchPrimitive[5]);
+                let item: AblType.Parameter = this.variableAsVariable(matchPrimitive[2],matchPrimitive[3],matchPrimitive[4],matchPrimitive[5]);
                 item.position = source.document.positionAt(matchPrimitive.index);
                 item.direction = this.getDirection(matchPrimitive[1]);
-                item.scope = ABL_BLOCK_SCOPE.LOCAL;
+                item.scope = AblType.SCOPE.PARAMETER;
                 result.push(item);
             }
             catch {} // suppress errors
@@ -309,10 +306,10 @@ export class Document {
         let matchTempTable = reTempTable.exec(text);
         while(matchTempTable) {
             try {
-                let item: AblParameter = this.tempTableAsVariable(matchTempTable[2]);
+                let item: AblType.Parameter = this.tempTableAsVariable(matchTempTable[2]);
                 item.position = source.document.positionAt(matchTempTable.index);
                 item.direction = this.getDirection(matchTempTable[1]);
-                item.scope = ABL_BLOCK_SCOPE.LOCAL;
+                item.scope = AblType.SCOPE.PARAMETER;
                 result.push(item);
             }
             catch {} // suppress errors
@@ -327,9 +324,9 @@ export class Document {
         let matchBuffer = reBuffer.exec(text);
         while(matchBuffer) {
             try {
-                let item: AblParameter = this.bufferAsVariable(matchBuffer[1],matchBuffer[2],matchBuffer[3]);
+                let item: AblType.Parameter = this.bufferAsVariable(matchBuffer[1],matchBuffer[2],matchBuffer[3]);
                 item.position = source.document.positionAt(matchBuffer.index);
-                item.scope = ABL_BLOCK_SCOPE.LOCAL;
+                item.scope = AblType.SCOPE.PARAMETER;
                 result.push(item);
             }
             catch {}
@@ -345,7 +342,7 @@ export class Document {
     }
 
     private refreshTempTables(source: SourceCode) {
-        let result: AblTempTable[] = [];
+        let result: AblType.TempTable[] = [];
         let text = source.sourceWithoutStrings;
 
         let reStart: RegExp = new RegExp(/\b(?:def|define){1}(?:[\s\t\n]|new|global|shared)+(?:temp-table){1}[\s\t\n\r]+([\w\d\-\+]*)[^\w\d\-\+]/gim);
@@ -365,7 +362,7 @@ export class Document {
                     let posStart = source.document.positionAt(matchStart.index);
                     let posEnd = source.document.positionAt(reEnd.lastIndex);
                     let innerText = text.substring(reStart.lastIndex, matchEnd.index);
-                    let item: AblTempTable = {
+                    let item: AblType.TempTable = {
                         name: matchStart[1],
                         range: new vscode.Range(posStart, posEnd)
                     };
@@ -392,8 +389,8 @@ export class Document {
         // this.updateTempTableReferences();
     }
 
-    private extractTempTableFields(text: string, source: SourceCode): AblField[] {
-        let result: AblField[] = [];
+    private extractTempTableFields(text: string, source: SourceCode): AblType.Field[] {
+        let result: AblType.Field[] = [];
         let regexDefineField: RegExp = new RegExp(/(?:field){1}(?:[\s\t\n]+)([\w\d\-]+)[\s\t\n]+(as|like){1}[\s\t\n]+([\w\d\-\.]+)/gim);
         // 1 = var name
         // 2 = as | like
@@ -401,10 +398,10 @@ export class Document {
         let res = regexDefineField.exec(text);
         while(res) {
             try {
-                let item: AblField = { name: res[1] };
-                if (res[2].toLowerCase() == ABL_ASLIKE.AS)
+                let item: AblType.Field = { name: res[1] };
+                if (res[2].toLowerCase() == AblType.TYPE_DEFINITION.AS)
                     item.dataType = this.normalizeDataType(res[3]);
-                else if (res[2].toLowerCase() == ABL_ASLIKE.AS)
+                else if (res[2].toLowerCase() == AblType.TYPE_DEFINITION.AS)
                     item.likeType = this.normalizeDataType(res[3]);
                 result.push(item);
             }
@@ -429,7 +426,7 @@ export class Document {
             // like database table
             let table = dbf.getTable(item.referenceTable);
             if (table) {
-                item.referenceFields = table.fields.map(f => { return <AblField>{ name: f.name, dataType: f.type } });
+                item.referenceFields = table.fields.map(f => { return <AblType.Field>{ name: f.name, dataType: f.type } });
             }
             // like temp-table
             else {
@@ -458,58 +455,58 @@ export class Document {
         });
     }
 
-    private getScope(details?:string): ABL_SCOPE {
+    private getVisibility(details?:string): AblType.VISIBILITY {
         let split = (details || '').trim().toLowerCase().split(' ');
-        if (split.includes(ABL_SCOPE.PRIVATE))
-            return ABL_SCOPE.PRIVATE;
-        if (split.includes(ABL_SCOPE.PROTECTED))
-            return ABL_SCOPE.PROTECTED;
-        return ABL_SCOPE.PUBLIC;
+        if (split.includes(AblType.VISIBILITY.PRIVATE))
+            return AblType.VISIBILITY.PRIVATE;
+        if (split.includes(AblType.VISIBILITY.PROTECTED))
+            return AblType.VISIBILITY.PROTECTED;
+        return AblType.VISIBILITY.PUBLIC;
     }
 
-    private getDirection(text:string): ABL_PARAM_DIRECTION {
-        if (text.toLowerCase() == ABL_PARAM_DIRECTION.RETURN)
-            return ABL_PARAM_DIRECTION.RETURN;
-        if (text.toLowerCase() == ABL_PARAM_DIRECTION.OUT)
-            return ABL_PARAM_DIRECTION.OUT;
-        if (text.toLowerCase() == ABL_PARAM_DIRECTION.INOUT)
-            return ABL_PARAM_DIRECTION.INOUT;
-        return ABL_PARAM_DIRECTION.IN;
+    private getDirection(text:string): AblType.PARAM_DIRECTION {
+        if (text.toLowerCase() == AblType.PARAM_DIRECTION.RETURN)
+            return AblType.PARAM_DIRECTION.RETURN;
+        if (text.toLowerCase() == AblType.PARAM_DIRECTION.OUT)
+            return AblType.PARAM_DIRECTION.OUT;
+        if (text.toLowerCase() == AblType.PARAM_DIRECTION.INOUT)
+            return AblType.PARAM_DIRECTION.INOUT;
+        return AblType.PARAM_DIRECTION.IN;
     }
 
-    private variableAsVariable(pName:string,pAsLike:string,pType:string,pAdditional:string): AblVariable {
-        let item: AblVariable = {
+    private variableAsVariable(pName:string,pAsLike:string,pType:string,pAdditional:string): AblType.Variable {
+        let item: AblType.Variable = {
             name: pName.trim(),
             additional: (pAdditional || ``).trim()
         }
-        if (pAsLike.toLowerCase() == ABL_ASLIKE.AS) {
+        if (pAsLike.toLowerCase() == AblType.TYPE_DEFINITION.AS) {
             item.dataType = this.normalizeDataType(pType);
         }
-        else if (pAsLike.toLowerCase() == ABL_ASLIKE.LIKE) {
+        else if (pAsLike.toLowerCase() == AblType.TYPE_DEFINITION.LIKE) {
             item.likeType = this.normalizeDataType(pType);
         }
         return item;
     }
 
-    private bufferAsVariable(pName:string,pBufferType:string,pReference:string): AblVariable {
-        let item: AblVariable = {
+    private bufferAsVariable(pName:string,pBufferType:string,pReference:string): AblType.Variable {
+        let item: AblType.Variable = {
             name: pName.trim(),
-            dataType: ABL_TYPE.BUFFER,
+            dataType: AblType.ATTRIBUTE_TYPE.BUFFER,
             likeType: pReference.trim().toLowerCase()
         }
-        if ((pBufferType || '').toLowerCase() == ABL_BUFFER_TYPE.TEMP_TABLE) {
-            item.bufferType = ABL_BUFFER_TYPE.TEMP_TABLE;
+        if ((pBufferType || '').toLowerCase() == AblType.BUFFER_REFERENCE.TEMP_TABLE) {
+            item.bufferType = AblType.BUFFER_REFERENCE.TEMP_TABLE;
         }
         else {
-            item.bufferType = ABL_BUFFER_TYPE.TABLE;
+            item.bufferType = AblType.BUFFER_REFERENCE.TABLE;
         }
         return item;
     }
 
-    private tempTableAsVariable(pName:string): AblVariable {
-        let item: AblVariable = {
+    private tempTableAsVariable(pName:string): AblType.Variable {
+        let item: AblType.Variable = {
             name: pName.trim(),
-            dataType: ABL_TYPE.TEMP_TABLE
+            dataType: AblType.ATTRIBUTE_TYPE.TEMP_TABLE
         }
         return item;
     }
@@ -522,7 +519,7 @@ export class Document {
         return value;
     }
 
-    methodInPosition(position: vscode.Position): AblMethod {
+    methodInPosition(position: vscode.Position): AblType.Method {
         return this.documentMethods.find(m => m.range.contains(position));
     }
 

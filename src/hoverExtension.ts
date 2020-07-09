@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import * as utils from './utils';
-import { LegacyABLDocumentController, getDocumentController } from "./legacyDocumentController";
-import { getTableCollection } from "./legacyCodeCompletionExtension";
+import { LegacyABLDocumentController, getDocumentController } from './legacyDocumentController';
+import { getTableCollection } from './legacyCodeCompletionExtension';
 import { ABLFieldDefinition, ABLTableDefinition, SYMBOL_TYPE, ABLTempTable, ABLVariable, ABLMethod, ABLParameter } from './definition';
 import { ABL_MODE } from './environment';
 import { isNullOrUndefined } from 'util';

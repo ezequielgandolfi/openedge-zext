@@ -1,7 +1,7 @@
-import * as vscode from "vscode";
-import { ABL_MODE } from "./environment";
-import { DocumentController } from "./documentController";
-import { Document } from "./documentModel";
+import * as vscode from 'vscode';
+import { ABL_MODE } from './environment';
+import { DocumentController } from './documentController';
+import { Document } from './documentModel';
 
 export class SymbolExtension implements vscode.DocumentSymbolProvider {
 
@@ -16,9 +16,18 @@ export class SymbolExtension implements vscode.DocumentSymbolProvider {
 
     public provideDocumentSymbols(document: vscode.TextDocument, token: vscode.CancellationToken): Thenable<vscode.SymbolInformation[]> {
         let doc = DocumentController.getInstance().getDocument(document);
-        if (doc)
-            return Promise.resolve(this.documentSymbols(doc));
-        return null;
+        if (doc) {
+            let documentSymbols = this.documentSymbols.bind(this);
+            return new Promise(resolve => {
+                process.nextTick(() => {
+                    if (!token.isCancellationRequested)
+                        resolve(documentSymbols(doc));
+                    else
+                        resolve();
+                });
+            });
+        }
+        return;
     }
 
     private documentSymbols(document: Document): vscode.SymbolInformation[] {

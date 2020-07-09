@@ -1,9 +1,9 @@
-import * as vscode from "vscode";
+import * as vscode from 'vscode';
 import * as utils from './utils';
-import { LegacyABLDocumentController, getDocumentController } from "./legacyDocumentController";
-import { ABL_MODE } from "./environment";
-import { isNullOrUndefined } from "util";
-import { SYMBOL_TYPE, ABLParameter } from "./definition";
+import { LegacyABLDocumentController, getDocumentController } from './legacyDocumentController';
+import { ABL_MODE } from './environment';
+import { isNullOrUndefined } from 'util';
+import { SYMBOL_TYPE, ABLParameter } from './definition';
 
 export class DefinitionExtension implements vscode.DefinitionProvider {
     private _ablDocumentController: LegacyABLDocumentController;

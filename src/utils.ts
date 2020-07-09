@@ -1,10 +1,10 @@
-import * as vscode from "vscode";
+import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
 import cp = require('child_process');
-import { TextSelection, ABLTableDefinition, ABLIndexDefinition } from "./definition";
-import { getXcodeBin } from "./environment";
-import { isArray } from "util";
+import { TextSelection, ABLTableDefinition, ABLIndexDefinition } from './definition';
+import { getXcodeBin } from './environment';
+import { isArray } from 'util';
 
 let regexInvalidWordEnd: RegExp = new RegExp(/[\.|\:|\-|\_|\\|\/]$/);
 
