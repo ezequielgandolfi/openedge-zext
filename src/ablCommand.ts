@@ -3,7 +3,7 @@ import cp = require('child_process');
 import path = require('path');
 import { outputChannel, showStatusBar, STATUS_COLOR, errorDiagnosticCollection, warningDiagnosticCollection, hideStatusBar } from './notification';
 import { getProBin, createProArgs, setupEnvironmentVariables, ABL_MODE, getProwinBin } from './environment';
-import { ICheckResult } from './definition';
+import { ICheckResult } from './legacyDefinition';
 import { saveAndExec, xcode } from './utils';
 import { ExtensionConfig, OpenEdgeConfig } from './extensionConfig';
 import { TASK_TYPE, fileDeploy, rcodeDeploy } from './deploy';

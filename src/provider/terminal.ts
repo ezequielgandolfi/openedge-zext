@@ -1,9 +1,9 @@
 import * as vscode from 'vscode';
 
-export class TerminalExtension {
+export class Terminal {
 
     static attach(context: vscode.ExtensionContext) {
-        let instance = new TerminalExtension();
+        let instance = new Terminal();
         instance.registerCommands(context);
     }
 

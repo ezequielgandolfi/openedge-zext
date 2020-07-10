@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as util from 'util';
-import { ABLTableDefinition } from './definition';
+import { ABLTableDefinition } from './legacyDefinition';
 import { LegacyABLDocumentController, getDocumentController } from './legacyDocumentController';
 import { updateTableCompletionList, getText, replaceSnippetTableName } from './utils';
 import { ABL_MODE } from './environment';

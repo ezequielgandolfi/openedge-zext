@@ -1,12 +1,12 @@
 import * as vscode from 'vscode';
-import { ABL_MODE } from './environment';
-import { DocumentController } from './documentController';
-import { Document } from './documentModel';
+import { ABL_MODE } from '../environment';
+import { DocumentController } from '../documentController';
+import { Document } from '../documentModel';
 
-export class SymbolExtension implements vscode.DocumentSymbolProvider {
+export class Symbol implements vscode.DocumentSymbolProvider {
 
     static attach(context: vscode.ExtensionContext) {
-        let instance = new SymbolExtension();
+        let instance = new Symbol();
         instance.registerCommands(context);
 	}
 

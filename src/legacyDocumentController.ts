@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import * as utils from './utils';
 import * as fs from 'fs';
 import { ABL_MODE } from './environment';
-import { SYMBOL_TYPE, ABLVariable, ABLMethod, ABLInclude, ABLTempTable, ABL_PARAM_DIRECTION, ABLSymbol } from './definition';
+import { SYMBOL_TYPE, ABLVariable, ABLMethod, ABLInclude, ABLTempTable, ABL_PARAM_DIRECTION, ABLSymbol } from './legacyDefinition';
 import { getAllIncludes, getAllMethods, getAllVariables, getAllParameters, getAllTempTables, getAllBuffers } from './processDocument';
 import { SourceCode, SourceParser } from './sourceParser';
 import { isNullOrUndefined } from 'util';

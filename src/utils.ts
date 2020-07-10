@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
 import cp = require('child_process');
-import { TextSelection, ABLTableDefinition, ABLIndexDefinition } from './definition';
+import { TextSelection, ABLTableDefinition, ABLIndexDefinition } from './legacyDefinition';
 import { getXcodeBin } from './environment';
 import { isArray } from 'util';
 

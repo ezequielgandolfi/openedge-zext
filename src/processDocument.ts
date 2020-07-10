@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { ABLVariable, ABL_ASLIKE, ABLMethod, ABLParameter, ABLInclude, ABLTempTable, ABLFieldDefinition, ABLIndexDefinition, ABLTableDefinition, ABL_PARAM_DIRECTION } from './definition';
+import { ABLVariable, ABL_ASLIKE, ABLMethod, ABLParameter, ABLInclude, ABLTempTable, ABLFieldDefinition, ABLIndexDefinition, ABLTableDefinition, ABL_PARAM_DIRECTION } from './legacyDefinition';
 import { removeInvalidRightChar, updateTableCompletionList } from './utils';
 import { SourceCode } from './sourceParser';
 import { isNumber } from 'util';

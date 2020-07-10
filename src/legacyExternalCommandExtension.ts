@@ -9,10 +9,10 @@ import { ABLCompile, COMPILE_OPTIONS } from './ablCommand';
  * Provider for invisible commands.
  * Can be used by other VSCode extensions.
  */
-export class ExternalCommandExtension {
+export class LegacyExternalCommandExtension {
 
     static attach(context: vscode.ExtensionContext) {
-        let instance = new ExternalCommandExtension();
+        let instance = new LegacyExternalCommandExtension();
         instance.registerCommands(context);
     }
 

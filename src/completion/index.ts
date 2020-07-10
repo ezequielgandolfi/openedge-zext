@@ -1,1 +1,1 @@
-export * as CompletionProvider from './index-unify';
+export * as CompletionProvider from './index-completion-provider';

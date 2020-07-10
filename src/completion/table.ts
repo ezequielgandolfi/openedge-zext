@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { DbfController } from '../dbfController';
 import { StatementUtil } from '../statementUtil';
-import { DbType } from '../types';
+import { DbType } from '../type';
 
 export class Table implements vscode.CompletionItemProvider {
 
@@ -12,6 +12,10 @@ export class Table implements vscode.CompletionItemProvider {
     }
 
     public provideCompletionItems(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken, context: vscode.CompletionContext) {
+        // ignores on include notation
+        if (context.triggerCharacter == '{')
+            return;
+            
         let words = StatementUtil.dotSplitStatement(document, position);
         if (words.length == 2) {
             let table = DbfController.getInstance().getTable(words[0]);

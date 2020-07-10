@@ -4,7 +4,7 @@ import * as path from 'path';
 import { ExtensionConfig } from './extensionConfig';
 import { SourceParser } from './sourceParser';
 
-export class FormatExtension {
+export class LegacyFormatExtension {
 
     ablKeywordsPattern: string;
 
@@ -13,7 +13,7 @@ export class FormatExtension {
     }
 
     static attach(context: vscode.ExtensionContext) {
-        let instance = new FormatExtension();
+        let instance = new LegacyFormatExtension();
         instance.registerCommands(context);
 	}
 

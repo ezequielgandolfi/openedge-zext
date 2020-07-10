@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { DocumentController } from './documentController';
-import { AblType } from './types';
+import { AblType } from './type';
 import { SourceParser, SourceCode } from './sourceParser';
 import { DbfController } from './dbfController';
 
@@ -140,6 +140,7 @@ export class Document {
                 // ignores {1} (include parameter) and {&ANYTHING} (global/scoped definition)
                 if ((Number.isNaN(Number.parseInt(name))) && (!name.startsWith('&')) && (!result.find(item => item.name == name))) {
                     let item: AblType.Include = {
+                        type: AblType.TYPE.INCLUDE,
                         name: name
                     }
                     result.push(item);
@@ -189,8 +190,9 @@ export class Document {
                     let posStart = source.document.positionAt(matchStart.index);
                     let posEnd = source.document.positionAt(reEnd.lastIndex);
                     let item: AblType.Method = {
+                        type: AblType.TYPE.METHOD,
                         name: matchStart[2],
-                        type: AblType.METHOD_TYPE.PROCEDURE,
+                        kind: AblType.METHOD_KIND.PROCEDURE,
                         range: new vscode.Range(posStart, posEnd),
                         visibility: this.getVisibility(matchStart[3]),
                         params: [],
@@ -245,7 +247,7 @@ export class Document {
         }
 
         // BUFFERS
-        let reDefineBuffer = new RegExp(/(?:def|define){1}(?:[\s\t\n]|new|shared)+(?:buffer){1}[\s\t\n]+([\w\d\-]+){1}[\s\t\n]+(?:for){1}[\s\t\n]+(temp-table[\s\t\n]+)*([\w\d\-\+]*)(?:\.[^\w\d\-\+])+/gim);
+        let reDefineBuffer = new RegExp(/(?:def|define){1}(?:[\s\t\n]|new|shared)+(?:buffer){1}[\s\t\n]+([\w\d\-]+){1}[\s\t\n]+(?:for){1}[\s\t\n]+(temp-table)*[\s\t\n]*([\w\d\-\+]*)(?:\.[^\w\d\-\+])+/gim);
         // 1 = buffer name
         // 2 = undefined | temp-table
         // 3 = buffer value
@@ -293,6 +295,7 @@ export class Document {
                 item.position = source.document.positionAt(matchPrimitive.index);
                 item.direction = this.getDirection(matchPrimitive[1]);
                 item.scope = AblType.SCOPE.PARAMETER;
+                item.type = AblType.TYPE.PARAMETER;
                 result.push(item);
             }
             catch {} // suppress errors
@@ -363,6 +366,7 @@ export class Document {
                     let posEnd = source.document.positionAt(reEnd.lastIndex);
                     let innerText = text.substring(reStart.lastIndex, matchEnd.index);
                     let item: AblType.TempTable = {
+                        type: AblType.TYPE.TEMP_TABLE,
                         name: matchStart[1],
                         range: new vscode.Range(posStart, posEnd)
                     };
@@ -398,7 +402,10 @@ export class Document {
         let res = regexDefineField.exec(text);
         while(res) {
             try {
-                let item: AblType.Field = { name: res[1] };
+                let item: AblType.Field = { 
+                    type: AblType.TYPE.FIELD,
+                    name: res[1]
+                };
                 if (res[2].toLowerCase() == AblType.TYPE_DEFINITION.AS)
                     item.dataType = this.normalizeDataType(res[3]);
                 else if (res[2].toLowerCase() == AblType.TYPE_DEFINITION.AS)
@@ -476,6 +483,7 @@ export class Document {
 
     private variableAsVariable(pName:string,pAsLike:string,pType:string,pAdditional:string): AblType.Variable {
         let item: AblType.Variable = {
+            type: AblType.TYPE.VARIABLE,
             name: pName.trim(),
             additional: (pAdditional || ``).trim()
         }
@@ -490,6 +498,7 @@ export class Document {
 
     private bufferAsVariable(pName:string,pBufferType:string,pReference:string): AblType.Variable {
         let item: AblType.Variable = {
+            type: AblType.TYPE.VARIABLE,
             name: pName.trim(),
             dataType: AblType.ATTRIBUTE_TYPE.BUFFER,
             likeType: pReference.trim().toLowerCase()
@@ -505,6 +514,7 @@ export class Document {
 
     private tempTableAsVariable(pName:string): AblType.Variable {
         let item: AblType.Variable = {
+            type: AblType.TYPE.TEMP_TABLE,
             name: pName.trim(),
             dataType: AblType.ATTRIBUTE_TYPE.TEMP_TABLE
         }
@@ -519,8 +529,66 @@ export class Document {
         return value;
     }
 
-    methodInPosition(position: vscode.Position): AblType.Method {
+    methodInPosition(position?: vscode.Position): AblType.Method {
+        if (!position)
+            return;
         return this.documentMethods.find(m => m.range.contains(position));
+    }
+
+    searchReference(reference: string, position?: vscode.Position): AblType.Variable | AblType.Parameter | AblType.TempTable | AblType.Method {
+        reference = reference.toLowerCase();
+
+        let insideMethod = this.methodInPosition(position);
+        if (insideMethod) {
+            let localVariable = insideMethod.localVariables.find(item => item.name.toLowerCase() == reference);
+            if (localVariable)
+                return localVariable;
+            let parameter = insideMethod.params.find(item => item.name.toLowerCase() == reference);
+            if (parameter)
+                return parameter;
+        }
+        let globalVariable = this.documentVariables.find(item => item.name.toLowerCase() == reference);
+        if (globalVariable)
+            return globalVariable;
+        let tempTable = this.documentTempTables.find(item => item.name.toLowerCase() == reference);
+        if (tempTable)
+            return tempTable;
+        let method = this.documentMethods.find(item => item.name.toLowerCase() == reference);
+        if (method)
+            return method;
+
+        let result;
+        this.documentIncludes.find(item => {
+            let include = DocumentController.getInstance().getDocument(item.uri);
+            result = include?.searchReference(reference);
+            if (result)
+                return true;
+            return false;
+        }); 
+        if (result)
+            return result;
+    }
+
+    get allTempTables(): AblType.TempTable[] {
+        let result = [...this.documentTempTables];
+        this.documentIncludes.forEach(item => {
+            let include = DocumentController.getInstance().getDocument(item.uri);
+            let includeResult = include?.allTempTables;
+            if (includeResult)
+                result.push(...includeResult);
+        }); 
+        return result;
+    }
+
+    getTempTable(name: string): AblType.TempTable {
+        return this.allTempTables.find(item => item.name.toLowerCase() == name.toLowerCase());
+    }
+
+    getAllFields(tempTable: AblType.TempTable): AblType.Field[] {
+        return  [
+            ...(tempTable.referenceFields || []),
+            ...tempTable.fields
+        ];
     }
 
 }

@@ -11,6 +11,7 @@ OpenEdge ABL Extension for Visual Studio Code
 - Deploy (source / r-code)
 - Source formatting
 - Hover information
+- Include files suggestion
 - Code snippets
 
 ### Auto-complete
@@ -52,7 +53,9 @@ OpenEdge ABL Extension for Visual Studio Code
 ## What's new
 
 ### 1.0.0
-- Brand new source code (seriously... like 90%...)
+- Better code completion details
+- Includes file sugestion on typing `{`
+- Brand new source code (seriously... almost everything...)
 
 ### 0.6.0
 - New commands for source formatting

@@ -3,13 +3,13 @@ import * as utils from './utils';
 import { LegacyABLDocumentController, getDocumentController } from './legacyDocumentController';
 import { ABL_MODE } from './environment';
 import { isNullOrUndefined } from 'util';
-import { SYMBOL_TYPE, ABLParameter } from './definition';
+import { SYMBOL_TYPE, ABLParameter } from './legacyDefinition';
 
-export class DefinitionExtension implements vscode.DefinitionProvider {
+export class LegacyDefinitionExtension implements vscode.DefinitionProvider {
     private _ablDocumentController: LegacyABLDocumentController;
 
     static attach(context: vscode.ExtensionContext) {
-        let instance = new DefinitionExtension();
+        let instance = new LegacyDefinitionExtension();
         instance._ablDocumentController = getDocumentController();
         instance.registerCommands(context);
 	}

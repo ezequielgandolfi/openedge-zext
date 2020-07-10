@@ -6,10 +6,10 @@ import { documentDeploy } from './deploy';
 import { getDocumentController } from './legacyDocumentController';
 import { ABLCheckSyntax, ABLCompile, ABLRun, ABLDictDump } from './ablCommand';
 
-export class ABLCommandExtension {
+export class LegacyABLCommandExtension {
 
     static attach(context: vscode.ExtensionContext) {
-        let instance = new ABLCommandExtension();
+        let instance = new LegacyABLCommandExtension();
         instance.registerCommands(context);
     }
 

@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { AblType } from '../types';
+import { AblType } from '../type';
 import { Document } from '../documentModel';
 import { CodeCompletionBase } from './code-base';
 

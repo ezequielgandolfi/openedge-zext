@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { DbfController } from '../dbfController';
-import { AblType, AblTypeCheck } from '../types';
+import { AblType, AblTypeCheck } from '../type';
 import { Document } from '../documentModel';
 import { CodeCompletionBase } from './code-base';
 import { Table } from './table';

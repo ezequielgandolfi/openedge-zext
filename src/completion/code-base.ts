@@ -8,6 +8,10 @@ export class CodeCompletionBase implements vscode.CompletionItemProvider {
     protected documentController = DocumentController.getInstance();
 
     provideCompletionItems(textDocument: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken, context: vscode.CompletionContext) {
+        // ignores on include notation
+        if (context.triggerCharacter == '{')
+            return;
+
         let document = this.documentController.getDocument(textDocument);
         if (document) {
             let words = this.splitStatement(textDocument, position);
