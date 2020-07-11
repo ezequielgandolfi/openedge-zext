@@ -136,7 +136,7 @@ export class Document {
             reEnd.lastIndex = reStart.lastIndex;
             matchEnd = reEnd.exec(text);
             if (matchEnd) {
-                let name = matchStart[1].trim().toLowerCase();
+                let name = matchStart[1].trim().toLowerCase().replace('\\','/');
                 // ignores {1} (include parameter) and {&ANYTHING} (global/scoped definition)
                 if ((Number.isNaN(Number.parseInt(name))) && (!name.startsWith('&')) && (!result.find(item => item.name == name))) {
                     let item: AblType.Include = {
@@ -159,6 +159,7 @@ export class Document {
                 pending.push(controller.getUri(item.name).then(uri => {
                     item.uri = uri;
                     if (item.uri) {
+                        item.name = vscode.workspace.asRelativePath(uri, false);
                         item.document = controller.getDocument(item.uri)?.document;
                         if (!item.document) {
                             // request to open the includes
@@ -194,6 +195,7 @@ export class Document {
                         name: matchStart[2],
                         kind: AblType.METHOD_KIND.PROCEDURE,
                         range: new vscode.Range(posStart, posEnd),
+                        uri: source.document.uri,
                         visibility: this.getVisibility(matchStart[3]),
                         params: [],
                         localVariables: []
@@ -240,6 +242,7 @@ export class Document {
             try {
                 let item = this.variableAsVariable(matchDefineVar[1],matchDefineVar[2],matchDefineVar[3],matchDefineVar[4]);
                 item.position = source.document.positionAt(matchDefineVar.index);
+                item.uri = source.document.uri;
                 result.push(item);
             }
             catch {}
@@ -256,6 +259,7 @@ export class Document {
             try {
                 let item = this.bufferAsVariable(matchDefineBuffer[1],matchDefineBuffer[2],matchDefineBuffer[3]);
                 item.position = source.document.positionAt(matchDefineBuffer.index);
+                item.uri = source.document.uri;
                 result.push(item);
             }
             catch {}
@@ -293,6 +297,7 @@ export class Document {
             try {
                 let item: AblType.Parameter = this.variableAsVariable(matchPrimitive[2],matchPrimitive[3],matchPrimitive[4],matchPrimitive[5]);
                 item.position = source.document.positionAt(matchPrimitive.index);
+                item.uri = source.document.uri;
                 item.direction = this.getDirection(matchPrimitive[1]);
                 item.scope = AblType.SCOPE.PARAMETER;
                 item.type = AblType.TYPE.PARAMETER;
@@ -311,8 +316,10 @@ export class Document {
             try {
                 let item: AblType.Parameter = this.tempTableAsVariable(matchTempTable[2]);
                 item.position = source.document.positionAt(matchTempTable.index);
+                item.uri = source.document.uri;
                 item.direction = this.getDirection(matchTempTable[1]);
                 item.scope = AblType.SCOPE.PARAMETER;
+                item.type = AblType.TYPE.PARAMETER;
                 result.push(item);
             }
             catch {} // suppress errors
@@ -329,7 +336,9 @@ export class Document {
             try {
                 let item: AblType.Parameter = this.bufferAsVariable(matchBuffer[1],matchBuffer[2],matchBuffer[3]);
                 item.position = source.document.positionAt(matchBuffer.index);
+                item.uri = source.document.uri;
                 item.scope = AblType.SCOPE.PARAMETER;
+                item.type = AblType.TYPE.PARAMETER;
                 result.push(item);
             }
             catch {}
@@ -368,7 +377,8 @@ export class Document {
                     let item: AblType.TempTable = {
                         type: AblType.TYPE.TEMP_TABLE,
                         name: matchStart[1],
-                        range: new vscode.Range(posStart, posEnd)
+                        range: new vscode.Range(posStart, posEnd),
+                        uri: source.document.uri
                     };
                     // check for reference table
                     reLike.lastIndex = reStart.lastIndex;
@@ -514,7 +524,7 @@ export class Document {
 
     private tempTableAsVariable(pName:string): AblType.Variable {
         let item: AblType.Variable = {
-            type: AblType.TYPE.TEMP_TABLE,
+            type: AblType.TYPE.VARIABLE,
             name: pName.trim(),
             dataType: AblType.ATTRIBUTE_TYPE.TEMP_TABLE
         }
@@ -535,7 +545,7 @@ export class Document {
         return this.documentMethods.find(m => m.range.contains(position));
     }
 
-    searchReference(reference: string, position?: vscode.Position): AblType.Variable | AblType.Parameter | AblType.TempTable | AblType.Method {
+    searchReference(reference: string, position?: vscode.Position, ignoreIncludes?: boolean): AblType.Variable | AblType.Parameter | AblType.TempTable | AblType.Method {
         reference = reference.toLowerCase();
 
         let insideMethod = this.methodInPosition(position);
@@ -557,16 +567,18 @@ export class Document {
         if (method)
             return method;
 
-        let result;
-        this.documentIncludes.find(item => {
-            let include = DocumentController.getInstance().getDocument(item.uri);
-            result = include?.searchReference(reference);
+        if (!ignoreIncludes) {
+            let result;
+            this.documentIncludes.find(item => {
+                let include = DocumentController.getInstance().getDocument(item.uri);
+                result = include?.searchReference(reference);
+                if (result)
+                    return true;
+                return false;
+            }); 
             if (result)
-                return true;
-            return false;
-        }); 
-        if (result)
-            return result;
+                return result;
+        }
     }
 
     get allTempTables(): AblType.TempTable[] {

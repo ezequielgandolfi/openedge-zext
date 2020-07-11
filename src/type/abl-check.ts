@@ -1,4 +1,4 @@
-import { Parameter, TempTable, Method, Variable, Field, TYPE } from './abl';
+import { Parameter, TempTable, Method, Variable, Field, IPosition, IRange, TYPE, IUri } from './abl';
 
 export class AblTypeCheck {
 
@@ -25,6 +25,21 @@ export class AblTypeCheck {
     static isMethod(object: any): object is Method {
         if (!object) return false;
         return object['type'] == TYPE.METHOD;
+    }
+
+    static hasPosition(object: any): object is IPosition {
+        if (!object) return false;
+        return 'position' in object;
+    }
+
+    static hasRange(object: any): object is IRange {
+        if (!object) return false;
+        return 'range' in object;
+    }
+
+    static hasUri(object: any): object is IUri {
+        if (!object) return false;
+        return 'uri' in object;
     }
 
 }

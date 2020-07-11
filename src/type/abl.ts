@@ -52,20 +52,34 @@ export enum METHOD_KIND {
 //#endregion
 
 //#region types
-interface Typed {
+
+export interface IUri {
+    uri?: vscode.Uri;
+}
+
+export interface IPosition extends IUri {
+    position?: vscode.Position;
+}
+
+export interface IRange extends IUri {
+    range?: vscode.Range;
+}
+
+export interface IType {
     type: any;
 }
 
-export interface Field extends Typed {
+export interface Field extends IType {
     name: string;
     dataType?: string;
     likeType?: string;
     additional?: string;
 }
 
-export interface Variable extends Field {
+export interface Variable extends Field, IPosition {
     bufferType?: string;
     position?: vscode.Position;
+    uri?: vscode.Uri;
     scope?: SCOPE;
 }
 
@@ -73,26 +87,28 @@ export interface Parameter extends Variable {
     direction?: PARAM_DIRECTION;
 }
 
-export interface Method extends Typed {
+export interface Method extends IType, IRange {
     name: string;
     visibility: VISIBILITY;
     kind: METHOD_KIND;
     range: vscode.Range;
+    uri?: vscode.Uri;
     params?: Parameter[];
     localVariables?: Variable[];
 }
 
-export interface Include extends Typed {
+export interface Include extends IType, IUri {
     name: string;
     uri?: vscode.Uri;
     document?: vscode.TextDocument;
 }
 
-export interface TempTable extends Typed {
+export interface TempTable extends IType, IRange {
     name: string;
     fields?: Field[];
     indexes?: any[]; // not used at this moment
     range?: vscode.Range;
+    uri?: vscode.Uri;
     referenceTable?: string;
     referenceFields?: Field[];
 }
