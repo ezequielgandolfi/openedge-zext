@@ -62,6 +62,8 @@ function initOnChangeActiveTextWatcher(context: vscode.ExtensionContext) {
 
 function attachExtensions(context: vscode.ExtensionContext) {
     Provider.CodeCompletion.attach(context);
+    Provider.Definition.attach(context);
+    Provider.Format.attach(context);
     Provider.Hover.attach(context);
     Provider.KeyBinding.attach(context);
     Provider.Symbol.attach(context);
@@ -73,8 +75,6 @@ function attachExtensions(context: vscode.ExtensionContext) {
 
     // backlog
     Provider.Signature.attach(context);
-    Provider.Definition.attach(context);
-    Provider.Format.attach(context);
     Provider.Terminal.attach(context);
     Provider.AblCommand.attach(context);
     Provider.Integration.attach(context);
