@@ -1,13 +1,5 @@
 import * as vscode from 'vscode';
 
-export interface ICheckResult {
-    file: string;
-    line: number;
-    column: number;
-    msg: string;
-    severity: string;
-}
-
 export class TextSelection {
     word: string;
     wordRange: vscode.Range;

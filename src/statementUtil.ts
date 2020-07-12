@@ -1,10 +1,16 @@
 import * as vscode from 'vscode';
+import { SourceParser } from './sourceParser';
 
 export interface Statement {
     word?: string;
     wordRange?: vscode.Range;
     statement?: string;
     statementRange?: vscode.Range;
+}
+
+export interface MethodParameterSignature {
+    name: string;
+    activeParameter: number;
 }
 
 export class StatementUtil {
@@ -56,6 +62,54 @@ export class StatementUtil {
             }
         }
         return array;
+    }
+
+    static nestedMethodName(document: vscode.TextDocument, position: vscode.Position, escapeEndChars?: boolean): MethodParameterSignature {
+        let source = new SourceParser().getSourceCode(document);
+        let text = source.sourceWithoutStrings;
+        let offset = document.offsetAt(position) - 1;
+        let level = 0;
+        let methodName = '';
+        let methodParam = 0;
+        let char = '';
+
+        while (/*(level >= 0)&&*/(offset > 0)) {
+            char = text.charAt(offset);
+            if (char == '(') {
+                if (level == 0) {
+                    methodName = '';
+                }
+                level++;
+            }
+            else if (char == ')') {
+                level--;
+            }
+            else if (level == 0) {
+                if (char == ',') {
+                    methodParam++;
+                }
+            }
+            else if (level == 1) {
+                if (char.match(/[\w\d\-]/i)) {
+                    methodName = char + methodName;
+                }
+                else if (methodName != '') {
+                    if (char.match(/[^\s\t\n\r\(\,]/)) {
+                        methodName = '';
+                        methodParam = 0;
+                    }
+                    break;
+                }
+            }
+            offset--;
+        }
+        if (methodName != '') {
+            return {
+                name: methodName,
+                activeParameter: methodParam
+            };
+        }
+        return null;
     }
 
 }

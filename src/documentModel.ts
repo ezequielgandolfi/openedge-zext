@@ -603,4 +603,18 @@ export class Document {
         ];
     }
 
+    getMethod(name: string): AblType.Method {
+        let method = this.documentMethods.find(item => item.name.toLowerCase() == name.toLowerCase());
+        if (!method) {
+            this.documentIncludes.find(docInclude => {
+                let include = DocumentController.getInstance().getDocument(docInclude.uri);
+                method = include?.getMethod(name);
+                if (method)
+                    return true;
+                return false;
+            }); 
+        }
+        return method;
+    }
+
 }

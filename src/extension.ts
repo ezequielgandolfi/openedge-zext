@@ -3,9 +3,9 @@ import { Provider } from './provider';
 import { hideStatusBar, initDiagnostic, updateStatusBar, initStatusBar } from './notification';
 import { ExtensionConfig } from './extensionConfig';
 import { ABL_MODE } from './environment';
-import { ABLCheckSyntax } from './ablCommand';
 import { DbfController } from './dbfController';
 import { DocumentController } from './documentController';
+import { AblExecute } from './abl-execute';
 
 export function activate(context: vscode.ExtensionContext): void {
     new ExtensionConfig(context);
@@ -41,7 +41,7 @@ function initOnSaveWatcher(context: vscode.ExtensionContext) {
             if (document.languageId !== ABL_MODE.language) {
                 return;
             }
-            new ABLCheckSyntax().execute(document);
+            AblExecute.CheckSyntax.getInstance().execute(document);
         }, null, context.subscriptions);
     }
 }
@@ -61,6 +61,7 @@ function initOnChangeActiveTextWatcher(context: vscode.ExtensionContext) {
 }
 
 function attachExtensions(context: vscode.ExtensionContext) {
+    Provider.AblCommand.attach(context);
     Provider.CodeCompletion.attach(context);
     Provider.Definition.attach(context);
     Provider.Format.attach(context);
@@ -71,11 +72,11 @@ function attachExtensions(context: vscode.ExtensionContext) {
     // TODO -------------------------------------------------------
 
     // in progress
-    
+    Provider.Integration.attach(context);
 
     // backlog
     Provider.Signature.attach(context);
     Provider.Terminal.attach(context);
-    Provider.AblCommand.attach(context);
-    Provider.Integration.attach(context);
+    
+    
 }

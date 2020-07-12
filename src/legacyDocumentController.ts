@@ -12,10 +12,7 @@ let thisInstance: LegacyABLDocumentController;
 export function getDocumentController(): LegacyABLDocumentController {
     return thisInstance;
 }
-export function initDocumentController(context: vscode.ExtensionContext): LegacyABLDocumentController {
-    thisInstance = new LegacyABLDocumentController(context);
-    return thisInstance;
-}
+
 
 export class LegacyABLDocument {
     private _document: vscode.TextDocument;
