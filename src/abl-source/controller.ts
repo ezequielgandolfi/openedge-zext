@@ -15,6 +15,7 @@ export class Controller {
         _instance = new Controller();
         _instance.context = context;
         process.nextTick(() => _instance.initialize());
+        return _instance;
     }
 
     // remover o getInstance.... o controller vai passar a instancia para os documents
@@ -81,9 +82,9 @@ export class Controller {
         // TODO - check for propagation loop
 
         // refresh current document symbols
-        if ((document?.document?.uri) && (vscode.window.activeTextEditor.document?.uri == document.document.uri)) {
-            process.nextTick(() => vscode.commands.executeCommand('vscode.executeDocumentSymbolProvider', document.document.uri));
-        }
+        // if ((document?.document?.uri) && (vscode.window.activeTextEditor.document?.uri == document.document.uri)) {
+        //     process.nextTick(() => vscode.commands.executeCommand('vscode.executeDocumentSymbolProvider', document.document.uri));
+        // }
         //
         this.onChangeEmitter.fire(document);
     }

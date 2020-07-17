@@ -1,11 +1,11 @@
 import * as vscode from 'vscode';
 import { AblType, AblTypeCheck } from '@oe-zext/types';
-import { Document } from '../documentModel';
 import { CodeCompletionBase } from './code-base';
+import { AblSource } from '../abl-source';
 
 export class TempTable extends CodeCompletionBase {
 
-    protected getCompletionItems(document: Document, words: string[], textDocument: vscode.TextDocument, position?: vscode.Position): vscode.CompletionItem[] {
+    protected getCompletionItems(document: AblSource.Document, words: string[], textDocument: vscode.TextDocument, position?: vscode.Position): vscode.CompletionItem[] {
         if (words.length == 2) {
             let tempTable = document.tempTables.find(item => item.name.toLowerCase() == words[0].toLowerCase());
             if (tempTable) {
@@ -39,7 +39,7 @@ export class TempTable extends CodeCompletionBase {
         return [];
     }
 
-    protected filterCompletionItems(items: vscode.CompletionItem[], document: Document, words: string[], textDocument: vscode.TextDocument, position?: vscode.Position): vscode.CompletionItem[] {
+    protected filterCompletionItems(items: vscode.CompletionItem[], document: AblSource.Document, words: string[], textDocument: vscode.TextDocument, position?: vscode.Position): vscode.CompletionItem[] {
         if (words.length == 1) {
             // remove parameter temp-tables
             let method = document.methodInPosition(position);

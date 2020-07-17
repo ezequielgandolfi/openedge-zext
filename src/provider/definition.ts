@@ -1,13 +1,12 @@
 import * as vscode from 'vscode';
 import { ABL_MODE } from '../environment';
 import { StatementUtil, Statement } from '../statementUtil';
-import { DocumentController } from '../documentController';
-import { Document } from '../documentModel';
 import { AblType, AblTypeCheck } from '@oe-zext/types';
+import { AblSource } from '../abl-source';
 
 export class Definition implements vscode.DefinitionProvider {
 
-    private documentController: DocumentController;
+    private documentController: AblSource.Controller;
 
     static attach(context: vscode.ExtensionContext) {
         let instance = new Definition();
@@ -15,7 +14,7 @@ export class Definition implements vscode.DefinitionProvider {
     }
     
     constructor() {
-        this.documentController = DocumentController.getInstance();
+        this.documentController = AblSource.Controller.getInstance();
     }
 
 	private registerCommands(context: vscode.ExtensionContext) {
@@ -32,7 +31,7 @@ export class Definition implements vscode.DefinitionProvider {
         return;
     }
 
-    private a(document: Document, position: vscode.Position): Thenable<vscode.Location> {
+    private a(document: AblSource.Document, position: vscode.Position): Thenable<vscode.Location> {
         let statement = StatementUtil.statementAtPosition(document.document, position);
         if (!statement)
             return;

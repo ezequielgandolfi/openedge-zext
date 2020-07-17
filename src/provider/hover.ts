@@ -1,16 +1,15 @@
 import * as vscode from 'vscode';
 import { ABL_MODE } from '../environment';
-import { DocumentController } from '../documentController';
-import { Document } from '../documentModel';
 import { StatementUtil, Statement } from '../statementUtil';
 import { DbType, AblTypeCheck, AblType } from '@oe-zext/types';
 import { AblDatabase } from '@oe-zext/database';
+import { AblSource } from '../abl-source';
 
 declare type ReferenceData = AblType.Variable | AblType.Parameter | AblType.TempTable | AblType.Method;
 
 export class Hover implements vscode.HoverProvider {
 
-    private documentController: DocumentController;
+    private documentController: AblSource.Controller;
     private dbfController: AblDatabase.Controller;
 
     static attach(context: vscode.ExtensionContext) {
@@ -19,7 +18,7 @@ export class Hover implements vscode.HoverProvider {
     }
     
     constructor() {
-        this.documentController = DocumentController.getInstance();
+        this.documentController = AblSource.Controller.getInstance();
         this.dbfController = AblDatabase.Controller.getInstance();
     }
 
@@ -34,7 +33,7 @@ export class Hover implements vscode.HoverProvider {
         return;
     }
 
-    analyseHover(document: Document, position: vscode.Position, token: vscode.CancellationToken): vscode.ProviderResult<vscode.Hover> {
+    analyseHover(document: AblSource.Document, position: vscode.Position, token: vscode.CancellationToken): vscode.ProviderResult<vscode.Hover> {
         let statement = StatementUtil.statementAtPosition(document.document, position);
         if (!statement)
             return;
@@ -70,7 +69,7 @@ export class Hover implements vscode.HoverProvider {
         return;
     }
 
-    private buildFHoverFromReference(document: Document, reference: ReferenceData, statement: Statement): vscode.Hover {
+    private buildFHoverFromReference(document: AblSource.Document, reference: ReferenceData, statement: Statement): vscode.Hover {
         if (AblTypeCheck.isTempTable(reference)) {
             return this.buildTempTableHover(reference, statement);
         }
@@ -110,7 +109,7 @@ export class Hover implements vscode.HoverProvider {
         return;
     }
 
-    private buildFHoverFromReferenceProperty(document: Document, reference: ReferenceData, name: string, statement: Statement): vscode.Hover {
+    private buildFHoverFromReferenceProperty(document: AblSource.Document, reference: ReferenceData, name: string, statement: Statement): vscode.Hover {
         let property: DbType.Field | AblType.Field;
         let refData: AblType.TempTable | DbType.Table;
         if (AblTypeCheck.isTempTable(reference)) {

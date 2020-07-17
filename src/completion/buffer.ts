@@ -1,14 +1,14 @@
 import * as vscode from 'vscode';
 import { AblType, AblTypeCheck } from '@oe-zext/types';
-import { Document } from '../documentModel';
 import { CodeCompletionBase } from './code-base';
 import { Table } from './table';
 import { TempTable } from './temp-table';
 import { AblDatabase } from '@oe-zext/database';
+import { AblSource } from '../abl-source';
 
 export class Buffer extends CodeCompletionBase {
 
-    protected getCompletionItems(document: Document, words: string[], textDocument: vscode.TextDocument, position?: vscode.Position): vscode.CompletionItem[] {
+    protected getCompletionItems(document: AblSource.Document, words: string[], textDocument: vscode.TextDocument, position?: vscode.Position): vscode.CompletionItem[] {
         if (words.length == 2) {
             let buffer: AblType.Variable;
             // local buffers
@@ -71,7 +71,7 @@ export class Buffer extends CodeCompletionBase {
         return [];
     }
 
-    protected filterCompletionItems(items: vscode.CompletionItem[], document: Document, words: string[], textDocument: vscode.TextDocument, position?: vscode.Position): vscode.CompletionItem[] {
+    protected filterCompletionItems(items: vscode.CompletionItem[], document: AblSource.Document, words: string[], textDocument: vscode.TextDocument, position?: vscode.Position): vscode.CompletionItem[] {
         if (words.length == 1) {
             // remove global vars when local/param declared
             let method = document.methodInPosition(position);

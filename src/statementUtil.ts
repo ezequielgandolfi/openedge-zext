@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { SourceParser } from './sourceParser';
+import { AblSource } from './abl-source';
 
 export interface Statement {
     word?: string;
@@ -65,7 +65,7 @@ export class StatementUtil {
     }
 
     static nestedMethodName(document: vscode.TextDocument, position: vscode.Position, escapeEndChars?: boolean): MethodParameterSignature {
-        let source = new SourceParser().getSourceCode(document);
+        let source = new AblSource.Extractor().execute(document);
         let text = source.sourceWithoutStrings;
         let offset = document.offsetAt(position) - 1;
         let level = 0;

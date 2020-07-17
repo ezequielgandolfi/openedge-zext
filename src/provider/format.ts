@@ -1,8 +1,8 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
-import { SourceParser } from '../sourceParser';
 import { ExtensionConfig } from '../extensionConfig';
+import { AblSource } from '../abl-source';
 
 export class Format {
 
@@ -36,7 +36,7 @@ export class Format {
     }
 
     private applyKeywordsFunction(editor: vscode.TextEditor, func: (text:string) => string) {
-        let source = new SourceParser().getSourceCode(editor.document);
+        let source = new AblSource.Extractor().execute(editor.document);
         let reg = RegExp(this.ablKeywordsPattern, 'gim');
 
         editor.edit(builder =>  {

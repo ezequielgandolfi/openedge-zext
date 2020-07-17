@@ -1,13 +1,12 @@
 import * as vscode from 'vscode';
 import { ABL_MODE } from '../environment';
-import { DocumentController } from '../documentController';
-import { Document } from '../documentModel';
 import { StatementUtil } from '../statementUtil';
 import { AblType } from '@oe-zext/types';
+import { AblSource } from '../abl-source';
 
 export class Signature implements vscode.SignatureHelpProvider {
 
-    private documentController: DocumentController;
+    private documentController: AblSource.Controller;
 
     static attach(context: vscode.ExtensionContext) {
         let instance = new Signature();
@@ -15,7 +14,7 @@ export class Signature implements vscode.SignatureHelpProvider {
     }
 
     constructor() {
-        this.documentController = DocumentController.getInstance();
+        this.documentController = AblSource.Controller.getInstance();
     }
     
 	private registerProviders(context: vscode.ExtensionContext) {
@@ -29,7 +28,7 @@ export class Signature implements vscode.SignatureHelpProvider {
         return;
     }
 
-    analyseSignature(document: Document, position: vscode.Position, token: vscode.CancellationToken): vscode.ProviderResult<vscode.SignatureHelp> {
+    analyseSignature(document: AblSource.Document, position: vscode.Position, token: vscode.CancellationToken): vscode.ProviderResult<vscode.SignatureHelp> {
         let methodSignature = StatementUtil.nestedMethodName(document.document, position);
         if (!methodSignature)
             return;

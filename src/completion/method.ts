@@ -1,11 +1,11 @@
 import * as vscode from 'vscode';
 import { AblType } from '@oe-zext/types';
-import { Document } from '../documentModel';
 import { CodeCompletionBase } from './code-base';
+import { AblSource } from '../abl-source';
 
 export class Method extends CodeCompletionBase {
 
-    protected getCompletionItems(document: Document, words: string[], textDocument: vscode.TextDocument, position?: vscode.Position): vscode.CompletionItem[] {
+    protected getCompletionItems(document: AblSource.Document, words: string[], textDocument: vscode.TextDocument, position?: vscode.Position): vscode.CompletionItem[] {
         if (words.length == 1) {
             let methodCompletion = document.methods.map(method => {
                 let result = new vscode.CompletionItem(method.name, vscode.CompletionItemKind.Method);

@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { DocumentController } from '../documentController';
+import { AblSource } from '../abl-source';
 
 export class KeyBinding {
 
@@ -15,7 +15,7 @@ export class KeyBinding {
     private editor_gotoMethodStart() {
         let textDocument = vscode.window.activeTextEditor;
         if (textDocument?.selection?.active) {
-            let document = DocumentController.getInstance().getDocument(textDocument?.document);
+            let document = AblSource.Controller.getInstance().getDocument(textDocument?.document);
             let position = textDocument.selection.active;
             let method = document?.methods.find(item => item.range.contains(position));
             if (method) {

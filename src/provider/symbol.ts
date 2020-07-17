@@ -1,7 +1,6 @@
 import * as vscode from 'vscode';
 import { ABL_MODE } from '../environment';
-import { DocumentController } from '../documentController';
-import { Document } from '../documentModel';
+import { AblSource } from '../abl-source';
 
 export class Symbol implements vscode.DocumentSymbolProvider {
 
@@ -15,7 +14,7 @@ export class Symbol implements vscode.DocumentSymbolProvider {
     }
 
     public provideDocumentSymbols(document: vscode.TextDocument, token: vscode.CancellationToken): Thenable<vscode.SymbolInformation[]> {
-        let doc = DocumentController.getInstance().getDocument(document);
+        let doc = AblSource.Controller.getInstance().getDocument(document);
         if (doc) {
             let documentSymbols = this.documentSymbols.bind(this);
             return new Promise(resolve => {
@@ -30,7 +29,7 @@ export class Symbol implements vscode.DocumentSymbolProvider {
         return;
     }
 
-    private documentSymbols(document: Document): vscode.SymbolInformation[] {
+    private documentSymbols(document: AblSource.Document): vscode.SymbolInformation[] {
         let symbols:vscode.SymbolInformation[] = [];
         // methods / params / local variables
         document.methods.forEach(method => {

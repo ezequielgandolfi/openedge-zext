@@ -1,11 +1,10 @@
 import * as vscode from 'vscode';
-import { DocumentController } from '../documentController';
 import { StatementUtil } from '../statementUtil';
-import { Document } from '../documentModel';
+import { AblSource } from '../abl-source';
 
 export class CodeCompletionBase implements vscode.CompletionItemProvider {
 
-    protected documentController = DocumentController.getInstance();
+    protected documentController = AblSource.Controller.getInstance();
 
     provideCompletionItems(textDocument: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken, context: vscode.CompletionContext) {
         // ignores on include notation
@@ -32,7 +31,7 @@ export class CodeCompletionBase implements vscode.CompletionItemProvider {
         return 2;
     }
 
-    private getCompletion(document: Document, deepLevel: number, words: string[], textDocument: vscode.TextDocument, position?: vscode.Position): vscode.CompletionItem[] {
+    private getCompletion(document: AblSource.Document, deepLevel: number, words: string[], textDocument: vscode.TextDocument, position?: vscode.Position): vscode.CompletionItem[] {
         let result = [
             ...this.getCompletionItems(document, words, textDocument, position),
         ];
@@ -52,11 +51,11 @@ export class CodeCompletionBase implements vscode.CompletionItemProvider {
     }
     
 
-    protected getCompletionItems(document: Document, words: string[], textDocument: vscode.TextDocument, position?: vscode.Position): vscode.CompletionItem[] {
+    protected getCompletionItems(document: AblSource.Document, words: string[], textDocument: vscode.TextDocument, position?: vscode.Position): vscode.CompletionItem[] {
         return [];
     }
 
-    protected filterCompletionItems(items: vscode.CompletionItem[], document: Document, words: string[], textDocument: vscode.TextDocument, position?: vscode.Position): vscode.CompletionItem[] {
+    protected filterCompletionItems(items: vscode.CompletionItem[], document: AblSource.Document, words: string[], textDocument: vscode.TextDocument, position?: vscode.Position): vscode.CompletionItem[] {
         return items;
     }
 

@@ -1,10 +1,9 @@
 import * as vscode from 'vscode';
-import { OpenEdgeConfig } from '../extensionConfig';
-import { SourceParser } from '../sourceParser';
-import { DocumentController } from '../documentController';
-import { Document } from '../documentModel';
-import { AblExecute } from '../abl-execute';
 import { AblDatabase } from '@oe-zext/database';
+import { OpenEdgeConfig } from '../extensionConfig';
+import { AblExecute } from '../abl-execute';
+import { AblSource } from '../abl-source';
+
 
 /**
  * Provider for integration commands (usually hidden from command palette).
@@ -70,7 +69,7 @@ export class Integration {
     private currentFileGetMap() {
         let textDocument = vscode.window.activeTextEditor.document;
         if (textDocument) {
-            let document = DocumentController.getInstance().getDocument(textDocument);
+            let document = AblSource.Controller.getInstance().getDocument(textDocument);
             if (document) {
                 return IntegrationV1.Generate.map(document);
             }
@@ -81,7 +80,7 @@ export class Integration {
     private currentFileGetSourceCode() {
         let doc = vscode.window.activeTextEditor.document;
         if (doc)
-            return new SourceParser().getSourceCode(doc);
+            return new AblSource.Extractor().execute(doc);
         return;
     }
 
@@ -170,7 +169,7 @@ namespace IntegrationV1 {
 
     export class Generate {
 
-        static map(document: Document): MapFile {
+        static map(document: AblSource.Document): MapFile {
             let tempTables: MapTempTable[] = document.tempTables.map(tempTable => {
                 let line = document.document.lineAt(tempTable.range.start).lineNumber;
                 let ttFields: MapVariable[] = [
