@@ -37,23 +37,35 @@ export class Signature implements vscode.SignatureHelpProvider {
         if (method?.params?.length > 0) {
             let params = [];
             let paramInfo: vscode.ParameterInformation[] = method.params?.map(param => {
-                let doc = '';
-                if (param.direction)
-                    doc += `${param.direction} `;
-                doc += `${param.name} `;
-                doc += `${param.dataType || param.likeType}`;
-                // if (param.dataType == AblType.ATTRIBUTE_TYPE.BUFFER) {
-                //     doc += `parameter ${param.dataType} for `;
-                //     if (param.bufferType == AblType.BUFFER_REFERENCE.TABLE) {
-
-                //     }
-                // }
-                // else if (param.dataType == AblType.ATTRIBUTE_TYPE.TEMP_TABLE) {
-
-                // }
-                // else {
-
-                // }
+                let doc = `${param.name}`;
+                if (param.dataType == AblType.ATTRIBUTE_TYPE.BUFFER) {
+                    doc = `buffer ${doc}: ${param.likeType}`;
+                }
+                else if (param.dataType == AblType.ATTRIBUTE_TYPE.TEMP_TABLE) {
+                    doc = `table ${doc}`;
+                }
+                else {
+                    if (param.dataType) {
+                        doc += `: ${param.dataType}`;
+                    }
+                    else {
+                        doc += `: like ${param.likeType}`;
+                    }
+                }
+                switch (param.direction) {
+                    case AblType.PARAM_DIRECTION.IN:
+                        doc = `input ${doc}`;
+                        break;
+                    case AblType.PARAM_DIRECTION.OUT:
+                        doc = `output ${doc}`;
+                        break;
+                    case AblType.PARAM_DIRECTION.INOUT:
+                        doc = `input-output ${doc}`;
+                        break;
+                    case AblType.PARAM_DIRECTION.RETURN:
+                        doc = `return ${doc}`;
+                        break;
+                }
                 params.push(doc);
                 return new vscode.ParameterInformation(doc);
             });

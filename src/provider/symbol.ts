@@ -31,19 +31,20 @@ export class Symbol implements vscode.DocumentSymbolProvider {
     }
 
     private documentSymbols(document: Document): vscode.SymbolInformation[] {
-        let methods:vscode.SymbolInformation[] = [];
-        let params:vscode.SymbolInformation[] = [];
+        let symbols:vscode.SymbolInformation[] = [];
+        // methods / params / local variables
         document.methods.forEach(method => {
-            methods.push(new vscode.SymbolInformation(method.name, vscode.SymbolKind.Method, 'Methods', new vscode.Location(document.document.uri, method.range)));
+            symbols.push(new vscode.SymbolInformation(method.name, vscode.SymbolKind.Method, 'Methods', new vscode.Location(document.document.uri, method.range)));
             // parameters
-            // method.params?.forEach(param => {
-            //     params.push(new vscode.SymbolInformation(param.name, vscode.SymbolKind.Property, 'Method Parameters', new vscode.Location(document.document.uri, param.position)));
-            // });
+            method.params?.forEach(param => {
+                symbols.push(new vscode.SymbolInformation(param.name, vscode.SymbolKind.Property, method.name, new vscode.Location(document.document.uri, param.position)));
+            });
+            // local variables
+            method.localVariables?.forEach(variable => {
+                symbols.push(new vscode.SymbolInformation(variable.name, vscode.SymbolKind.Variable, method.name, new vscode.Location(document.document.uri, variable.position)));
+            });
         });
-        return [
-            ...methods,
-            ...params
-        ];
+        return symbols;
     }
 }
 

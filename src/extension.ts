@@ -71,12 +71,13 @@ function attachExtensions(context: vscode.ExtensionContext) {
 
     // TODO -------------------------------------------------------
 
+    // testing
+    Provider.Signature.attach(context);
+
     // in progress
     Provider.Integration.attach(context);
 
     // backlog
-    Provider.Signature.attach(context);
     Provider.Terminal.attach(context);
-    
     
 }
