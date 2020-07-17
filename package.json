@@ -2,7 +2,7 @@
     "name": "openedge-zext",
     "displayName": "OpenEdge ABL (Progress 4GL)",
     "description": "OpenEdge ABL Extension for VSCode",
-    "version": "0.6.0",
+    "version": "0.9.1",
     "publisher": "ezequielgandolfi",
     "author": "Ezequiel Gandolfi",
     "license": "Apache-2.0",
@@ -234,7 +234,10 @@
         "watch": "tsc -watch -p ./",
         "build": "vsce package"
     },
-    "dependencies": {},
+    "dependencies": {
+        "@oe-zext/database": "1.0.1",
+        "@oe-zext/types": "1.0.1"
+    },
     "devDependencies": {
         "@types/node": "14.0.14",
         "@types/vscode": "1.46.0",

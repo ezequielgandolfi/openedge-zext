@@ -1,14 +1,14 @@
 import * as vscode from 'vscode';
-import { DbfController } from '../dbfController';
 import { StatementUtil } from '../statementUtil';
-import { DbType } from '../type';
+import { DbType } from '@oe-zext/types';
+import { AblDatabase } from '@oe-zext/database';
 
 export class Table implements vscode.CompletionItemProvider {
 
     private tableCompletion: vscode.CompletionItem[];
 
     constructor() {
-        DbfController.getInstance().onChange(db => this.resetTableCompletion());
+        AblDatabase.Controller.getInstance().onChange(db => this.resetTableCompletion());
     }
 
     public provideCompletionItems(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken, context: vscode.CompletionContext) {
@@ -18,7 +18,7 @@ export class Table implements vscode.CompletionItemProvider {
             
         let words = StatementUtil.dotSplitStatement(document, position);
         if (words.length == 2) {
-            let table = DbfController.getInstance().getTable(words[0]);
+            let table = AblDatabase.Controller.getInstance().getTable(words[0]);
             if (table) {
                 return [
                     ...Table.fieldsCompletion(table),
@@ -39,7 +39,7 @@ export class Table implements vscode.CompletionItemProvider {
     }
 
     private setTableCompletion() {
-        this.tableCompletion = DbfController.getInstance().getCollection().map(table => {
+        this.tableCompletion = AblDatabase.Controller.getInstance().getCollection().map(table => {
             let pkFields = table.indexes.find(i => i.isPK)?.fields.join(', ');
             let r = new vscode.CompletionItem(table.name, vscode.CompletionItemKind.File);
             r.detail = table.description;

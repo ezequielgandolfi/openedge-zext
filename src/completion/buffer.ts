@@ -1,10 +1,10 @@
 import * as vscode from 'vscode';
-import { DbfController } from '../dbfController';
-import { AblType, AblTypeCheck } from '../type';
+import { AblType, AblTypeCheck } from '@oe-zext/types';
 import { Document } from '../documentModel';
 import { CodeCompletionBase } from './code-base';
 import { Table } from './table';
 import { TempTable } from './temp-table';
+import { AblDatabase } from '@oe-zext/database';
 
 export class Buffer extends CodeCompletionBase {
 
@@ -38,7 +38,7 @@ export class Buffer extends CodeCompletionBase {
                 }
             }
             else if (buffer.bufferType == AblType.BUFFER_REFERENCE.TABLE) {
-                let table = DbfController.getInstance().getTable(buffer.likeType);
+                let table = AblDatabase.Controller.getInstance().getTable(buffer.likeType);
                 if (table) {
                     return [
                         ...Table.fieldsCompletion(table, buffer.name),

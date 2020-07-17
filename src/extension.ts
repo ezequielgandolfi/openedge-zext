@@ -1,11 +1,14 @@
 import * as vscode from 'vscode';
+import { AblDatabase } from '@oe-zext/database';
 import { Provider } from './provider';
 import { hideStatusBar, initDiagnostic, updateStatusBar, initStatusBar } from './notification';
 import { ExtensionConfig } from './extensionConfig';
 import { ABL_MODE } from './environment';
-import { DbfController } from './dbfController';
 import { DocumentController } from './documentController';
 import { AblExecute } from './abl-execute';
+
+const DBF_PATTERN = '**/.openedge-zext.db.*';
+const DBF_DBNAME_REGEX = /\.openedge-zext\.db\.(\w+)$/i;
 
 export function activate(context: vscode.ExtensionContext): void {
     new ExtensionConfig(context);
@@ -25,7 +28,8 @@ function deactivate() {
 }
 
 function initControllers(context: vscode.ExtensionContext) {
-    context.subscriptions.push(DbfController.getInstance());
+    AblDatabase.Controller.attach(DBF_PATTERN, DBF_DBNAME_REGEX);
+    // context.subscriptions.push(DbfController.getInstance());
     context.subscriptions.push(DocumentController.getInstance());
 }
 

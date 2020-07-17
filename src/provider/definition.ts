@@ -3,7 +3,7 @@ import { ABL_MODE } from '../environment';
 import { StatementUtil, Statement } from '../statementUtil';
 import { DocumentController } from '../documentController';
 import { Document } from '../documentModel';
-import { AblType, AblTypeCheck } from '../type';
+import { AblType, AblTypeCheck } from '@oe-zext/types';
 
 export class Definition implements vscode.DefinitionProvider {
 

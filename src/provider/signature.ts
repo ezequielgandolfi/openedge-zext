@@ -3,7 +3,7 @@ import { ABL_MODE } from '../environment';
 import { DocumentController } from '../documentController';
 import { Document } from '../documentModel';
 import { StatementUtil } from '../statementUtil';
-import { AblType } from '../type';
+import { AblType } from '@oe-zext/types';
 
 export class Signature implements vscode.SignatureHelpProvider {
 

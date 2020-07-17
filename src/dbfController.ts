@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as util from 'util';
-import { DbType } from './type';
+import { DbType } from '@oe-zext/types';
 
 
 let _instance: DbfController;

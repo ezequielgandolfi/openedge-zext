@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
-import { DocumentController } from './documentController';
 import { AblType } from '@oe-zext/types';
-import { SourceParser, SourceCode } from './sourceParser';
+import { Extractor, SourceCode } from './extract';
+import { Controller } from './controller';
 import { AblDatabase } from '@oe-zext/database';
 
 export class Document {
@@ -11,6 +11,8 @@ export class Document {
     private inProgress = false;
     private debounceUpdate;
     private textDocument: vscode.TextDocument;
+    private extractor = new Extractor();
+    private controller: Controller;
 
     //#region 
     private documentIncludes: AblType.Include[] = [];
@@ -19,7 +21,8 @@ export class Document {
     private documentTempTables: AblType.TempTable[] = [];
     //#endregion
 
-    constructor(document: vscode.TextDocument) {
+    constructor(controller: Controller, document: vscode.TextDocument) {
+        this.controller = controller;
         this.textDocument = document;
         this.initialize();
     }
@@ -30,7 +33,7 @@ export class Document {
 
     private initialize() {
         // monitor external files
-        DocumentController.getInstance().onChange(doc => this.checkExternalReferenceUpdate(doc));
+        this.controller.onChange(doc => this.checkExternalReferenceUpdate(doc));
         // monitor update
         vscode.workspace.onDidChangeTextDocument(event => {
             if (event.document.uri.fsPath == this.textDocument.uri.fsPath) {
@@ -88,7 +91,7 @@ export class Document {
         this.resetDebounceUpdate();
         this.inProgress = true;
         try {
-            let source = new SourceParser().getSourceCode(this.textDocument);
+            let source = this.extractor.execute(this.textDocument);
             this.refreshIncludes(source).then(() => {
 
                 this.refreshMethods(source);
@@ -99,7 +102,7 @@ export class Document {
     
                 // TODO - only when model updated
     
-                process.nextTick(() => DocumentController.getInstance().pushDocumentChange(this));
+                process.nextTick(() => this.controller.pushDocumentChange(this));
             })
             .finally(() => this.inProgress = false);
             
@@ -123,7 +126,7 @@ export class Document {
     }
 
     private refreshIncludes(source: SourceCode): Promise<any> {
-        let controller = DocumentController.getInstance();
+        let controller = this.controller;
         let result: AblType.Include[] = [];
         let text = source.sourceWithoutStrings;
         let reStart: RegExp = new RegExp(/\{{1}([\w\d\-\\\/\.]+)/gim);
@@ -454,7 +457,7 @@ export class Document {
                 }
                 // external
                 else {
-                    let controller = DocumentController.getInstance();
+                    let controller = this.controller;
                     this.documentIncludes.filter(i => !!i.document).find(i => {
                         let doc = controller.getDocument(i.document);
                         if (doc) {
@@ -570,7 +573,7 @@ export class Document {
         if (!ignoreIncludes) {
             let result;
             this.documentIncludes.find(item => {
-                let include = DocumentController.getInstance().getDocument(item.uri);
+                let include = this.controller.getDocument(item.uri);
                 result = include?.searchReference(reference);
                 if (result)
                     return true;
@@ -584,7 +587,7 @@ export class Document {
     get allTempTables(): AblType.TempTable[] {
         let result = [...this.documentTempTables];
         this.documentIncludes.forEach(item => {
-            let include = DocumentController.getInstance().getDocument(item.uri);
+            let include = this.controller.getDocument(item.uri);
             let includeResult = include?.allTempTables;
             if (includeResult)
                 result.push(...includeResult);
@@ -607,7 +610,7 @@ export class Document {
         let method = this.documentMethods.find(item => item.name.toLowerCase() == name.toLowerCase());
         if (!method) {
             this.documentIncludes.find(docInclude => {
-                let include = DocumentController.getInstance().getDocument(docInclude.uri);
+                let include = this.controller.getDocument(docInclude.uri);
                 method = include?.getMethod(name);
                 if (method)
                     return true;

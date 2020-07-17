@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { AblType, AblTypeCheck } from '../type';
+import { AblType, AblTypeCheck } from '@oe-zext/types';
 import { Document } from '../documentModel';
 import { CodeCompletionBase } from './code-base';
 

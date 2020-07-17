@@ -3,15 +3,15 @@ import { ABL_MODE } from '../environment';
 import { DocumentController } from '../documentController';
 import { Document } from '../documentModel';
 import { StatementUtil, Statement } from '../statementUtil';
-import { DbfController } from '../dbfController';
-import { DbType, AblTypeCheck, AblType } from '../type';
+import { DbType, AblTypeCheck, AblType } from '@oe-zext/types';
+import { AblDatabase } from '@oe-zext/database';
 
 declare type ReferenceData = AblType.Variable | AblType.Parameter | AblType.TempTable | AblType.Method;
 
 export class Hover implements vscode.HoverProvider {
 
     private documentController: DocumentController;
-    private dbfController: DbfController;
+    private dbfController: AblDatabase.Controller;
 
     static attach(context: vscode.ExtensionContext) {
         let instance = new Hover();
@@ -20,7 +20,7 @@ export class Hover implements vscode.HoverProvider {
     
     constructor() {
         this.documentController = DocumentController.getInstance();
-        this.dbfController = DbfController.getInstance();
+        this.dbfController = AblDatabase.Controller.getInstance();
     }
 
 	private registerCommands(context: vscode.ExtensionContext) {

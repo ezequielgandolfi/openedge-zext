@@ -3,8 +3,8 @@ import { OpenEdgeConfig } from '../extensionConfig';
 import { SourceParser } from '../sourceParser';
 import { DocumentController } from '../documentController';
 import { Document } from '../documentModel';
-import { DbfController } from '../dbfController';
 import { AblExecute } from '../abl-execute';
+import { AblDatabase } from '@oe-zext/database';
 
 /**
  * Provider for integration commands (usually hidden from command palette).
@@ -203,11 +203,11 @@ namespace IntegrationV1 {
         }
     
         static table(tableName: string) {
-            return DbfController.getInstance().getTable(tableName);
+            return AblDatabase.Controller.getInstance().getTable(tableName);
         }
     
         static tables() {
-            return DbfController.getInstance().getCollection().map(item => item.name);
+            return AblDatabase.Controller.getInstance().getCollection().map(item => item.name);
         }
 
     }
