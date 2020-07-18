@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { AblDatabase } from '@oe-zext/database';
-import { OpenEdgeConfig } from '../extensionConfig';
+import { OpenEdgeConfig } from '../extension-config';
 import { AblExecute } from '../abl-execute';
 import { AblSource } from '@oe-zext/source';
 

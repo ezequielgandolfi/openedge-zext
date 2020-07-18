@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { StatementUtil } from '../statementUtil';
+import { StatementUtil } from '../statement-util';
 import { AblType, AblTypeCheck, AblSchema } from '@oe-zext/types';
 import { AblSource } from '@oe-zext/source';
 

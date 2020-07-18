@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { showStatusBar, STATUS_COLOR, errorDiagnosticCollection, warningDiagnosticCollection } from '../notification';
-import { OpenEdgeConfig } from '../extensionConfig';
+import { OpenEdgeConfig } from '../extension-config';
 import { BaseExecutor } from './base-executor';
 
 export class CheckSyntax extends BaseExecutor {

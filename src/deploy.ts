@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import path = require('path');
 import * as fs from 'fs';
 import * as http from 'http';
-import { ExtensionConfig, DeploymentTask } from './extensionConfig';
+import { ExtensionConfig, DeploymentTask } from './extension-config';
 import { AblExecute } from './abl-execute';
 
 export enum TASK_TYPE {

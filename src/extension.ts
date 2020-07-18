@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import { AblDatabase } from '@oe-zext/database';
 import { Provider } from './provider';
 import { hideStatusBar, initDiagnostic, updateStatusBar, initStatusBar } from './notification';
-import { ExtensionConfig } from './extensionConfig';
+import { ExtensionConfig } from './extension-config';
 import { AblExecute } from './abl-execute';
 import { AblSource } from '@oe-zext/source';
 import { AblSchema } from '@oe-zext/types';

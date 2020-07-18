@@ -15,9 +15,6 @@ export interface DeploymentTask {
     path: string;
     postAction?: PostActionTask[];
 }
-export interface OpenEdgeFormatOptions {
-    trim?: 'none' | 'right';
-}
 export interface OpenEdgeConfig {
     proPath?: string[];
     proPathMode?: 'append' | 'overwrite' | 'prepend';
@@ -27,7 +24,6 @@ export interface OpenEdgeConfig {
     dlcPath?: string;
     dbDictionary?: string[];
     deployment?: DeploymentTask[];
-    format?: OpenEdgeFormatOptions;
 }
 
 export class ExtensionConfig {

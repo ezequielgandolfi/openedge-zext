@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { StatementUtil } from '../statementUtil';
+import { StatementUtil } from '../statement-util';
 import { DbType } from '@oe-zext/types';
 import { AblDatabase } from '@oe-zext/database';
 

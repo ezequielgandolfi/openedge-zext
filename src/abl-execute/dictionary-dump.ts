@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { ExtensionConfig } from '../extensionConfig';
+import { ExtensionConfig } from '../extension-config';
 import { BaseExecutor } from './base-executor';
 
 export class DictionaryDump extends BaseExecutor {

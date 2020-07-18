@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
-import { ExtensionConfig, OpenEdgeConfig } from '../extensionConfig';
+import { ExtensionConfig, OpenEdgeConfig } from '../extension-config';
 
 export interface ProArgsOptions {
     startupProcedure: string;

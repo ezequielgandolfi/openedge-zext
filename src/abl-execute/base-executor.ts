@@ -3,7 +3,7 @@ import cp = require('child_process');
 import path = require('path');
 import { outputChannel } from '../notification';
 import { AblEnvironment } from './environment';
-import { ExtensionConfig, OpenEdgeConfig } from '../extensionConfig';
+import { ExtensionConfig, OpenEdgeConfig } from '../extension-config';
 import { CheckResult } from './model';
 import { AblSchema } from '@oe-zext/types';
 

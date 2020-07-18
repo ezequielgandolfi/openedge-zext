@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import path = require('path');
 import { showStatusBar, STATUS_COLOR, errorDiagnosticCollection, warningDiagnosticCollection } from '../notification';
-import { ExtensionConfig, OpenEdgeConfig } from '../extensionConfig';
+import { ExtensionConfig, OpenEdgeConfig } from '../extension-config';
 import { TASK_TYPE, fileDeploy, rcodeDeploy } from '../deploy';
 import { BaseExecutor } from './base-executor';
 import { Process } from './process';
