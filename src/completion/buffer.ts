@@ -4,7 +4,7 @@ import { CodeCompletionBase } from './code-base';
 import { Table } from './table';
 import { TempTable } from './temp-table';
 import { AblDatabase } from '@oe-zext/database';
-import { AblSource } from '../abl-source';
+import { AblSource } from '@oe-zext/source';
 
 export class Buffer extends CodeCompletionBase {
 

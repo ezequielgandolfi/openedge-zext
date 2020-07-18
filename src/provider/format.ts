@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
 import { ExtensionConfig } from '../extensionConfig';
-import { AblSource } from '../abl-source';
+import { AblSource } from '@oe-zext/source';
 
 export class Format {
 

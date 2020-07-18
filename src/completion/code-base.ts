@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { StatementUtil } from '../statementUtil';
-import { AblSource } from '../abl-source';
+import { AblSource } from '@oe-zext/source';
 
 export class CodeCompletionBase implements vscode.CompletionItemProvider {
 

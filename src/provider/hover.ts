@@ -1,9 +1,8 @@
 import * as vscode from 'vscode';
-import { ABL_MODE } from '../environment';
 import { StatementUtil, Statement } from '../statementUtil';
-import { DbType, AblTypeCheck, AblType } from '@oe-zext/types';
+import { DbType, AblTypeCheck, AblType, AblSchema } from '@oe-zext/types';
 import { AblDatabase } from '@oe-zext/database';
-import { AblSource } from '../abl-source';
+import { AblSource } from '@oe-zext/source';
 
 declare type ReferenceData = AblType.Variable | AblType.Parameter | AblType.TempTable | AblType.Method;
 
@@ -23,7 +22,7 @@ export class Hover implements vscode.HoverProvider {
     }
 
 	private registerCommands(context: vscode.ExtensionContext) {
-        context.subscriptions.push(vscode.languages.registerHoverProvider(ABL_MODE.language, this));
+        context.subscriptions.push(vscode.languages.registerHoverProvider(AblSchema.languageId, this));
     }
     
     provideHover(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): vscode.ProviderResult<vscode.Hover> {

@@ -1,10 +1,10 @@
 import * as vscode from 'vscode';
 import path = require('path');
 import { showStatusBar, STATUS_COLOR, errorDiagnosticCollection, warningDiagnosticCollection } from '../notification';
-import { xcode } from '../utils';
 import { ExtensionConfig, OpenEdgeConfig } from '../extensionConfig';
 import { TASK_TYPE, fileDeploy, rcodeDeploy } from '../deploy';
 import { BaseExecutor } from './base-executor';
+import { Process } from './process';
 
 export enum COMPILE_OPTIONS {
     COMPILE = 'COMPILE',
@@ -109,7 +109,7 @@ export class Compile extends BaseExecutor {
                     fileDeploy(wf, document.uri.fsPath+'.preprocess', '.preprocess', [TASK_TYPE.DEPLOY_PREPROCESS,TASK_TYPE.DEPLOY_ALL]);
                     break;
                 case COMPILE_OPTIONS.XCODE:
-                    xcode(wf, document.uri.fsPath+'.xcode').then(ok => {
+                    Process.xcode(wf, document.uri.fsPath+'.xcode').then(ok => {
                         if (ok)
                             fileDeploy(wf, document.uri.fsPath+'.xcode', '.xcode', [TASK_TYPE.DEPLOY_XCODE,TASK_TYPE.DEPLOY_ALL]);
                     });

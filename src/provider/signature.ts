@@ -1,8 +1,7 @@
 import * as vscode from 'vscode';
-import { ABL_MODE } from '../environment';
 import { StatementUtil } from '../statementUtil';
-import { AblType } from '@oe-zext/types';
-import { AblSource } from '../abl-source';
+import { AblType, AblSchema } from '@oe-zext/types';
+import { AblSource } from '@oe-zext/source';
 
 export class Signature implements vscode.SignatureHelpProvider {
 
@@ -18,7 +17,7 @@ export class Signature implements vscode.SignatureHelpProvider {
     }
     
 	private registerProviders(context: vscode.ExtensionContext) {
-        context.subscriptions.push(vscode.languages.registerSignatureHelpProvider(ABL_MODE.language, this, '('));
+        context.subscriptions.push(vscode.languages.registerSignatureHelpProvider(AblSchema.languageId, this, '('));
     }
 
     provideSignatureHelp(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken, context: vscode.SignatureHelpContext): vscode.ProviderResult<vscode.SignatureHelp> {

@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
-import { ABL_MODE } from '../environment';
 import { CompletionProvider } from '../completion';
+import { AblSchema } from '@oe-zext/types';
 
 export class CodeCompletion {
 
@@ -10,14 +10,14 @@ export class CodeCompletion {
     }
     
 	private registerProviders(context: vscode.ExtensionContext) {
-        context.subscriptions.push(vscode.languages.registerCompletionItemProvider(ABL_MODE.language, new CompletionProvider.Buffer(), '.'));
-        context.subscriptions.push(vscode.languages.registerCompletionItemProvider(ABL_MODE.language, new CompletionProvider.Method(), '.'));
-        context.subscriptions.push(vscode.languages.registerCompletionItemProvider(ABL_MODE.language, new CompletionProvider.TempTable(), '.'));
-        context.subscriptions.push(vscode.languages.registerCompletionItemProvider(ABL_MODE.language, new CompletionProvider.Variable(), '.'));
+        context.subscriptions.push(vscode.languages.registerCompletionItemProvider(AblSchema.languageId, new CompletionProvider.Buffer(), '.'));
+        context.subscriptions.push(vscode.languages.registerCompletionItemProvider(AblSchema.languageId, new CompletionProvider.Method(), '.'));
+        context.subscriptions.push(vscode.languages.registerCompletionItemProvider(AblSchema.languageId, new CompletionProvider.TempTable(), '.'));
+        context.subscriptions.push(vscode.languages.registerCompletionItemProvider(AblSchema.languageId, new CompletionProvider.Variable(), '.'));
 
-        context.subscriptions.push(vscode.languages.registerCompletionItemProvider(ABL_MODE.language, new CompletionProvider.Table(), '.'));
+        context.subscriptions.push(vscode.languages.registerCompletionItemProvider(AblSchema.languageId, new CompletionProvider.Table(), '.'));
 
-        context.subscriptions.push(vscode.languages.registerCompletionItemProvider(ABL_MODE.language, new CompletionProvider.File(), '{'));
+        context.subscriptions.push(vscode.languages.registerCompletionItemProvider(AblSchema.languageId, new CompletionProvider.File(), '{'));
     }
     
 }

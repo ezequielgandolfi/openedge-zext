@@ -3,9 +3,9 @@ import { AblDatabase } from '@oe-zext/database';
 import { Provider } from './provider';
 import { hideStatusBar, initDiagnostic, updateStatusBar, initStatusBar } from './notification';
 import { ExtensionConfig } from './extensionConfig';
-import { ABL_MODE } from './environment';
 import { AblExecute } from './abl-execute';
-import { AblSource } from './abl-source';
+import { AblSource } from '@oe-zext/source';
+import { AblSchema } from '@oe-zext/types';
 
 const DBF_PATTERN = '**/.openedge-zext.db.*';
 const DBF_DBNAME_REGEX = /\.openedge-zext\.db\.(\w+)$/i;
@@ -38,10 +38,10 @@ function initOnSaveWatcher(context: vscode.ExtensionContext) {
 
     vscode.workspace.onDidSaveTextDocument(document => hideStatusBar(document.uri.fsPath));
 
-    let ablConfig = vscode.workspace.getConfiguration(ABL_MODE.language);
+    let ablConfig = vscode.workspace.getConfiguration(AblSchema.languageId);
     if (ablConfig.get('checkSyntaxOnSave') === 'file') {
         vscode.workspace.onDidSaveTextDocument(document => {
-            if (document.languageId !== ABL_MODE.language) {
+            if (document.languageId !== AblSchema.languageId) {
                 return;
             }
             AblExecute.CheckSyntax.getInstance().execute(document);

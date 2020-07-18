@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
-import { ABL_MODE } from '../environment';
-import { AblSource } from '../abl-source';
+import { AblSource } from '@oe-zext/source';
+import { AblSchema } from '@oe-zext/types';
 
 export class Symbol implements vscode.DocumentSymbolProvider {
 
@@ -10,7 +10,7 @@ export class Symbol implements vscode.DocumentSymbolProvider {
 	}
 
 	private registerCommands(context: vscode.ExtensionContext) {
-        context.subscriptions.push(vscode.languages.registerDocumentSymbolProvider(ABL_MODE.language, this));
+        context.subscriptions.push(vscode.languages.registerDocumentSymbolProvider(AblSchema.languageId, this));
     }
 
     public provideDocumentSymbols(document: vscode.TextDocument, token: vscode.CancellationToken): Thenable<vscode.SymbolInformation[]> {

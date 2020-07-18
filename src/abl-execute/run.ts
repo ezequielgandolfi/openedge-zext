@@ -1,6 +1,5 @@
 import * as vscode from 'vscode';
 import { showStatusBar, STATUS_COLOR, errorDiagnosticCollection, warningDiagnosticCollection, hideStatusBar } from '../notification';
-import { getProwinBin } from '../environment';
 import { OpenEdgeConfig } from '../extensionConfig';
 import { BaseExecutor } from './base-executor';
 
@@ -17,7 +16,7 @@ export class Run extends BaseExecutor {
     }
 
     protected getBinary() {
-        return getProwinBin();
+        return this.ablEnvironment.prowinBin;
     }
 
     protected isBatch() {

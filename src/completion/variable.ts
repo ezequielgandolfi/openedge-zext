@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { AblType, AblTypeCheck } from '@oe-zext/types';
 import { CodeCompletionBase } from './code-base';
-import { AblSource } from '../abl-source';
+import { AblSource } from '@oe-zext/source';
 
 export class Variable extends CodeCompletionBase {
 

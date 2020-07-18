@@ -2,15 +2,16 @@ import * as vscode from 'vscode';
 import cp = require('child_process');
 import path = require('path');
 import { outputChannel } from '../notification';
-import { getProBin, createProArgs, setupEnvironmentVariables, ABL_MODE } from '../environment';
-import { saveAndExec } from '../utils';
+import { AblEnvironment } from './environment';
 import { ExtensionConfig, OpenEdgeConfig } from '../extensionConfig';
 import { CheckResult } from './model';
+import { AblSchema } from '@oe-zext/types';
 
 export class BaseExecutor {
 
     protected errorDiagnostic: vscode.DiagnosticCollection;
     protected warningDiagnostic: vscode.DiagnosticCollection;
+    protected ablEnvironment = AblEnvironment.getInstance();
     
     private mapSeverity(ablSeverity: string): vscode.DiagnosticSeverity {
         switch (ablSeverity) {
@@ -64,7 +65,7 @@ export class BaseExecutor {
     }
 
     protected getBinary() {
-        return getProBin();
+        return this.ablEnvironment.progressBin;
     }
 
     protected isBatch() {
@@ -72,7 +73,7 @@ export class BaseExecutor {
     }
 
     protected executeCommand(document: vscode.TextDocument, procedure: string, params:string[], mergeOeConfig?: OpenEdgeConfig, silent?: boolean): Promise<boolean> {
-        if (document.languageId !== ABL_MODE.language) {
+        if (document.languageId !== AblSchema.languageId) {
             return;
         }
 
@@ -96,7 +97,7 @@ export class BaseExecutor {
             });
         }
     
-        return saveAndExec(document, doCommand);	
+        return this.saveAndExec(document, doCommand);	
     }
 
     protected executeStandaloneCommand(procedure: string, params:string[], mergeOeConfig?: OpenEdgeConfig, silent?: boolean): Promise<boolean> {
@@ -124,13 +125,20 @@ export class BaseExecutor {
             this.warningDiagnostic.clear();
 
         let diagnosticMap: Map<string, Map<vscode.DiagnosticSeverity, vscode.Diagnostic[]>> = new Map();
+        let wf = vscode.workspace.getWorkspaceFolder(document.uri);
 
         errors.forEach(error => {
-            let canonicalFile = vscode.Uri.file(error.file).toString();
+            let fileUri = vscode.Uri.file(error.file);
+            let filePath = fileUri.path;
+            let fileWf = vscode.workspace.getWorkspaceFolder(fileUri);
+            if (!fileWf) {
+                // includes
+                filePath = vscode.Uri.joinPath(wf.uri, error.file).path;
+            }
             let startColumn = 0;
             let endColumn = 1;
             if (error.line > 0) {
-                if (document && document.uri.toString() === canonicalFile) {
+                if (document && document.uri.path == filePath) {
                     let range = new vscode.Range(error.line - 1, startColumn, error.line - 1, document.lineAt(error.line - 1).range.end.character + 1);
                     let text = document.getText(range);
                     let [_, leading, trailing] = /^(\s*).*(\s*)$/.exec(text);
@@ -140,7 +148,7 @@ export class BaseExecutor {
                 let range = new vscode.Range(error.line - 1, startColumn, error.line - 1, endColumn);
                 let severity = this.mapSeverity(error.severity);
                 let diagnostic = new vscode.Diagnostic(range, error.msg, severity);
-                let diagnostics = diagnosticMap.get(canonicalFile);
+                let diagnostics = diagnosticMap.get(filePath);
                 if (!diagnostics) {
                     diagnostics = new Map<vscode.DiagnosticSeverity, vscode.Diagnostic[]>();
                 }
@@ -148,7 +156,7 @@ export class BaseExecutor {
                     diagnostics[severity] = [];
                 }
                 diagnostics[severity].push(diagnostic);
-                diagnosticMap.set(canonicalFile, diagnostics);
+                diagnosticMap.set(filePath, diagnostics);
             }
         });
         diagnosticMap.forEach((diagMap, file) => {
@@ -163,8 +171,8 @@ export class BaseExecutor {
         let cmd = this.getBinary();
         
         let oeConfig = ExtensionConfig.getInstance().getConfig(mergeOeConfig);
-        let env = setupEnvironmentVariables(process.env, oeConfig, workspaceRoot);
-        let args = createProArgs({
+        let env = this.ablEnvironment.setupEnvironmentVariables(process.env, oeConfig, workspaceRoot);
+        let args = this.ablEnvironment.createProArgs({
             parameterFiles: oeConfig.parameterFiles,
             configFile: oeConfig.configFile,
             batchMode: this.isBatch(),
@@ -184,6 +192,21 @@ export class BaseExecutor {
                 }
             });
         });
+    }
+
+    protected saveAndExec(document: vscode.TextDocument, action: () => Promise<boolean>): Promise<boolean> {
+        if (document.isDirty) {
+            return new Promise(function(resolve,reject) {
+                vscode.window.showInformationMessage('Current file has unsaved changes!', ...['Save', 'Cancel']).then(result => {
+                    if (result == 'Save') 
+                        document.save().then(saved => { if (saved) { action().then(v => resolve(v)); }});
+                    else
+                        resolve(false);
+                });
+            });
+        }
+        else
+            return action().then(value => { return value });
     }
 
 }

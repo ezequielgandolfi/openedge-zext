@@ -1,8 +1,7 @@
 import * as vscode from 'vscode';
-import { ABL_MODE } from '../environment';
-import { StatementUtil, Statement } from '../statementUtil';
-import { AblType, AblTypeCheck } from '@oe-zext/types';
-import { AblSource } from '../abl-source';
+import { StatementUtil } from '../statementUtil';
+import { AblType, AblTypeCheck, AblSchema } from '@oe-zext/types';
+import { AblSource } from '@oe-zext/source';
 
 export class Definition implements vscode.DefinitionProvider {
 
@@ -18,7 +17,7 @@ export class Definition implements vscode.DefinitionProvider {
     }
 
 	private registerCommands(context: vscode.ExtensionContext) {
-        context.subscriptions.push(vscode.languages.registerDefinitionProvider(ABL_MODE.language, this));
+        context.subscriptions.push(vscode.languages.registerDefinitionProvider(AblSchema.languageId, this));
     }
 
     provideDefinition(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Thenable<vscode.Location> {
