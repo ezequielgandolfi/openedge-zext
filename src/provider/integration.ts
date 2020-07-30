@@ -1,8 +1,12 @@
 import * as vscode from 'vscode';
+import * as path from 'path';
+import * as fs from 'fs';
 import { AblDatabase } from '@oe-zext/database';
 import { OpenEdgeConfig } from '../extension-config';
 import { AblExecute } from '../abl-execute';
 import { AblSource } from '@oe-zext/source';
+import { AblType } from '@oe-zext/types';
+import { isArray } from 'util';
 
 
 /**
@@ -26,44 +30,41 @@ export class Integration {
     }
 
     private currentFileSaveMap(args) {
-
-        // TODO
-
-        // let doc = vscode.window.activeTextEditor.document;
-        // let filename = null;
-        // if (args) {
-        //     if ((isArray(args))&&(args.length>0))
-        //         filename = args[0];
-        //     else
-        //         filename = args;
-        // }
-        // this.saveMapFile(doc, filename);
-        // return filename;
+        let doc = vscode.window.activeTextEditor.document;
+        let filename = null;
+        if (args) {
+            if ((isArray(args))&&(args.length>0))
+                filename = args[0];
+            else
+                filename = args;
+        }
+        this.saveMapFile(doc, filename);
+        return filename;
     }
 
-    private saveMapFile(document: vscode.TextDocument, filename?: string) {
-        // let doc = getDocumentController().getDocument(document);
-        // if (doc) {
-        //     let save = (fname:string, showMessage:boolean) => {
-        //         let data = doc.getMap();
-        //         if (data) {
-        //             fs.writeFileSync(fname, JSON.stringify(data));
-        //             if (showMessage)
-        //                 vscode.window.showInformationMessage('File ' + path.basename(fname) + ' created!');
-        //         }
-        //         else if (showMessage) {
-        //             vscode.window.showErrorMessage('Error mapping file');
-        //         }
-        //     }
-        //     //
-        //     if (filename) {
-        //         save(filename, false);
-        //     }
-        //     else {
-        //         let opt: vscode.InputBoxOptions = {prompt: 'Save into file', value: doc.document.uri.fsPath + '.oe-map.json'};
-        //         vscode.window.showInputBox(opt).then(fname => { if(fname) save(fname, true) });
-        //     }
-        // }
+    private saveMapFile(textDocument: vscode.TextDocument, filename?: string) {
+        let document =  AblSource.Controller.getInstance().getDocument(textDocument);
+        if (document) {
+            let save = (fname:string, showMessage:boolean) => {
+                let data = IntegrationV1.Generate.map(document);
+                if (data) {
+                    fs.writeFileSync(fname, JSON.stringify(data));
+                    if (showMessage)
+                        vscode.window.showInformationMessage('File ' + path.basename(fname) + ' created!');
+                }
+                else if (showMessage) {
+                    vscode.window.showErrorMessage('Error mapping file');
+                }
+            }
+            //
+            if (filename) {
+                save(filename, false);
+            }
+            else {
+                let opt: vscode.InputBoxOptions = {prompt: 'Save into file', value: document.document.uri.fsPath + '.oe-map.json'};
+                vscode.window.showInputBox(opt).then(fname => { if(fname) save(fname, true) });
+            }
+        }
     }
 
     private currentFileGetMap() {
@@ -135,14 +136,14 @@ namespace IntegrationV1 {
     interface MapInclude {
         fsPath: string;
         name: string;
-        map: MapFile;
+        map?: MapFile;
     }
     
     interface MapFile {
-        methods: MapMethod[];
-        variables: MapVariable[];
-        tempTables: MapTempTable[];
-        includes: MapInclude[];
+        methods?: MapMethod[];
+        variables?: MapVariable[];
+        tempTables?: MapTempTable[];
+        includes?: MapInclude[];
     }
     
     interface MapField {
@@ -170,8 +171,7 @@ namespace IntegrationV1 {
     export class Generate {
 
         static map(document: AblSource.Document): MapFile {
-            let tempTables: MapTempTable[] = document.tempTables.map(tempTable => {
-                let line = document.document.lineAt(tempTable.range.start).lineNumber;
+            let _tempTables: MapTempTable[] = document.tempTables.map(tempTable => {
                 let ttFields: MapVariable[] = [
                     ...tempTable.fields,
                     ...(tempTable.referenceFields || [])
@@ -180,7 +180,7 @@ namespace IntegrationV1 {
                         name: field.name,
                         asLike: (field.dataType ? 'as' : 'like'),
                         dataType: (field.dataType ? field.dataType : field.likeType),
-                        line: line
+                        line: tempTable.range.start.line
                     }
                 });
                 return <MapTempTable>{
@@ -189,16 +189,53 @@ namespace IntegrationV1 {
                 }
             });
 
+            let _methods: MapMethod[] = document.methods.map(method => {
+                return {
+                    name: method.name,
+                    lineAt: method.range.start.line,
+                    lineEnd: method.range.end.line,
+                    params: method.params.map(param => {
+                        let additional;
+                        if (param.dataType == AblType.ATTRIBUTE_TYPE.BUFFER) {
+                            additional = param.likeType;
+                        }
+                        else {
+                            additional = param.additional;
+                        }
+                        return <MapParams>{
+                            name: param.name,
+                            asLike: (param.dataType ? 'as' : 'like'),
+                            dataType: param.dataType || param.likeType,
+                            direction: param.direction,
+                            line: param.position.line,
+                            additional: additional
+                        }
+                    })
+                }
+            });
+
+            let _includes: MapInclude[] = document.includes.filter(include => !!include.uri).map(include => {
+                let includeMap;
+                let includeDocument = AblSource.Controller.getInstance().getDocument(include.uri);
+                if (includeDocument) {
+                    includeMap = Generate.map(includeDocument);
+                }
+                return {
+                    fsPath: include.uri?.fsPath,
+                    name: include.name,
+                    map: includeMap
+                }
+            })
 
 
-            // return {
-            //     methods: this._methods,
-            //     variables: this._vars,
-            //     tempTables: tempTables,
-            //     includes: inc,
-            //     external: this.externalDocument
-            // };
-            return;
+
+            return {
+                methods: _methods,
+                // variables: this._vars,
+                tempTables: _tempTables,
+                includes: _includes,
+                // external: this.externalDocument
+            };
         }
     
         static table(tableName: string) {

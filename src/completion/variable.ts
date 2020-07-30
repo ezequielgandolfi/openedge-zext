@@ -8,7 +8,7 @@ export class Variable extends CodeCompletionBase {
     protected getCompletionItems(document: AblSource.Document, words: string[], textDocument: vscode.TextDocument, position?: vscode.Position): vscode.CompletionItem[] {
         if (words.length == 1) {
             // global vars
-            let variables = [...document.variables.filter(v => !((v.dataType == AblType.ATTRIBUTE_TYPE.BUFFER)||(v.dataType == AblType.ATTRIBUTE_TYPE.TEMP_TABLE)))];
+            let variables: Array<AblType.Variable | AblType.Parameter> = [...document.variables.filter(v => !((v.dataType == AblType.ATTRIBUTE_TYPE.BUFFER)||(v.dataType == AblType.ATTRIBUTE_TYPE.TEMP_TABLE)))];
             // local vars/params
             if (position) {
                 let method = document.methodInPosition(position);

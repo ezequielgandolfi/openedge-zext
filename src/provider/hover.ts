@@ -55,7 +55,7 @@ export class Hover implements vscode.HoverProvider {
                 // document variables/params/temp-tables
                 let reference = document.searchReference(words[0], position);
                 if (reference) {
-                    return this.buildFHoverFromReferenceProperty(document, reference, words[1], statement);
+                    return this.buildHoverFromReferenceProperty(document, reference, words[1], statement);
                 }
                 // check for table
                 let table = this.dbfController.getTable(words[0]);
@@ -108,7 +108,7 @@ export class Hover implements vscode.HoverProvider {
         return;
     }
 
-    private buildFHoverFromReferenceProperty(document: AblSource.Document, reference: ReferenceData, name: string, statement: Statement): vscode.Hover {
+    private buildHoverFromReferenceProperty(document: AblSource.Document, reference: ReferenceData, name: string, statement: Statement): vscode.Hover {
         let property: DbType.Field | AblType.Field;
         let refData: AblType.TempTable | DbType.Table;
         if (AblTypeCheck.isTempTable(reference)) {
@@ -136,7 +136,7 @@ export class Hover implements vscode.HoverProvider {
         if (property) {
             if (AblTypeCheck.isTempTable(refData)) {
                 // temp-table field
-                let field: AblType.Field = property;
+                let field: AblType.Field = <AblType.Field>property;
                 let result = [];
                 result.push(`field **${field.name}**\n`);
                 if (AblTypeCheck.isVariable(reference) && reference.dataType == AblType.ATTRIBUTE_TYPE.BUFFER) {

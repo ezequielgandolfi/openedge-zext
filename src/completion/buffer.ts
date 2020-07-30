@@ -10,7 +10,7 @@ export class Buffer extends CodeCompletionBase {
 
     protected getCompletionItems(document: AblSource.Document, words: string[], textDocument: vscode.TextDocument, position?: vscode.Position): vscode.CompletionItem[] {
         if (words.length == 2) {
-            let buffer: AblType.Variable;
+            let buffer: AblType.Variable | AblType.Parameter;
             // local buffers
             if (position) {
                 let method = document.methodInPosition(position);
@@ -50,7 +50,7 @@ export class Buffer extends CodeCompletionBase {
         }
         else if (words.length == 1) {
             // global buffers
-            let buffers = [...document.variables.filter(v => v.dataType == AblType.ATTRIBUTE_TYPE.BUFFER)];
+            let buffers: Array<AblType.Variable | AblType.Parameter> = [...document.variables.filter(v => v.dataType == AblType.ATTRIBUTE_TYPE.BUFFER)];
             // local buffers
             if (position) {
                 let method = document.methodInPosition(position);
@@ -88,14 +88,14 @@ export class Buffer extends CodeCompletionBase {
         return items;
     }
 
-    static bufferDetail(variable: AblType.Variable): string {
+    static bufferDetail(variable: AblType.Variable | AblType.Parameter): string {
         let detail = `${variable.scope} buffer ${variable.name}`;
         if (AblTypeCheck.isParameter(variable) && variable.direction)
             detail = `${variable.direction} ${detail}`;
         return detail;
     }
 
-    static bufferDocumentation(variable: AblType.Variable): vscode.MarkdownString {
+    static bufferDocumentation(variable: AblType.Variable | AblType.Parameter): vscode.MarkdownString {
         let result = new vscode.MarkdownString();
         if (AblTypeCheck.isParameter(variable)) {
             result.appendMarkdown(`- Direction: *${variable.direction}*\n`);

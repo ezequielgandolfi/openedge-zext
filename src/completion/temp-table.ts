@@ -18,7 +18,7 @@ export class TempTable extends CodeCompletionBase {
         }
         else if (words.length == 1) {
             // global temps
-            let tempTables = [...document.tempTables];
+            let tempTables: Array<AblType.TempTable | AblType.Parameter> = [...document.tempTables];
             // local params (unnecessary - always have global temps with same name)
             if (position) {
                 let method = document.methodInPosition(position);
