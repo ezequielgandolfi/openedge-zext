@@ -43,7 +43,7 @@ export class Hover implements vscode.HoverProvider {
                 // document variables/params/temp-tables
                 let reference = document.searchReference(words[0], position);
                 if (reference) {
-                    return this.buildFHoverFromReference(document, reference, statement);
+                    return this.buildHoverFromReference(document, reference, statement);
                 }
                 // check for table names
                 let table = this.dbfController.getTable(words[0]);
@@ -68,7 +68,7 @@ export class Hover implements vscode.HoverProvider {
         return;
     }
 
-    private buildFHoverFromReference(document: AblSource.Document, reference: ReferenceData, statement: Statement): vscode.Hover {
+    private buildHoverFromReference(document: AblSource.Document, reference: ReferenceData, statement: Statement): vscode.Hover {
         if (AblTypeCheck.isTempTable(reference)) {
             return this.buildTempTableHover(reference, statement);
         }
