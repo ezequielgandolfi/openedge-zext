@@ -23,12 +23,12 @@ OpenEdge ABL Extension for Visual Studio Code
 ![navigation](resources/readme/navigation.gif)
 
 ### Check syntax, Compile, Run, Deploy
-- Check syntax `Shift+F2`
-- Compile (and deploy) `Alt+F1`
-- Compile (and deploy) with options (xref, debug-list, xcode, etc) `Alt+F3`
-- Deploy without compile `Alt+F2`
-- Compile and run `F2`
-> *Deployment options are located in configuration file*
+- OpenEdge integration for check syntax, compile and run commands
+- Configurable deployment options
+
+> Check **Shortcut Keys** section
+
+> Deployment options are located in configuration file
 
 ### Source formatting
 - Available commands:
@@ -43,7 +43,11 @@ OpenEdge ABL Extension for Visual Studio Code
 -
 
 ### Shortcut Keys
-- 
+- `Alt+F1` Compile + deploy
+- `Alt+F3` Compile with options (xref, debug-list, xcode, etc) + deploy
+- `Alt+F2` Deploy without compile (only source file)
+- `Shift+F2` Check syntax
+- `F2` Run
 
 ### Other features
 
@@ -64,7 +68,7 @@ See [CHANGELOG](CHANGELOG.md) for more information.
 
 ## Requirements
 
-- OpenEdge Progress 11
+- OpenEdge Progress 11+
 
 ## Usage
 - Extension is activated for extensions: .i .p .w .cls
@@ -90,12 +94,6 @@ See [CHANGELOG](CHANGELOG.md) for more information.
 
 #### ABL: Compile with Options (Alt+F3)
 > Compile the current file with additional options (Preprocess, X-Ref, etc)
-
-### Other features
-
-#### Format source code
-
-- Trim: *remove whitespaces from the end of the lines*
 
 ## Extension Settings
 
@@ -135,7 +133,6 @@ Create a file named ".openedge-zext.json" in root path of the workspace.
 - `dlcPath` is optional, and overwrite DLC enviorenment variable
 - `dbDictionary` are the logical names of database files for the auto-complete option (command: ABL Read Dictionary Structure)
 - `deployment` are actions from compile/deploy commands (Alt+F1, Alt+F2 and Alt+F3)
-- `format` are formatter options
 - Default values:
     - `proPath`: workspaceRoot
     - `workingDirectory`: folder of active source file
@@ -145,7 +142,7 @@ Create a file named ".openedge-zext.json" in root path of the workspace.
 Visit [Issues page on GitHub](https://github.com/ezequielgandolfi/openedge-zext/issues) to report any problem or submit an enhancement.
 
 ## Greetings
-Grammar file based on Christophe Camicas' (https://github.com/chriscamicas/abl-tmlanguage.git)
+Grammar file based on Christophe Camicas' project (https://github.com/chriscamicas/abl-tmlanguage.git)
 
 ## License
 Licensed under the [Apache-2.0](LICENSE) License.

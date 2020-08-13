@@ -235,9 +235,9 @@
         "build": "vsce package"
     },
     "dependencies": {
-        "@oe-zext/database": "1.0.1",
-        "@oe-zext/source": "1.0.1",
-        "@oe-zext/types": "1.0.1"
+        "@oe-zext/database": "1.0.2",
+        "@oe-zext/source": "1.0.6",
+        "@oe-zext/types": "1.0.4"
     },
     "devDependencies": {
         "@types/node": "14.0.14",
