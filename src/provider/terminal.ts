@@ -36,7 +36,6 @@ class OpenEdgeTerminal {
     private readonly CMD_HELP = 'help';
     private readonly CMD_COMPILE = 'compile';
     private readonly CMD_DEPLOY = 'deploy';
-    private readonly CMD_TEST = 'test';
 
     // private readonly COLOR_BG_RED = 41;
 
@@ -85,9 +84,6 @@ class OpenEdgeTerminal {
             // case this.CMD_DEPLOY:
             //     this.processDeploy(args);
             //     break;
-            // case this.CMD_TEST:
-            //     this.processTest();
-            //     break;
             default:
                 this.writeColor(this.COLOR_RED);
                 this.writeEmitter.fire(`Unknown command: ${cmd}. Type 'help' to available commands`);
@@ -97,15 +93,12 @@ class OpenEdgeTerminal {
     private processHelp() {
         this.writeColor(this.COLOR_CYAN);
         this.writeEmitter.fire('Commands:');
+        
         this.insertNewLine();
-        //
-        //
-        // this.writeEmitter.fire('\ttest - Test message');
-        // this.insertNewLine();
-        // this.writeEmitter.fire('\tcompile - Compile and deploy the .R');
-        // this.insertNewLine();
-        // this.writeEmitter.fire('\tdeploy - Deploy the source file');
-        // this.insertNewLine();
+        this.writeEmitter.fire('\tcompile - Compile and deploy the .R');
+        this.insertNewLine();
+        this.writeEmitter.fire('\tdeploy - Deploy the source file');
+        this.insertNewLine();
     }
 
     // private processDeploy(args: string[]) {
@@ -122,20 +115,15 @@ class OpenEdgeTerminal {
     //     }
     // }
 
-    // private processTest() {
-    //     this.writeColor(this.COLOR_CYAN);
-    //     this.writeEmitter.fire('Sending test message command...');
-    //     this.insertNewLine();
-    //     //
-    //     vscode.commands.executeCommand('abl.alert', 'Test message');
-    //     //
-    //     this.writeEmitter.fire('Done!');
-    //     this.insertNewLine();
-    // }
-
     private insertTerminalHeader() {
         this.writeColor(this.COLOR_GREEN);
         this.writeEmitter.fire('OpenEdge Terminal');
+        //
+        this.insertNewLine();
+        this.writeColor(this.COLOR_RED);
+        this.writeEmitter.fire('WORK IN PROGRESS...');
+        this.insertNewLine();
+        //
         this.insertNewCommandInput();
     }
 

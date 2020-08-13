@@ -71,16 +71,11 @@ function attachExtensions(context: vscode.ExtensionContext) {
     Provider.Hover.attach(context);
     Provider.KeyBinding.attach(context);
     Provider.Symbol.attach(context);
+    Provider.Signature.attach(context);
+    Provider.Integration.attach(context);
 
     // TODO -------------------------------------------------------
 
-    // testing
-    Provider.Signature.attach(context);
-
-    // in progress
-    Provider.Integration.attach(context);
-
-    // backlog
     Provider.Terminal.attach(context);
     
 }
