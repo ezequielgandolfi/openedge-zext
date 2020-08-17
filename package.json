@@ -236,7 +236,7 @@
     },
     "dependencies": {
         "@oe-zext/database": "1.0.2",
-        "@oe-zext/source": "1.0.6",
+        "@oe-zext/source": "1.0.7",
         "@oe-zext/types": "1.0.4"
     },
     "devDependencies": {
