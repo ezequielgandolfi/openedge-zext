@@ -39,9 +39,6 @@ OpenEdge ABL Extension for Visual Studio Code
 ### Hover information
 - Provides information when mouse hovers an element (table, field, variable, etc)
 
-### Command Palette
--
-
 ### Shortcut Keys
 - `Alt+F1` Compile + deploy
 - `Alt+F3` Compile with options (xref, debug-list, xcode, etc) + deploy

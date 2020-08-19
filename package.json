@@ -229,10 +229,11 @@
         ]
     },
     "scripts": {
+        "clear": "del .\\out\\* /S /Q 2>NUL && rmdir /S /Q .\\out 2>NUL || exit 0",
         "vscode:prepublish": "npm run compile",
         "compile": "tsc -p ./",
         "watch": "tsc -watch -p ./",
-        "build": "vsce package"
+        "build": "npm run clear && vsce package"
     },
     "dependencies": {
         "@oe-zext/database": "1.0.2",
