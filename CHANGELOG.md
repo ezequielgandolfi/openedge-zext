@@ -1,5 +1,11 @@
 # Change Log
 
+## 1.0.0
+- Brand new source code (seriously... almost everything...)
+- Better code completion details
+- Includes file sugestion on typing `{`
+- Method signature provider
+
 ## 0.6.0
 
 ### Breaking Changes

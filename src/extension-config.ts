@@ -15,9 +15,6 @@ export interface DeploymentTask {
     path: string;
     postAction?: PostActionTask[];
 }
-export interface OpenEdgeFormatOptions {
-    trim?: 'none' | 'right';
-}
 export interface OpenEdgeConfig {
     proPath?: string[];
     proPathMode?: 'append' | 'overwrite' | 'prepend';
@@ -27,7 +24,6 @@ export interface OpenEdgeConfig {
     dlcPath?: string;
     dbDictionary?: string[];
     deployment?: DeploymentTask[];
-    format?: OpenEdgeFormatOptions;
 }
 
 export class ExtensionConfig {
@@ -35,12 +31,14 @@ export class ExtensionConfig {
     readonly OPENEDGE_CONFIG_FILENAME = '.openedge-zext.json';
     readonly THIS_EXTENSION = 'ezequielgandolfi.openedge-zext';
 
+    private _context: vscode.ExtensionContext;
     private _openEdgeConfig: OpenEdgeConfig = null;
     private _watcher: vscode.FileSystemWatcher = null;
     private _genericWorkspaceFolder: vscode.WorkspaceFolder = null;
 
-    constructor() {
+    constructor(context: vscode.ExtensionContext) {
         _extensionConfig = this;
+        this._context = context;
         this.initConfig();
         this.initWatcher();
     }
@@ -86,6 +84,10 @@ export class ExtensionConfig {
         return readFileAsync(filename, { encoding: 'utf8' }).then(text => {
             return JSON.parse(text);
         });
+    }
+
+    getContext() {
+        return this._context;
     }
 
     getConfig(mergeConfig?: OpenEdgeConfig): OpenEdgeConfig {

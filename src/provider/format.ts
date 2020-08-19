@@ -1,21 +1,21 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
-import { ExtensionConfig } from './extensionConfig';
-import { SourceParser } from './sourceParser';
+import { ExtensionConfig } from '../extension-config';
+import { AblSource } from '@oe-zext/source';
 
-export class FormatExtension {
+export class Format {
 
     ablKeywordsPattern: string;
 
+    static attach(context: vscode.ExtensionContext) {
+        let instance = new Format();
+        instance.registerCommands(context);
+    }
+    
     constructor() {
         this.loadKeywordPattern();
     }
-
-    static attach(context: vscode.ExtensionContext) {
-        let instance = new FormatExtension();
-        instance.registerCommands(context);
-	}
 
 	private registerCommands(context: vscode.ExtensionContext) {
         context.subscriptions.push(vscode.commands.registerCommand('abl.format.upperCase', this.formatUpperCase.bind(this)));
@@ -36,7 +36,7 @@ export class FormatExtension {
     }
 
     private applyKeywordsFunction(editor: vscode.TextEditor, func: (text:string) => string) {
-        let source = new SourceParser().getSourceCode(editor.document);
+        let source = new AblSource.Extractor().execute(editor.document);
         let reg = RegExp(this.ablKeywordsPattern, 'gim');
 
         editor.edit(builder =>  {
@@ -80,5 +80,5 @@ export class FormatExtension {
             }
         });
     }
-    
+
 }

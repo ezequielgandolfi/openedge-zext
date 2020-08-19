@@ -2,8 +2,8 @@ import * as vscode from 'vscode';
 import path = require('path');
 import * as fs from 'fs';
 import * as http from 'http';
-import { mkdir } from './utils';
-import { ExtensionConfig, DeploymentTask } from './extensionConfig';
+import { ExtensionConfig, DeploymentTask } from './extension-config';
+import { AblExecute } from './abl-execute';
 
 export enum TASK_TYPE {
     DEPLOY_SOURCE = 'current.source',
@@ -65,7 +65,7 @@ function deploy(workspace: vscode.WorkspaceFolder, filename: string, dirname: st
             fname = fname.replace(workspace.uri.fsPath, task.path);
             let cwd = path.dirname(fname);
             if (!fs.existsSync(cwd))
-                mkdir(cwd);
+                AblExecute.Process.mkdir(cwd);
             fs.createReadStream(filename).pipe(fs.createWriteStream(fname));
             // post-action
             if (task.postAction) {

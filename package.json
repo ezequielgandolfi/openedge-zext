@@ -2,7 +2,7 @@
     "name": "openedge-zext",
     "displayName": "OpenEdge ABL (Progress 4GL)",
     "description": "OpenEdge ABL Extension for VSCode",
-    "version": "0.6.0",
+    "version": "1.0.0",
     "publisher": "ezequielgandolfi",
     "author": "Ezequiel Gandolfi",
     "license": "Apache-2.0",
@@ -109,6 +109,11 @@
                 "command": "abl.format.trimRight",
                 "title": "ABL: Format - Trim Right",
                 "description": "Trim right spaces from each line"
+            },
+            {
+                "command": "abl.terminal.open",
+                "title": "ABL: Command Terminal",
+                "description": "Open an OpenEdge-ZExt command terminal"
             }
         ],
         "menus": {
@@ -151,6 +156,9 @@
                 {
                     "command": "abl.format.trimRight",
                     "when": "editorLangId == 'abl'"
+                },
+                {
+                    "command": "abl.terminal.open"
                 }
             ]
         },
@@ -221,12 +229,17 @@
         ]
     },
     "scripts": {
+        "clear": "del .\\out\\* /S /Q 2>NUL && rmdir /S /Q .\\out 2>NUL || exit 0",
         "vscode:prepublish": "npm run compile",
         "compile": "tsc -p ./",
         "watch": "tsc -watch -p ./",
-        "build": "vsce package"
+        "build": "npm run clear && vsce package"
     },
-    "dependencies": {},
+    "dependencies": {
+        "@oe-zext/database": "1.0.2",
+        "@oe-zext/source": "1.0.7",
+        "@oe-zext/types": "1.0.4"
+    },
     "devDependencies": {
         "@types/node": "14.0.14",
         "@types/vscode": "1.46.0",
