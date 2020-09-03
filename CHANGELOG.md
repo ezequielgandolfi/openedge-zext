@@ -1,5 +1,10 @@
 # Change Log
 
+## 1.0.1
+
+### Fixes
+- Fix: `ABL: Read Dictionary Structure` command working path
+
 ## 1.0.0
 - Brand new source code (seriously... almost everything...)
 - Better code completion details

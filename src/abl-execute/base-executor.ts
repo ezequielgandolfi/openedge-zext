@@ -101,13 +101,15 @@ export class BaseExecutor {
     }
 
     protected executeStandaloneCommand(procedure: string, params:string[], mergeOeConfig?: OpenEdgeConfig, silent?: boolean): Promise<boolean> {
-        let tempPath = process.env['TEMP'];
-        let config = ExtensionConfig.getInstance().getConfig(mergeOeConfig);
-        if (config.workingDirectory) {
-            tempPath = config.workingDirectory;
+        let wf: vscode.WorkspaceFolder;
+        if (vscode.window.activeTextEditor) {
+            wf = vscode.workspace.getWorkspaceFolder(vscode.window.activeTextEditor.document.uri);
+        }
+        if (!wf) {
+            wf = ExtensionConfig.getInstance().getGenericWorkspaceFolder();
         }
         let doCommand = (): Promise<boolean> => {
-            let result = this.runProcess(procedure, params.join(','), mergeOeConfig, tempPath);
+            let result = this.runProcess(procedure, params.join(','), mergeOeConfig, wf.uri.fsPath);
             return result.then(errors => {
                 return true;
             }).catch(e => {
