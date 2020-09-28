@@ -16,11 +16,11 @@ export class Symbol implements vscode.DocumentSymbolProvider {
     public provideDocumentSymbols(document: vscode.TextDocument, token: vscode.CancellationToken): Thenable<vscode.SymbolInformation[]> {
         let doc = AblSource.Controller.getInstance().getDocument(document);
         if (doc) {
-            return doc.update().then(() => {
+            return new Promise(resolve => {
                 let documentSymbols = this.documentSymbols.bind(this);
                 if (!token.isCancellationRequested)
-                    return documentSymbols(doc);
-                return;
+                    resolve(documentSymbols(doc));
+                resolve();
             });
         }
         return;
