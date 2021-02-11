@@ -54,7 +54,7 @@ function deploy(workspace: vscode.WorkspaceFolder, filename: string, dirname: st
     // check if file exists
     if (!fs.existsSync(filename)) {
         vscode.window.showErrorMessage(`File ${path.basename(filename)} not found`);
-        return Promise.resolve();
+        return Promise.resolve(null);
     }
 
     let oeConfig = ExtensionConfig.getInstance().getConfig();
@@ -78,6 +78,6 @@ function deploy(workspace: vscode.WorkspaceFolder, filename: string, dirname: st
         // notification
         if (tasks.length > 0)
             vscode.window.showInformationMessage('File ' + path.basename(filename) + ' deployed!');
-        resolve();
+        resolve(null);
     });
 }

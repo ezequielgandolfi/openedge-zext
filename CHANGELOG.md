@@ -1,5 +1,15 @@
 # Change Log
 
+## 1.0.3
+
+### Integration
+- New integration command: `abl.getMap` (fsPath)
+
+## 1.0.2
+
+### Fixes
+- Fix: Performance issues with Symbol Provider forcing 
+
 ## 1.0.1
 
 ### Fixes
