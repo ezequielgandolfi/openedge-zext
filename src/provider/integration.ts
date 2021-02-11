@@ -27,6 +27,7 @@ export class Integration {
         context.subscriptions.push(vscode.commands.registerCommand('abl.tables', this.tables.bind(this)));
         context.subscriptions.push(vscode.commands.registerCommand('abl.table', this.table.bind(this)));
         context.subscriptions.push(vscode.commands.registerCommand('abl.compile', this.compile.bind(this)));
+        context.subscriptions.push(vscode.commands.registerCommand('abl.getMap', this.fileGetMap.bind(this)));
     }
 
     private currentFileSaveMap(args) {
@@ -99,6 +100,14 @@ export class Integration {
                 AblExecute.Compile.getInstance().execute(textDocument, mergeOeConfig, true, [AblExecute.COMPILE_OPTIONS.COMPILE]).then(v => resolve(v));
             });
         });
+    }
+
+    private fileGetMap(fsPath: string) {
+        let document = AblSource.Controller.getInstance().getDocument(vscode.Uri.file(fsPath));
+        if (document) {
+            return IntegrationV1.Generate.map(document);
+        }
+        return {};
     }
 
 }

@@ -20,7 +20,7 @@ export class Symbol implements vscode.DocumentSymbolProvider {
                 let documentSymbols = this.documentSymbols.bind(this);
                 if (!token.isCancellationRequested)
                     resolve(documentSymbols(doc));
-                resolve();
+                resolve(null);
             });
         }
         return;
