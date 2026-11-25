@@ -1,5 +1,4 @@
 import * as vscode from 'vscode';
-import { isNullOrUndefined } from 'util';
 
 export let outputChannel = vscode.window.createOutputChannel('OpenEdge');
 let statusMessages: {fsPath:string,text?:string,color?:any,active?:boolean}[] = [];
@@ -25,9 +24,9 @@ export function updateStatusBar() {
 function updateDocumentStatusBar(fsPath?: string) {
     statusBarEntry.hide();
 
-    if (!isNullOrUndefined(fsPath)) {
+    if (fsPath !== null && fsPath !== undefined) {
         let msg = statusMessages.find(item => item.fsPath == fsPath);
-        if (!isNullOrUndefined(msg) && msg.active) {
+        if (msg !== null && msg !== undefined && msg.active) {
             statusBarEntry.text = msg.text;
             statusBarEntry.color = msg.color;
             statusBarEntry.show();
@@ -45,7 +44,7 @@ export function hideStatusBar(fsPath: string) {
 
 export function showStatusBar(fsPath: string, message: string, status?: STATUS_COLOR) {
     let msg = statusMessages.find(item => item.fsPath == fsPath);
-    if (isNullOrUndefined(msg)) {
+    if (msg === null || msg === undefined) {
         msg = { fsPath: fsPath };
         statusMessages.push(msg);
     }
