@@ -6,7 +6,6 @@ import { OpenEdgeConfig } from '../extension-config';
 import { AblExecute } from '../abl-execute';
 import { AblSource } from '@oe-zext/source';
 import { AblType } from '@oe-zext/types';
-import { isArray } from 'util';
 
 
 /**
@@ -34,7 +33,7 @@ export class Integration {
         let doc = vscode.window.activeTextEditor.document;
         let filename = null;
         if (args) {
-            if ((isArray(args))&&(args.length>0))
+            if ((Array.isArray(args))&&(args.length>0))
                 filename = args[0];
             else
                 filename = args;

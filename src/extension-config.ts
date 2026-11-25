@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
-import { isNullOrUndefined, promisify } from 'util';
+import { promisify } from 'util';
 
 const readFileAsync = promisify(fs.readFile);
 
@@ -57,7 +57,7 @@ export class ExtensionConfig {
     }
 
     private loadAndSetConfigFile(uri?: vscode.Uri) {
-        if (isNullOrUndefined(uri)) {
+        if (uri === null || uri === undefined) {
             return;
         }
         this.loadFile(uri.fsPath).then(config => {
@@ -92,7 +92,7 @@ export class ExtensionConfig {
 
     getConfig(mergeConfig?: OpenEdgeConfig): OpenEdgeConfig {
         let result = this._openEdgeConfig || {};
-        if (isNullOrUndefined(mergeConfig))
+        if (mergeConfig === null || mergeConfig === undefined)
             return result;
         else
             // deep copy from config
